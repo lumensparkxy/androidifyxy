@@ -50,7 +50,13 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
     implementation("com.google.firebase:firebase-ai:17.6.0")
+    implementation("com.google.firebase:firebase-auth")
     implementation("io.noties.markwon:core:4.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7")
+
+    // Credential Manager for Google Sign-In
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 }

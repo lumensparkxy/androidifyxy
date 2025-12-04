@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">Krishi Mitra</string>
 
+    <!-- Login Screen -->
+    <string name="login_tagline">Your AI-powered agriculture assistant</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="terms_privacy">By signing in, you agree to our Terms of Service and Privacy Policy</string>
+    <string name="sign_out">Sign Out</string>
+
     <!-- Welcome Screen -->
     <string name="welcome_title">Welcome to Krishi Mitra</string>
     <string name="welcome_subtitle">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>

@@ -1,6 +1,9 @@
 package com.maswadkar.developers.androidify
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -15,17 +18,30 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.maswadkar.developers.androidify.auth.AuthRepository
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
+    private lateinit var authRepository: AuthRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        // Initialize auth repository
+        authRepository = AuthRepository(this)
+
+        // Check if user is logged in
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            navigateToLogin()
+            return
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.systemBars())
             v.setPadding(imeInsets.left, imeInsets.top, imeInsets.right, imeInsets.bottom)
@@ -90,5 +106,34 @@ class MainActivity : AppCompatActivity() {
             viewModel.sendMessage(userText)
             etInput.text.clear()
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_sign_out -> {
+                signOut()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun signOut() {
+        lifecycleScope.launch {
+            authRepository.signOut()
+            navigateToLogin()
+        }
+    }
+
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
