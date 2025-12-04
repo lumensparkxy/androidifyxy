@@ -4,36 +4,21 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.Firebase
-import com.google.firebase.ai.ai
-import com.google.firebase.ai.type.GenerativeBackend
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    private val messages = mutableListOf<ChatMessage>()
+    private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
-    
-    private val funnyLoadingMessages = listOf(
-        "Thinking... 🤔",
-        "Consulting the matrix... 🐇",
-        "Reticulating splines... ⚙️",
-        "Asking the squirrels... 🐿️",
-        "Decoding the cosmos... 🌌",
-        "Brewing some coffee... ☕",
-        "Waking up the hamsters... 🐹",
-        "Connecting to the neural net... 🧠",
-        "Looking up the answer in a really big book... 📖",
-        "Asking the magic 8-ball... 🎱"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,59 +34,29 @@ class MainActivity : AppCompatActivity() {
         val etInput = findViewById<EditText>(R.id.etInput)
         val btnSend = findViewById<Button>(R.id.btnSend)
 
-        chatAdapter = ChatAdapter(messages)
+        chatAdapter = ChatAdapter(mutableListOf())
         rvChat.layoutManager = LinearLayoutManager(this).apply {
             stackFromEnd = true // Start from bottom like a chat
         }
         rvChat.adapter = chatAdapter
 
-        // Initialize Firebase AI with Gemini model
-        val model = Firebase.ai(backend = GenerativeBackend.vertexAI())
-            .generativeModel("gemini-2.5-flash")
+        // Observe messages from ViewModel
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.messages.collect { messages ->
+                    chatAdapter.updateMessages(messages)
+                    if (messages.isNotEmpty()) {
+                        rvChat.scrollToPosition(messages.size - 1)
+                    }
+                }
+            }
+        }
 
         btnSend.setOnClickListener {
             val userText = etInput.text.toString().trim()
             if (userText.isNotEmpty()) {
-                // Add user message
-                messages.add(ChatMessage(userText, true))
-                chatAdapter.notifyItemInserted(messages.size - 1)
-                rvChat.scrollToPosition(messages.size - 1)
+                viewModel.sendMessage(userText)
                 etInput.text.clear()
-
-                // Add placeholder loading message
-                val loadingMessage = ChatMessage(funnyLoadingMessages.first(), false, true)
-                messages.add(loadingMessage)
-                val loadingIndex = messages.size - 1
-                chatAdapter.notifyItemInserted(loadingIndex)
-                rvChat.scrollToPosition(loadingIndex)
-
-                // Call AI
-                lifecycleScope.launch {
-                    val animationJob = launch {
-                        while (isActive) {
-                            delay(5000)
-                            loadingMessage.text = funnyLoadingMessages.random()
-                            chatAdapter.notifyItemChanged(loadingIndex)
-                        }
-                    }
-
-                    try {
-                        val response = model.generateContent(userText)
-                        val modelText = response.text ?: "No response"
-                        
-                        animationJob.cancel()
-                        
-                        // Update loading message with real response
-                        loadingMessage.text = modelText
-                        chatAdapter.notifyItemChanged(loadingIndex)
-                        rvChat.scrollToPosition(loadingIndex)
-                    } catch (e: Exception) {
-                        animationJob.cancel()
-                        loadingMessage.text = "Error: ${e.message}"
-                        chatAdapter.notifyItemChanged(loadingIndex)
-                        rvChat.scrollToPosition(loadingIndex)
-                    }
-                }
             }
         }
     }

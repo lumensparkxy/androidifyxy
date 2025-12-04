@@ -1,14 +1,14 @@
 package com.maswadkar.developers.androidify
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.noties.markwon.Markwon
 
-class ChatAdapter(private val messages: List<ChatMessage>) :
+class ChatAdapter(private var messages: MutableList<ChatMessage>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private lateinit var markwon: Markwon
@@ -16,6 +16,14 @@ class ChatAdapter(private val messages: List<ChatMessage>) :
     companion object {
         private const val VIEW_TYPE_USER = 1
         private const val VIEW_TYPE_MODEL = 2
+    }
+
+    fun updateMessages(newMessages: List<ChatMessage>) {
+        val diffCallback = MessageDiffCallback(messages, newMessages)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        messages.clear()
+        messages.addAll(newMessages)
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -58,6 +66,27 @@ class ChatAdapter(private val messages: List<ChatMessage>) :
         private val tvModelMessage: TextView = itemView.findViewById(R.id.tvModelMessage)
         fun bind(message: ChatMessage) {
             markwon.setMarkdown(tvModelMessage, message.text)
+        }
+    }
+
+    private class MessageDiffCallback(
+        private val oldList: List<ChatMessage>,
+        private val newList: List<ChatMessage>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            // Messages at the same position are considered the same item
+            return oldItemPosition == newItemPosition
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+            return oldItem.text == newItem.text &&
+                   oldItem.isUser == newItem.isUser &&
+                   oldItem.isLoading == newItem.isLoading
         }
     }
 }

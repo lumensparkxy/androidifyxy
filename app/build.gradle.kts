@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlin-parcelize")
     id("com.google.gms.google-services")
 }
 
@@ -50,4 +51,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
     implementation("com.google.firebase:firebase-ai:17.6.0")
     implementation("io.noties.markwon:core:4.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7")
 }
