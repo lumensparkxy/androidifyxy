@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Drawer Menu - Marathi -->
+    <string name="menu_new_chat">नवीन चॅट</string>
+    <string name="menu_history">मागील संभाषणे</string>
+    <string name="menu_other">इतर</string>
+    <string name="sign_out">साइन आउट</string>
+    <string name="open_drawer">नेव्हिगेशन ड्रॉवर उघडा</string>
+    <string name="close_drawer">नेव्हिगेशन ड्रॉवर बंद करा</string>
+    <string name="history_title">अलीकडील संभाषणे</string>
+    <string name="no_history">अद्याप कोणतेही संभाषण नाही।\nआपला इतिहास जतन करण्यासाठी चॅट करा!</string>
+    <string name="delete_conversation">संभाषण हटवा</string>
+</resources>
+
