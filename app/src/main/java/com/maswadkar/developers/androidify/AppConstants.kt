@@ -24,7 +24,7 @@ Guidelines:
 
     // Chat Configuration
     const val MAX_MESSAGES = 100
-    const val LOADING_MESSAGE_INTERVAL_MS = 5000L
+    const val LOADING_MESSAGE_INTERVAL_MS = 3000L
 
     // Messages
     const val NO_RESPONSE_MESSAGE = "No response"
@@ -44,4 +44,3 @@ Guidelines:
         "Asking the magic 8-ball... 🎱"
     )
 }
-
