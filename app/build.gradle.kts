@@ -48,6 +48,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
-    implementation("com.google.firebase:firebase-vertexai:16.5.0")
+    implementation("com.google.firebase:firebase-ai:17.6.0")
     implementation("io.noties.markwon:core:4.6.2")
 }
