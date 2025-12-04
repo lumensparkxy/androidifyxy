@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Drawer Menu - Kannada -->
+    <string name="menu_new_chat">ಹೊಸ ಚಾಟ್</string>
+    <string name="menu_history">ಹಿಂದಿನ ಸಂಭಾಷಣೆಗಳು</string>
+    <string name="menu_other">ಇತರೆ</string>
+    <string name="sign_out">ಸೈನ್ ಔಟ್</string>
+    <string name="open_drawer">ನ್ಯಾವಿಗೇಶನ್ ಡ್ರಾಯರ್ ತೆರೆಯಿರಿ</string>
+    <string name="close_drawer">ನ್ಯಾವಿಗೇಶನ್ ಡ್ರಾಯರ್ ಮುಚ್ಚಿರಿ</string>
+    <string name="history_title">ಇತ್ತೀಚಿನ ಸಂಭಾಷಣೆಗಳು</string>
+    <string name="no_history">ಇನ್ನೂ ಸಂಭಾಷಣೆಗಳಿಲ್ಲ.\nನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಉಳಿಸಲು ಚಾಟ್ ಮಾಡಿ!</string>
+    <string name="delete_conversation">ಸಂಭಾಷಣೆಯನ್ನು ಅಳಿಸಿ</string>
+</resources>
+

@@ -28,6 +28,11 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
     </application>
 
 </manifest>

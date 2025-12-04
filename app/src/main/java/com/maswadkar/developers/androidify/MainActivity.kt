@@ -2,31 +2,40 @@ package com.maswadkar.developers.androidify
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.auth.AuthRepository
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private val viewModel: ChatViewModel by viewModels()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var authRepository: AuthRepository
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var toggle: ActionBarDrawerToggle
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +51,81 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        setupToolbarAndDrawer()
+        setupViews()
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        // Check if we're loading a specific conversation from HistoryActivity
+        val conversationId = intent.getStringExtra(HistoryActivity.EXTRA_CONVERSATION_ID)
+        if (conversationId != null) {
+            viewModel.loadConversation(conversationId)
+        }
+    }
+
+    private fun setupToolbarAndDrawer() {
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        drawerLayout = findViewById(R.id.drawerLayout)
+        toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.open_drawer,
+            R.string.close_drawer
+        )
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        // Handle back press to close drawer
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
+        val navigationView = findViewById<NavigationView>(R.id.navigationView)
+        navigationView.setNavigationItemSelectedListener(this)
+
+        // Setup navigation header with user info
+        setupNavHeader(navigationView)
+    }
+
+    private fun setupNavHeader(navigationView: NavigationView) {
+        val headerView = navigationView.getHeaderView(0)
+        val ivUserPhoto = headerView.findViewById<ImageView>(R.id.ivUserPhoto)
+        val tvUserName = headerView.findViewById<TextView>(R.id.tvUserName)
+        val tvUserEmail = headerView.findViewById<TextView>(R.id.tvUserEmail)
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        currentUser?.let { user ->
+            tvUserName.text = user.displayName ?: "User"
+            tvUserEmail.text = user.email ?: ""
+
+            // Load profile photo with Glide
+            user.photoUrl?.let { photoUrl ->
+                Glide.with(this)
+                    .load(photoUrl)
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_default_avatar)
+                    .into(ivUserPhoto)
+            }
+        }
+    }
+
+    private fun setupViews() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.systemBars())
             v.setPadding(imeInsets.left, imeInsets.top, imeInsets.right, imeInsets.bottom)
@@ -56,9 +140,10 @@ class MainActivity : AppCompatActivity() {
         // Setup example question click listeners
         setupExampleQuestions(etInput)
 
+        // Setup chat adapter
         chatAdapter = ChatAdapter(mutableListOf())
         rvChat.layoutManager = LinearLayoutManager(this).apply {
-            stackFromEnd = true // Start from bottom like a chat
+            stackFromEnd = true
         }
         rvChat.adapter = chatAdapter
 
@@ -86,10 +171,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.nav_new_chat -> {
+                viewModel.startNewConversation()
+            }
+            R.id.nav_history -> {
+                startActivity(Intent(this, HistoryActivity::class.java))
+            }
+            R.id.nav_sign_out -> {
+                signOut()
+            }
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.saveCurrentConversation()
+    }
+
     private fun setupExampleQuestions(etInput: EditText) {
         val exampleClickListener = View.OnClickListener { view ->
             val question = (view as TextView).text.toString()
-            // Remove the quotes from the example question
             val cleanQuestion = question.trim('"')
             etInput.setText(cleanQuestion)
             sendMessage(etInput)
@@ -108,20 +213,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_sign_out -> {
-                signOut()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     private fun signOut() {
         lifecycleScope.launch {

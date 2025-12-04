@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Drawer Menu - Hindi -->
+    <string name="menu_new_chat">नई चैट</string>
+    <string name="menu_history">पिछली बातचीत</string>
+    <string name="menu_other">अन्य</string>
+    <string name="sign_out">साइन आउट</string>
+    <string name="open_drawer">नेविगेशन ड्रॉअर खोलें</string>
+    <string name="close_drawer">नेविगेशन ड्रॉअर बंद करें</string>
+    <string name="history_title">हाल की बातचीत</string>
+    <string name="no_history">अभी तक कोई बातचीत नहीं।\nअपना इतिहास सहेजने के लिए चैट करें!</string>
+    <string name="delete_conversation">बातचीत हटाएं</string>
+</resources>
+
