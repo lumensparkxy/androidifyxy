@@ -1,37 +1,37 @@
 <resources>
-    <string name="app_name">Krishi Mitra</string>
+    <string name="app_name" translatable="false">Krishi Mitra</string>
 
     <!-- Login Screen -->
-    <string name="login_tagline">Your AI-powered agriculture assistant</string>
-    <string name="sign_in_with_google">Sign in with Google</string>
-    <string name="terms_privacy">By signing in, you agree to our Terms of Service and Privacy Policy</string>
+    <string name="login_tagline" translatable="false">Your AI-powered agriculture assistant</string>
+    <string name="sign_in_with_google" translatable="false">Sign in with Google</string>
+    <string name="terms_privacy" translatable="false">By signing in, you agree to our Terms of Service and Privacy Policy</string>
     <string name="sign_out">Sign Out</string>
 
     <!-- Welcome Screen -->
-    <string name="welcome_title">Welcome to Krishi Mitra</string>
-    <string name="welcome_subtitle">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
+    <string name="welcome_title" translatable="false">Welcome to Krishi Mitra</string>
+    <string name="welcome_subtitle" translatable="false">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
 
     <!-- Features -->
-    <string name="features_title">What I can help you with</string>
-    <string name="feature_1">Get expert advice on crop cultivation, soil health, and farming techniques</string>
-    <string name="feature_2">Ask in your local language - Hindi, Marathi, Telugu, Tamil, and more</string>
-    <string name="feature_3">Access verified information from agricultural research documents</string>
-    <string name="feature_4">Get tips on pest control, fertilizers, irrigation, and market prices</string>
+    <string name="features_title" translatable="false">What I can help you with</string>
+    <string name="feature_1" translatable="false">Get expert advice on crop cultivation, soil health, and farming techniques</string>
+    <string name="feature_2" translatable="false">Ask in your local language - Hindi, Marathi, Telugu, Tamil, and more</string>
+    <string name="feature_3" translatable="false">Access verified information from agricultural research documents</string>
+    <string name="feature_4" translatable="false">Get tips on pest control, fertilizers, irrigation, and market prices</string>
 
     <!-- Example Questions -->
-    <string name="try_asking_title">Try asking:</string>
-    <string name="example_question_1">"मेरी गेहूं की फसल में पीलापन आ रहा है, क्या करूं?"</string>
-    <string name="example_question_2">"What is the best time to sow cotton in Maharashtra?"</string>
-    <string name="example_question_3">"ಟೊಮೆಟೊ ಬೆಳೆಗೆ ಯಾವ ಗೊಬ್ಬರ ಬಳಸಬೇಕು?"</string>
+    <string name="try_asking_title" translatable="false">Try asking:</string>
+    <string name="example_question_1" translatable="false">"मेरी गेहूं की फसल में पीलापन आ रहा है, क्या करूं?"</string>
+    <string name="example_question_2" translatable="false">"What is the best time to sow cotton in Maharashtra?"</string>
+    <string name="example_question_3" translatable="false">"ಟೊಮೆಟೊ ಬೆಳೆಗೆ ಯಾವ ಗೊಬ್ಬರ ಬಳಸಬೇಕು?"</string>
 
     <!-- Input -->
-    <string name="input_hint">Ask about farming, crops, weather…</string>
-    <string name="send_button">Send</string>
+    <string name="input_hint" translatable="false">Ask about farming, crops, weather…</string>
+    <string name="send_button" translatable="false">Send</string>
 
     <!-- Chat History -->
     <string name="history_title">Recent Conversations</string>
     <string name="no_history">No previous conversations yet.\nStart chatting to save your history!</string>
-    <string name="new_chat">New Chat</string>
+    <string name="new_chat" translatable="false">New Chat</string>
     <string name="delete_conversation">Delete conversation</string>
 
     <!-- Drawer Menu -->
@@ -40,5 +40,5 @@
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
-    <string name="user_photo">User photo</string>
+    <string name="user_photo" translatable="false">User photo</string>
 </resources>
