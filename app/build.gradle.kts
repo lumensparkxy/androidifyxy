@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     id("kotlin-parcelize")
     id("com.google.gms.google-services")
 }
@@ -37,6 +38,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
@@ -52,7 +56,6 @@ dependencies {
     implementation("com.google.firebase:firebase-ai:17.6.0")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation("io.noties.markwon:core:4.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7")
 
@@ -61,6 +64,25 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
-    // Glide for image loading
-    implementation("com.github.bumptech.glide:glide:4.16.0")
+    // Coil for image loading (Compose-compatible replacement for Glide)
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Jetpack Compose
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Markdown rendering for Compose
+    implementation("com.mikepenz:multiplatform-markdown-renderer:0.13.0")
+    implementation("com.mikepenz:multiplatform-markdown-renderer-m3:0.13.0")
 }
