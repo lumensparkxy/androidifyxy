@@ -4,7 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.media.ExifInterface
+import androidx.core.graphics.scale
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
@@ -65,6 +66,7 @@ object ImageUtils {
     /**
      * Compress a Bitmap directly (used for camera captures)
      */
+    @Suppress("unused")
     fun compressBitmap(bitmap: Bitmap): Bitmap {
         return scaleToMaxDimension(bitmap, MAX_DIMENSION)
     }
@@ -72,6 +74,7 @@ object ImageUtils {
     /**
      * Convert Bitmap to ByteArray with JPEG compression
      */
+    @Suppress("unused")
     fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
         val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, outputStream)
@@ -102,7 +105,7 @@ object ImageUtils {
         val newWidth = (width * scale).toInt()
         val newHeight = (height * scale).toInt()
 
-        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+        return bitmap.scale(newWidth, newHeight, true)
     }
 
     private fun handleExifOrientation(context: Context, uri: Uri, bitmap: Bitmap): Bitmap {
@@ -131,4 +134,3 @@ object ImageUtils {
         }
     }
 }
-
