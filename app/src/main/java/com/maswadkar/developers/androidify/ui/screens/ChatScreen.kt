@@ -1,5 +1,7 @@
 package com.maswadkar.developers.androidify.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.ChatMessage
@@ -97,6 +100,38 @@ fun ChatScreen(
         }
     }
 
+    val launchCamera = {
+        try {
+            val tempFile = File.createTempFile(
+                "camera_${System.currentTimeMillis()}",
+                ".jpg",
+                context.cacheDir
+            )
+            // Use explicit authority to avoid package name ambiguity
+            val authority = "com.maswadkar.developers.androidify.fileprovider"
+            val uri = FileProvider.getUriForFile(
+                context,
+                authority,
+                tempFile
+            )
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Error launching camera: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchCamera()
+        } else {
+            Toast.makeText(context, "Camera permission is required", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Get current user info
     val currentUser = FirebaseAuth.getInstance().currentUser
     val drawerUser = currentUser?.let {
@@ -137,25 +172,12 @@ fun ChatScreen(
                 scope.launch {
                     bottomSheetState.hide()
                     showImagePicker = false
-                    // Create temp file for camera capture
-                    try {
-                        val tempFile = File.createTempFile(
-                            "camera_${System.currentTimeMillis()}",
-                            ".jpg",
-                            context.cacheDir
-                        )
-                        // Use explicit authority to avoid package name ambiguity
-                        val authority = "com.maswadkar.developers.androidify.fileprovider"
-                        val uri = FileProvider.getUriForFile(
-                            context,
-                            authority,
-                            tempFile
-                        )
-                        tempCameraUri = uri
-                        cameraLauncher.launch(uri)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Toast.makeText(context, "Error launching camera: ${e.message}", Toast.LENGTH_SHORT).show()
+                    
+                    val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                    if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                        launchCamera()
+                    } else {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
                     }
                 }
             }
