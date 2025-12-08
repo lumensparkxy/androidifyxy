@@ -23,7 +23,7 @@ Guidelines:
 """
 
     // Chat Configuration
-    const val MAX_MESSAGES = 100
+    const val MAX_MESSAGES = 28
     const val LOADING_MESSAGE_INTERVAL_MS = 3000L
 
     // Messages
