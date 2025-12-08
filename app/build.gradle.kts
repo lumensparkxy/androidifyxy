@@ -67,12 +67,16 @@ dependencies {
     // Coil for image loading (Compose-compatible replacement for Glide)
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    // ExifInterface for handling image orientation
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
+
     // Jetpack Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.foundation:foundation")

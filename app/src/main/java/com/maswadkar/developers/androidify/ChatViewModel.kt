@@ -1,8 +1,10 @@
 package com.maswadkar.developers.androidify
 
+import android.app.Application
+import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -13,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.data.ChatRepository
 import com.maswadkar.developers.androidify.data.Conversation
 import com.maswadkar.developers.androidify.data.Message
+import com.maswadkar.developers.androidify.util.ImageUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +26,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class ChatViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class ChatViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "ChatViewModel"
@@ -193,11 +199,15 @@ class ChatViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
         }
     }
 
-    fun sendMessage(userText: String) {
-        if (userText.isBlank()) return
+    fun sendMessage(userText: String, imageUri: Uri? = null) {
+        if (userText.isBlank() && imageUri == null) return
 
-        // Add user message
-        val userMessage = ChatMessage(userText, isUser = true)
+        // Add user message (with image URI if present)
+        val userMessage = ChatMessage(
+            text = userText.ifBlank { "[Image attached]" },
+            isUser = true,
+            imageUri = imageUri?.toString()
+        )
         val currentMessages = _messages.value.toMutableList()
         currentMessages.add(userMessage)
 
@@ -226,7 +236,33 @@ class ChatViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
             }
 
             try {
-                val response = model.generateContent(userText)
+                // Build content with image if present
+                val response = if (imageUri != null) {
+                    // Load and compress the image
+                    val bitmap = ImageUtils.loadAndCompressBitmap(
+                        getApplication<Application>().applicationContext,
+                        imageUri
+                    )
+
+                    if (bitmap != null) {
+                        // Generate content with image and text
+                        model.generateContent(
+                            content {
+                                image(bitmap)
+                                if (userText.isNotBlank()) {
+                                    text(userText)
+                                }
+                            }
+                        )
+                    } else {
+                        // Fallback to text-only if image loading fails
+                        model.generateContent(userText.ifBlank { "Please describe what you see." })
+                    }
+                } else {
+                    // Text-only message
+                    model.generateContent(userText)
+                }
+
                 val modelText = response.text ?: AppConstants.NO_RESPONSE_MESSAGE
 
                 animationJob.cancel()
