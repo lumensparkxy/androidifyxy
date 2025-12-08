@@ -60,7 +60,7 @@ fun AppNavigation(
         composable(Screen.Chat.route) {
             ChatScreen(
                 messages = messages,
-                onSendMessage = { message -> chatViewModel.sendMessage(message) },
+                onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
                 onNewChat = { chatViewModel.startNewConversation() },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onSignOut = { authViewModel.signOut() }

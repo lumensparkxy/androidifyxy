@@ -1,16 +1,18 @@
 package com.maswadkar.developers.androidify.ui.screens
 
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,16 +30,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.ChatMessage
 import com.maswadkar.developers.androidify.R
@@ -46,14 +52,16 @@ import com.maswadkar.developers.androidify.ui.components.ChatBubble
 import com.maswadkar.developers.androidify.ui.components.ChatInput
 import com.maswadkar.developers.androidify.ui.components.DrawerItem
 import com.maswadkar.developers.androidify.ui.components.DrawerUser
+import com.maswadkar.developers.androidify.ui.components.ImagePickerBottomSheet
 import com.maswadkar.developers.androidify.ui.components.WelcomeScreen
 import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     messages: List<ChatMessage>,
-    onSendMessage: (String) -> Unit,
+    onSendMessage: (String, Uri?) -> Unit,
     onNewChat: () -> Unit,
     onHistoryClick: () -> Unit,
     onSignOut: () -> Unit,
@@ -63,8 +71,31 @@ fun ChatScreen(
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
 
     var inputText by remember { mutableStateOf("") }
+    var attachedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImagePicker by remember { mutableStateOf(false) }
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Temporary file for camera capture
+    var tempCameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    // Gallery picker launcher
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { attachedImageUri = it }
+    }
+
+    // Camera launcher (captures to file)
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) {
+            tempCameraUri?.let { attachedImageUri = it }
+        }
+    }
 
     // Get current user info
     val currentUser = FirebaseAuth.getInstance().currentUser
@@ -81,6 +112,54 @@ fun ChatScreen(
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
         }
+    }
+
+    // Image picker bottom sheet
+    if (showImagePicker) {
+        ImagePickerBottomSheet(
+            sheetState = bottomSheetState,
+            onDismiss = { showImagePicker = false },
+            onGalleryClick = {
+                scope.launch {
+                    bottomSheetState.hide()
+                    showImagePicker = false
+                    try {
+                        galleryLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, "Error launching gallery", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onCameraClick = {
+                scope.launch {
+                    bottomSheetState.hide()
+                    showImagePicker = false
+                    // Create temp file for camera capture
+                    try {
+                        val tempFile = File.createTempFile(
+                            "camera_${System.currentTimeMillis()}",
+                            ".jpg",
+                            context.cacheDir
+                        )
+                        // Use explicit authority to avoid package name ambiguity
+                        val authority = "com.maswadkar.developers.androidify.fileprovider"
+                        val uri = FileProvider.getUriForFile(
+                            context,
+                            authority,
+                            tempFile
+                        )
+                        tempCameraUri = uri
+                        cameraLauncher.launch(uri)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Toast.makeText(context, "Error launching camera: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        )
     }
 
     ModalNavigationDrawer(
@@ -132,11 +211,15 @@ fun ChatScreen(
                     value = inputText,
                     onValueChange = { inputText = it },
                     onSend = {
-                        if (inputText.isNotBlank()) {
-                            onSendMessage(inputText)
+                        if (inputText.isNotBlank() || attachedImageUri != null) {
+                            onSendMessage(inputText, attachedImageUri)
                             inputText = ""
+                            attachedImageUri = null
                         }
                     },
+                    attachedImageUri = attachedImageUri,
+                    onAttachClick = { showImagePicker = true },
+                    onRemoveImage = { attachedImageUri = null },
                     modifier = Modifier.imePadding()
                 )
             },
@@ -153,7 +236,7 @@ fun ChatScreen(
                     WelcomeScreen(
                         onExampleClick = { question ->
                             inputText = question
-                            onSendMessage(question)
+                            onSendMessage(question, null)
                             inputText = ""
                         },
                         modifier = Modifier.fillMaxSize()
@@ -175,4 +258,3 @@ fun ChatScreen(
         }
     }
 }
-
