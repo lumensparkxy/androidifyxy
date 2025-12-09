@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -55,11 +57,20 @@ class ChatViewModel(
     // Current conversation ID (null for new conversations)
     private var currentConversationId: String? = savedStateHandle.get<String>(CONVERSATION_ID_KEY)
 
-    // Flow of user's conversation history
-    val conversationsFlow: StateFlow<List<Conversation>> = currentUserId?.let { userId ->
-        chatRepository.getConversationsFlow(userId)
-            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-    } ?: MutableStateFlow(emptyList())
+    // Reactive user ID flow for auth state changes
+    private val _userIdFlow = MutableStateFlow(currentUserId)
+
+    // Flow of user's conversation history - reactive to auth state
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val conversationsFlow: StateFlow<List<Conversation>> = _userIdFlow
+        .flatMapLatest { userId ->
+            if (userId != null) {
+                chatRepository.getConversationsFlow(userId)
+            } else {
+                flowOf(emptyList())
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val model = Firebase.ai(backend = GenerativeBackend.vertexAI())
         .generativeModel(
@@ -106,6 +117,12 @@ class ChatViewModel(
     }
 
     init {
+        // Set up auth state listener to update userId flow
+        FirebaseAuth.getInstance().addAuthStateListener { auth ->
+            _userIdFlow.value = auth.currentUser?.uid
+            Log.d(TAG, "Auth state changed, userId: ${auth.currentUser?.uid}")
+        }
+
         // Clean up any loading messages from previous session (process death scenario)
         val cleanedMessages = _messages.value.map { msg ->
             if (msg.isLoading) msg.copy(text = AppConstants.REQUEST_INTERRUPTED_MESSAGE, isLoading = false)
@@ -114,6 +131,13 @@ class ChatViewModel(
         if (cleanedMessages != _messages.value) {
             updateMessages(cleanedMessages)
         }
+    }
+
+    /**
+     * Refresh the user ID flow - call this when auth state may have changed
+     */
+    fun refreshUserState() {
+        _userIdFlow.value = currentUserId
     }
 
     private fun updateMessages(newMessages: List<ChatMessage>) {
@@ -188,17 +212,15 @@ class ChatViewModel(
      */
     fun deleteConversation(conversationId: String) {
         viewModelScope.launch {
-            withContext(NonCancellable) {
-                try {
-                    chatRepository.deleteConversation(conversationId)
-                    // If we deleted the current conversation, clear it
-                    if (conversationId == currentConversationId) {
-                        clearCurrentConversation()
-                    }
-                    Log.d(TAG, "Deleted conversation: $conversationId")
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error deleting conversation: ${e.message}")
+            try {
+                chatRepository.deleteConversation(conversationId)
+                // If we deleted the current conversation, clear it
+                if (conversationId == currentConversationId) {
+                    clearCurrentConversation()
                 }
+                Log.d(TAG, "Deleted conversation: $conversationId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting conversation: ${e.message}")
             }
         }
     }
@@ -208,13 +230,15 @@ class ChatViewModel(
      */
     fun saveCurrentConversation() {
         val userId = currentUserId ?: return
-        val currentMessages = _messages.value
+        // Capture values NOW to prevent race conditions with startNewConversation()
+        val conversationIdToSave = currentConversationId
+        val messagesToSave = _messages.value.toList()
 
         // Don't save empty conversations or conversations with only loading messages
-        if (currentMessages.isEmpty() || currentMessages.all { it.isLoading }) return
+        if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         viewModelScope.launch {
-            saveConversationInternal(userId)
+            saveConversationInternal(userId, conversationIdToSave, messagesToSave)
         }
     }
 
@@ -224,23 +248,32 @@ class ChatViewModel(
      */
     suspend fun saveCurrentConversationSync() {
         val userId = currentUserId ?: return
-        val currentMessages = _messages.value
+        // Capture values NOW to prevent race conditions
+        val conversationIdToSave = currentConversationId
+        val messagesToSave = _messages.value.toList()
 
         // Don't save empty conversations or conversations with only loading messages
-        if (currentMessages.isEmpty() || currentMessages.all { it.isLoading }) return
+        if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
-        saveConversationInternal(userId)
+        saveConversationInternal(userId, conversationIdToSave, messagesToSave)
     }
 
     /**
      * Internal save logic shared by async and sync versions.
      * Uses NonCancellable to ensure save completes even when coroutine is cancelled.
+     *
+     * @param userId The user ID to save under
+     * @param conversationIdToSave The conversation ID captured at save request time (null for new)
+     * @param messagesToSave The messages captured at save request time
      */
-    private suspend fun saveConversationInternal(userId: String) {
+    private suspend fun saveConversationInternal(
+        userId: String,
+        conversationIdToSave: String?,
+        messagesToSave: List<ChatMessage>
+    ) {
         withContext(NonCancellable) {
             saveMutex.withLock {
-                // Re-check conditions inside lock (state may have changed while waiting)
-                val messagesToSave = _messages.value
+                // Check if messages are valid
                 if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return@withLock
 
                 try {
@@ -259,7 +292,7 @@ class ChatViewModel(
                     } ?: "New Conversation"
 
                     val conversation = Conversation(
-                        id = currentConversationId ?: "",
+                        id = conversationIdToSave ?: "",  // Use CAPTURED ID, not currentConversationId
                         userId = userId,
                         title = title,
                         messages = firestoreMessages
@@ -267,13 +300,16 @@ class ChatViewModel(
 
                     val savedId = chatRepository.saveConversation(conversation)
 
-                    // Update current conversation ID if this was a new conversation
-                    if (currentConversationId == null) {
+                    // Only update currentConversationId if:
+                    // 1. This was a new conversation (conversationIdToSave was null), AND
+                    // 2. The current conversation ID is STILL null (user hasn't started another new one)
+                    if (conversationIdToSave == null && currentConversationId == null) {
                         currentConversationId = savedId
                         savedStateHandle[CONVERSATION_ID_KEY] = savedId
+                        Log.d(TAG, "Set new conversation ID: $savedId")
                     }
 
-                    Log.d(TAG, "Saved conversation: $savedId")
+                    Log.d(TAG, "Saved conversation: $savedId (was new: ${conversationIdToSave == null})")
                 } catch (e: Exception) {
                     Log.e(TAG, "Error saving conversation: ${e.message}")
                 }
