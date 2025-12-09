@@ -11,9 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.auth.AuthRepository
@@ -22,7 +19,7 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.navigation.AppNavigation
 import com.maswadkar.developers.androidify.ui.navigation.Screen
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
 
@@ -78,7 +75,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        chatViewModel.saveCurrentConversation()
+        // Use runBlocking to ensure save completes before app exits
+        // This blocks the main thread briefly but ensures data is not lost
+        runBlocking {
+            chatViewModel.saveCurrentConversationSync()
+        }
     }
 
     companion object {

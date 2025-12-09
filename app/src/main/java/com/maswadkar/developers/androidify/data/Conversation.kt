@@ -2,6 +2,7 @@ package com.maswadkar.developers.androidify.data
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
 
 /**
@@ -9,7 +10,8 @@ import com.google.firebase.firestore.ServerTimestamp
  */
 data class Message(
     val text: String = "",
-    val isUser: Boolean = true,
+    @get:PropertyName("isUser") @set:PropertyName("isUser")
+    var isUser: Boolean = true,
     val timestamp: Timestamp = Timestamp.now()
 ) {
     // No-arg constructor for Firestore
