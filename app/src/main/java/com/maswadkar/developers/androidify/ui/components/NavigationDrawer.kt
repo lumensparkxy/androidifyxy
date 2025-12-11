@@ -38,6 +38,8 @@ sealed class DrawerItem(
 ) {
     data object NewChat : DrawerItem(R.drawable.ic_add, R.string.menu_new_chat)
     data object History : DrawerItem(R.drawable.ic_chat, R.string.menu_history)
+    data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
+    data object MandiSettings : DrawerItem(R.drawable.ic_settings, R.string.menu_mandi_settings)
     data object SignOut : DrawerItem(R.drawable.ic_logout, R.string.sign_out)
 }
 
@@ -83,6 +85,19 @@ fun AppDrawerContent(
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.MandiPrices.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.MandiPrices.labelRes)) },
+            selected = selectedItem == DrawerItem.MandiPrices,
+            onClick = { onItemClick(DrawerItem.MandiPrices) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
         Spacer(modifier = Modifier.weight(1f))
 
         HorizontalDivider()
@@ -93,6 +108,19 @@ fun AppDrawerContent(
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.MandiSettings.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.MandiSettings.labelRes)) },
+            selected = selectedItem == DrawerItem.MandiSettings,
+            onClick = { onItemClick(DrawerItem.MandiSettings) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 
         NavigationDrawerItem(

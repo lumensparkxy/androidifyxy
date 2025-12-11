@@ -67,6 +67,8 @@ fun ChatScreen(
     onSendMessage: (String, Uri?) -> Unit,
     onNewChat: () -> Unit,
     onHistoryClick: () -> Unit,
+    onMandiPricesClick: () -> Unit,
+    onMandiSettingsClick: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -195,6 +197,8 @@ fun ChatScreen(
                     when (item) {
                         DrawerItem.NewChat -> onNewChat()
                         DrawerItem.History -> onHistoryClick()
+                        DrawerItem.MandiPrices -> onMandiPricesClick()
+                        DrawerItem.MandiSettings -> onMandiSettingsClick()
                         DrawerItem.SignOut -> onSignOut()
                     }
                 }

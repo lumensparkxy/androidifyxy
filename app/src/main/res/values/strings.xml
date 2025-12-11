@@ -37,8 +37,34 @@
     <!-- Drawer Menu -->
     <string name="menu_new_chat">New Chat</string>
     <string name="menu_history">Historical Conversations</string>
+    <string name="menu_mandi_prices">Mandi Prices</string>
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer">Close navigation drawer</string>
     <string name="user_photo" translatable="false">User photo</string>
+
+    <!-- Mandi Prices Screen -->
+    <string name="back">Back</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="filter_state">State</string>
+    <string name="filter_district">District</string>
+    <string name="filter_commodity">Commodity</string>
+    <string name="filter_market">Market</string>
+    <string name="search">Search</string>
+    <string name="price_min">Min Price</string>
+    <string name="price_max">Max Price</string>
+    <string name="price_modal">Modal Price</string>
+    <string name="arrival_date">Arrival: %1$s</string>
+    <string name="data_as_of">Data as of: %1$s</string>
+    <string name="select_state_prompt">Select a state to view mandi prices</string>
+    <string name="search_prompt">Select a commodity and tap Search to view prices</string>
+    <string name="no_prices_found">No prices found for the selected filters</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="change_location">Change</string>
+    <string name="change_location_title">Change Location</string>
+    <string name="cancel">Cancel</string>
+    <string name="menu_mandi_settings">Mandi Preferences</string>
+    <string name="preferences_description">Set your default location to quickly view mandi prices without selecting state and district each time.</string>
+    <string name="current_location">Current Location</string>
+    <string name="save_preferences">Save Preferences</string>
 </resources>
