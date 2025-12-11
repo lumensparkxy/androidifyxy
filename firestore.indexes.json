@@ -1,0 +1,98 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "commodity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "commodity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "market", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "market", "order": "ASCENDING" },
+        { "fieldPath": "commodity", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "arrival_date_parsed", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "arrival_date_parsed", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "market", "order": "ASCENDING" },
+        { "fieldPath": "arrival_date_parsed", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "commodity", "order": "ASCENDING" },
+        { "fieldPath": "arrival_date_parsed", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mandi_prices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "district", "order": "ASCENDING" },
+        { "fieldPath": "market", "order": "ASCENDING" },
+        { "fieldPath": "commodity", "order": "ASCENDING" },
+        { "fieldPath": "arrival_date_parsed", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
+

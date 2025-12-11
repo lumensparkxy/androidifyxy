@@ -15,6 +15,8 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
+import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
+import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 
 @Composable
 fun AppNavigation(
@@ -63,6 +65,8 @@ fun AppNavigation(
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
                 onNewChat = { chatViewModel.startNewConversation() },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
+                onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
+                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
                 onSignOut = { authViewModel.signOut() }
             )
         }
@@ -77,6 +81,18 @@ fun AppNavigation(
                 onDeleteConversation = { conversation ->
                     chatViewModel.deleteConversation(conversation.id)
                 },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.MandiPrices.route) {
+            MandiPricesScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.MandiSettings.route) {
+            MandiPreferencesScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
