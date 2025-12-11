@@ -58,6 +58,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7")
+    
+    // Kotlin Reflect for runtime reflection
+    implementation(kotlin("reflect"))
 
     // Credential Manager for Google Sign-In
     implementation("androidx.credentials:credentials:1.3.0")
