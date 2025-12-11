@@ -165,6 +165,7 @@ class MandiPriceRepository {
      * Get the latest price for each commodity in a given location
      * This is useful when today's data is not available - shows the most recent price
      */
+    @Suppress("unused")
     suspend fun getLatestPricePerCommodity(
         state: String,
         district: String,
@@ -226,6 +227,7 @@ class MandiPriceRepository {
     /**
      * Search commodities by name
      */
+    @Suppress("unused")
     suspend fun searchCommodities(query: String): List<String> {
         return try {
             val snapshot = firestore.collection(COLLECTION_NAME)

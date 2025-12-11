@@ -26,8 +26,5 @@ data class MandiPrice(
     var maxPrice: Double = 0.0,
     @get:PropertyName("modal_price") @set:PropertyName("modal_price")
     var modalPrice: Double = 0.0
-) {
-    // No-arg constructor for Firestore
-    constructor() : this("", "", "", "", "", "", "", "", null, 0.0, 0.0, 0.0)
-}
+)
 

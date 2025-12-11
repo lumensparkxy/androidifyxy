@@ -1,6 +1,5 @@
 package com.maswadkar.developers.androidify.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +16,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -319,7 +317,7 @@ private fun FilterDropdown(
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { if (enabled) expanded = it },
+        onExpandedChange = { newValue -> if (enabled) expanded = newValue },
         modifier = modifier
     ) {
         OutlinedTextField(
@@ -355,8 +353,8 @@ private fun FilterDropdown(
 @Composable
 private fun PricesList(
     prices: List<MandiPrice>,
-    latestDataDate: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    latestDataDate: String? = null
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),

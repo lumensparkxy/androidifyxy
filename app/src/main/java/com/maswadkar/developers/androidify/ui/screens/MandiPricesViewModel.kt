@@ -193,6 +193,7 @@ class MandiPricesViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(selectedCommodity = commodity)
     }
 
+    @Suppress("unused")
     fun onMarketSelected(market: String?) {
         _uiState.value = _uiState.value.copy(selectedMarket = market)
     }
@@ -267,6 +268,7 @@ class MandiPricesViewModel : ViewModel() {
         repository.updateLastCommodity(uid, commodity)
     }
 
+    @Suppress("unused")
     fun savePreferences() {
         viewModelScope.launch {
             savePreferencesInternal()
