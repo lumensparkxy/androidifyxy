@@ -38,7 +38,8 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
     companion object {
         private const val TAG = "LiveConversationVM"
         // Use the native audio model for better audio conversation support
-        private const val LIVE_MODEL_NAME = "gemini-2.0-flash-live-preview-04-09"
+        private const val LIVE_MODEL_NAME = "gemini-live-2.5-flash-native-audio"
+            //"gemini-2.0-flash-live-preview-04-09"
     }
 
     private val _sessionState = MutableStateFlow<LiveSessionState>(LiveSessionState.Idle)
