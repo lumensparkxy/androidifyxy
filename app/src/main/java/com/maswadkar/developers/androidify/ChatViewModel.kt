@@ -226,6 +226,17 @@ class ChatViewModel(
     }
 
     /**
+     * Force refresh conversations by re-emitting the user ID to trigger Flow refresh
+     */
+    fun refreshConversations() {
+        // Re-emit the current user ID to trigger the flatMapLatest in conversationsFlow
+        // This forces Firestore to re-fetch the data
+        val userId = currentUserId
+        _userIdFlow.value = null
+        _userIdFlow.value = userId
+    }
+
+    /**
      * Save current conversation to Firestore (async version for regular use)
      */
     fun saveCurrentConversation() {

@@ -81,6 +81,10 @@ fun AppNavigation(
                 onDeleteConversation = { conversation ->
                     chatViewModel.deleteConversation(conversation.id)
                 },
+                onRefresh = {
+                    // Force refresh conversations from Firebase
+                    chatViewModel.refreshConversations()
+                },
                 onBackClick = { navController.popBackStack() }
             )
         }
