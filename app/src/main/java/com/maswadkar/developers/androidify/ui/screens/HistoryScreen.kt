@@ -1,6 +1,9 @@
 package com.maswadkar.developers.androidify.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,10 +25,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,6 +49,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.data.Conversation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,9 +62,25 @@ fun HistoryScreen(
     conversations: List<Conversation>,
     onConversationClick: (Conversation) -> Unit,
     onDeleteConversation: (Conversation) -> Unit,
+    onRefresh: suspend () -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Track optimistically deleted conversation IDs for immediate UI removal
+    val deletedIds = remember { mutableStateListOf<String>() }
+
+    // Keep callback reference updated
+    val currentOnDeleteConversation by rememberUpdatedState(onDeleteConversation)
+
+    // Filter out optimistically deleted items
+    val visibleConversations = remember(conversations, deletedIds.toList()) {
+        conversations.filter { it.id !in deletedIds }
+    }
+
+    // Pull-to-refresh state
+    var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -72,31 +105,85 @@ fun HistoryScreen(
             )
         }
     ) { paddingValues ->
-        if (conversations.isEmpty()) {
-            EmptyHistoryState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                scope.launch {
+                    isRefreshing = true
+                    // Clear optimistic deletions - let Firebase be the source of truth
+                    deletedIds.clear()
+                    onRefresh()
+                    delay(500) // Brief delay to show refresh indicator
+                    isRefreshing = false
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (visibleConversations.isEmpty()) {
+                EmptyHistoryState(
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                 items(
-                    items = conversations,
+                    items = visibleConversations,
                     key = { it.id }
                 ) { conversation ->
-                    ConversationItem(
-                        conversation = conversation,
-                        onClick = { onConversationClick(conversation) },
-                        onDelete = { onDeleteConversation(conversation) },
+                    val dismissState = rememberSwipeToDismissBoxState(
+                        confirmValueChange = { dismissValue ->
+                            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                                // Add to deleted IDs for optimistic UI removal
+                                deletedIds.add(conversation.id)
+                                // Trigger actual delete in background
+                                currentOnDeleteConversation(conversation)
+                                true // Allow the dismiss to complete
+                            } else {
+                                false
+                            }
+                        }
+                    )
+
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {
+                            val color by animateColorAsState(
+                                targetValue = if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart)
+                                    MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.background,
+                                label = "SwipeBackground"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(color)
+                                    .padding(horizontal = 20.dp),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Delete,
+                                    contentDescription = stringResource(R.string.delete_conversation),
+                                    tint = MaterialTheme.colorScheme.onError
+                                )
+                            }
+                        },
+                        content = {
+                            ConversationItem(
+                                conversation = conversation,
+                                onClick = { onConversationClick(conversation) },
+                                modifier = Modifier
+                            )
+                        },
+                        enableDismissFromStartToEnd = false,
                         modifier = Modifier.animateItem()
                     )
                 }
             }
+        }
         }
     }
 }
@@ -105,7 +192,6 @@ fun HistoryScreen(
 private fun ConversationItem(
     conversation: Conversation,
     onClick: () -> Unit,
-    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -122,7 +208,7 @@ private fun ConversationItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 4.dp),
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -150,14 +236,6 @@ private fun ConversationItem(
                     text = formatTimestamp(conversation.updatedAt?.toDate()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            IconButton(onClick = onDelete) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_delete),
-                    contentDescription = stringResource(R.string.delete_conversation),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -215,4 +293,3 @@ private fun formatTimestamp(date: Date?): String {
         }
     }
 }
-

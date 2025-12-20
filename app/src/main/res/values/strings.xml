@@ -67,4 +67,19 @@
     <string name="preferences_description">Set your default location to quickly view mandi prices without selecting state and district each time.</string>
     <string name="current_location">Current Location</string>
     <string name="save_preferences">Save Preferences</string>
+
+    <!-- Live Conversation Screen -->
+    <string name="live_conversation">Voice Chat</string>
+    <string name="end_call">End Call</string>
+    <string name="mic_button">Voice conversation</string>
+    <string name="live_idle">Ready</string>
+    <string name="live_connecting">Connecting…</string>
+    <string name="live_listening">Listening…</string>
+    <string name="live_processing">Thinking…</string>
+    <string name="live_speaking">Krishi Mitra is speaking</string>
+    <string name="live_ended">Conversation ended</string>
+    <string name="live_error">Something went wrong</string>
+    <string name="live_listening_hint">Speak now, I\'m listening</string>
+    <string name="live_speaking_hint">Please wait while I respond</string>
+    <string name="mic_permission_required">Microphone permission is required for voice chat</string>
 </resources>

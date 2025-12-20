@@ -81,10 +81,22 @@ fun ChatScreen(
     var inputText by remember { mutableStateOf("") }
     var attachedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showImagePicker by remember { mutableStateOf(false) }
+    var showLiveConversation by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Temporary file for camera capture
     var tempCameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    // Audio permission launcher for voice conversation
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            showLiveConversation = true
+        } else {
+            Toast.makeText(context, context.getString(R.string.mic_permission_required), Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // Gallery picker launcher
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -246,6 +258,18 @@ fun ChatScreen(
                     attachedImageUri = attachedImageUri,
                     onAttachClick = { showImagePicker = true },
                     onRemoveImage = { attachedImageUri = null },
+                    onMicClick = {
+                        // Check for audio recording permission
+                        val permissionCheckResult = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO
+                        )
+                        if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                            showLiveConversation = true
+                        } else {
+                            audioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                        }
+                    },
                     modifier = Modifier.imePadding()
                 )
             },
@@ -282,5 +306,12 @@ fun ChatScreen(
                 }
             }
         }
+    }
+
+    // Live Conversation overlay
+    if (showLiveConversation) {
+        LiveConversationScreen(
+            onDismiss = { showLiveConversation = false }
+        )
     }
 }

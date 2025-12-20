@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +44,8 @@ fun ChatInput(
     enabled: Boolean = true,
     attachedImageUri: Uri? = null,
     onAttachClick: () -> Unit = {},
-    onRemoveImage: () -> Unit = {}
+    onRemoveImage: () -> Unit = {},
+    onMicClick: () -> Unit = {}
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -139,21 +141,43 @@ fun ChatInput(
                     enabled = enabled
                 )
 
-                FilledIconButton(
-                    onClick = onSend,
-                    enabled = (value.isNotBlank() || attachedImageUri != null) && enabled,
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = stringResource(R.string.send_button)
-                    )
+                // Show mic button when text is empty, send button when text is present
+                if (value.isBlank() && attachedImageUri == null) {
+                    // Mic button for voice conversation
+                    FilledIconButton(
+                        onClick = onMicClick,
+                        enabled = enabled,
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = stringResource(R.string.mic_button)
+                        )
+                    }
+                } else {
+                    // Send button
+                    FilledIconButton(
+                        onClick = onSend,
+                        enabled = (value.isNotBlank() || attachedImageUri != null) && enabled,
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(R.string.send_button)
+                        )
+                    }
                 }
             }
         }

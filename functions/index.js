@@ -15,16 +15,16 @@ const API_KEY = "579b464db66ec23bdd0000015d0d42cb9328410e6bd0a1af77fa3f53";
 const BATCH_SIZE = 500; // Firestore batch write limit
 
 /**
- * Scheduled function to sync Mandi prices daily at 6 AM IST
- * Runs every day at 00:30 UTC (6:00 AM IST)
+ * Scheduled function to sync Mandi prices hourly between 1 PM and 8 PM IST
+ * Runs every hour from 13:00 to 20:00 IST
  */
 exports.syncMandiPrices = functions
   .region("asia-south1")
   .runWith({
     timeoutSeconds: 540,
-    memory: "512MB",
+    memory: "128MB",
   })
-  .pubsub.schedule("30 0 * * *")
+  .pubsub.schedule("0 13-20 * * *")
   .timeZone("Asia/Kolkata")
   .onRun(async (context) => {
     console.log("Starting Mandi prices sync...");
@@ -46,7 +46,7 @@ exports.syncMandiPricesManual = functions
   .region("asia-south1")
   .runWith({
     timeoutSeconds: 540,
-    memory: "512MB",
+    memory: "128MB",
   })
   .https.onRequest(async (req, res) => {
     console.log("Manual Mandi prices sync triggered");
@@ -73,7 +73,7 @@ exports.syncMandiPricesManual = functions
  */
 async function syncPricesFromAPI() {
   let offset = 0;
-  const limit = 1000;
+  const limit = 10000;
   let totalRecords = 0;
   const stateFilter = "Maharashtra";  
   let hasMore = true;
