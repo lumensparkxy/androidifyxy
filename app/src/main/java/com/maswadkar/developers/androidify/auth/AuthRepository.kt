@@ -1,5 +1,6 @@
 package com.maswadkar.developers.androidify.auth
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
@@ -17,7 +18,11 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingExcept
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.PhoneAuthCredential
+import com.google.firebase.auth.PhoneAuthOptions
+import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.coroutines.tasks.await
+import java.util.concurrent.TimeUnit
 
 class AuthRepository(private val context: Context) {
 
@@ -131,6 +136,45 @@ class AuthRepository(private val context: Context) {
             credentialManager.clearCredentialState(ClearCredentialStateRequest())
         } catch (e: Exception) {
             // Ignore credential clear errors
+        }
+    }
+
+    // Phone Authentication Methods
+
+    fun sendVerificationCode(
+        phoneNumber: String,
+        activity: Activity,
+        callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
+    ) {
+        val options = PhoneAuthOptions.newBuilder(firebaseAuth)
+            .setPhoneNumber(phoneNumber)
+            .setTimeout(60L, TimeUnit.SECONDS)
+            .setActivity(activity)
+            .setCallbacks(callbacks)
+            .build()
+
+        PhoneAuthProvider.verifyPhoneNumber(options)
+    }
+
+    suspend fun verifyOtpCode(verificationId: String, code: String): Result<FirebaseUser> {
+        return try {
+            val credential = PhoneAuthProvider.getCredential(verificationId, code)
+            signInWithPhoneCredential(credential)
+        } catch (e: Exception) {
+            Log.e(TAG, "OTP verification error: ${e.message}")
+            Result.failure(e)
+        }
+    }
+
+    suspend fun signInWithPhoneCredential(credential: PhoneAuthCredential): Result<FirebaseUser> {
+        return try {
+            val authResult = firebaseAuth.signInWithCredential(credential).await()
+            authResult.user?.let {
+                Result.success(it)
+            } ?: Result.failure(Exception("Phone authentication failed"))
+        } catch (e: Exception) {
+            Log.e(TAG, "Phone sign-in error: ${e.message}")
+            Result.failure(e)
         }
     }
 }

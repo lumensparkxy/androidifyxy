@@ -7,4 +7,8 @@ sealed class AuthState {
     data class Authenticated(val user: FirebaseUser) : AuthState()
     data object Unauthenticated : AuthState()
     data class Error(val message: String) : AuthState()
+
+    // Phone authentication states
+    data class AwaitingOtp(val verificationId: String, val phoneNumber: String) : AuthState()
+    data object OtpVerificationInProgress : AuthState()
 }

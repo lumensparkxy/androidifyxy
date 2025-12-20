@@ -1,11 +1,11 @@
 package com.maswadkar.developers.androidify.ui.navigation
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -53,9 +53,16 @@ fun AppNavigation(
         modifier = modifier
     ) {
         composable(Screen.Login.route) {
+            val activity = LocalActivity.current
             LoginScreen(
-                isLoading = authState is AuthState.Loading,
-                onGoogleSignInClick = { authViewModel.signInWithGoogle() }
+                authState = authState,
+                onGoogleSignInClick = { authViewModel.signInWithGoogle() },
+                onPhoneSignInClick = { phoneNumber ->
+                    activity?.let { authViewModel.signInWithPhone(phoneNumber, it) }
+                },
+                onOtpSubmit = { otp -> authViewModel.verifyOtp(otp) },
+                onCancelPhoneSignIn = { authViewModel.cancelPhoneSignIn() },
+                onClearError = { authViewModel.clearError() }
             )
         }
 
