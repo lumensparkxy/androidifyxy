@@ -70,9 +70,11 @@ export default function HomePage() {
                 live market prices, crop disease diagnosis, and more — all in your language.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <PlayStoreBadge href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy" />
-                <Button href="/services" variant="outline" size="lg">
+                <Button href="/services" size="lg">
                   Explore Features
+                </Button>
+                <Button href="/contact" variant="outline" size="lg">
+                  Contact Us
                 </Button>
               </div>
             </div>
