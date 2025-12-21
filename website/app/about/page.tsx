@@ -215,7 +215,7 @@ export default function AboutPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
-                href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy"
+                href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify"
                 external
                 variant="secondary"
                 size="lg"

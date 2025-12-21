@@ -5,7 +5,7 @@ import { Container } from './Container';
 const footerLinks = {
   product: [
     { name: 'Services', href: '/services' },
-    { name: 'Download App', href: 'https://play.google.com/store/apps/details?id=com.maswadkar.androidxy', external: true },
+    { name: 'Download App', href: 'https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify', external: true },
   ],
   company: [
     { name: 'About Us', href: '/about' },

@@ -155,7 +155,7 @@ export default function HomePage() {
               Join thousands of farmers who are already using Krishi AI to get better yields, 
               fair prices, and expert advice.
             </p>
-            <PlayStoreBadge href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy" />
+            <PlayStoreBadge href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify" />
           </div>
         </Container>
       </section>

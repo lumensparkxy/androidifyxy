@@ -118,10 +118,16 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">Location</h3>
               </div>
-              <p className="text-gray-600">
-                Maswadkar Developers<br />
-                Maharashtra, India
-              </p>
+              <a 
+                href="https://maps.app.goo.gl/tbZfs6pJM3mHqNXQ9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-primary transition-colors"
+              >
+                Kirchhaldenstrasse 8,<br />
+                8722 Kaltbrunn<br />
+                Switzerland
+              </a>
             </div>
           </div>
         </Container>
@@ -168,7 +174,7 @@ export default function ContactPage() {
               Download Krishi AI now and experience AI-powered farming assistance.
             </p>
             <Button
-              href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy"
+              href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify"
               external
               size="lg"
               className="bg-white text-primary hover:bg-gray-100"

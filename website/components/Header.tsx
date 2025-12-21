@@ -42,7 +42,7 @@ export function Header() {
               </Link>
             ))}
             <a
-              href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy"
+              href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
@@ -80,7 +80,7 @@ export function Header() {
                 </Link>
               ))}
               <a
-                href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy"
+                href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-primary text-white px-5 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors text-center mt-2"

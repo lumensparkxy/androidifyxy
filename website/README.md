@@ -101,7 +101,7 @@ Based on the Krishi AI Android app's agriculture theme:
 
 - **Email:** support@krishiai.pro
 - **WhatsApp:** +91 94035 13382
-- **Play Store:** [Download Krishi AI](https://play.google.com/store/apps/details?id=com.maswadkar.androidxy)
+- **Play Store:** [Download Krishi AI](https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify)
 
 ## License
 

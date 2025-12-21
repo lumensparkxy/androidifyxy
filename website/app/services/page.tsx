@@ -176,7 +176,7 @@ export default function ServicesPage() {
               Download Krishi AI today and unlock the full potential of AI-powered farming assistance.
             </p>
             <Button
-              href="https://play.google.com/store/apps/details?id=com.maswadkar.androidxy"
+              href="https://play.google.com/store/apps/details?id=com.maswadkar.developers.androidify"
               external
               size="lg"
             >
