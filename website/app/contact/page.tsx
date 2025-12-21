@@ -12,7 +12,6 @@ const contactMethods = [
     icon: Mail,
     title: 'Email Us',
     description: 'Send us an email and we\'ll respond within 24-48 hours.',
-    action: 'support@krishiai.pro',
     href: 'mailto:support@krishiai.pro',
     buttonText: 'Send Email',
   },
@@ -20,7 +19,6 @@ const contactMethods = [
     icon: MessageCircle,
     title: 'WhatsApp',
     description: 'Chat with us directly on WhatsApp for quick support.',
-    action: '+91 94035 13382',
     href: 'https://wa.me/919403513382?text=Hi, I have a query about Krishi AI',
     buttonText: 'Open WhatsApp',
     external: true,
@@ -50,7 +48,7 @@ const faqs = [
   },
   {
     question: 'How can I provide feedback or report issues?',
-    answer: 'You can email us at support@krishiai.pro or message us on WhatsApp. We value your feedback and use it to improve the app.',
+    answer: 'You can reach us via the Email or WhatsApp buttons above. We value your feedback and use it to improve the app.',
   },
 ];
 
@@ -82,8 +80,7 @@ export default function ContactPage() {
                   <method.icon className="w-7 h-7" />
                 </CardIcon>
                 <CardTitle className="text-xl">{method.title}</CardTitle>
-                <CardDescription className="mb-4">{method.description}</CardDescription>
-                <p className="text-primary font-semibold mb-4">{method.action}</p>
+                <CardDescription className="mb-6">{method.description}</CardDescription>
                 <Button
                   href={method.href}
                   external={method.external}

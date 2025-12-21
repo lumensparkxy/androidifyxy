@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Krishi Mitra</string>
+    <string name="app_name" translatable="false">Krishi AI</string>
 
     <!-- Login Screen -->
     <string name="login_tagline" translatable="false">Your AI-powered agriculture assistant</string>
@@ -8,7 +8,7 @@
     <string name="sign_out">Sign Out</string>
 
     <!-- Welcome Screen -->
-    <string name="welcome_title" translatable="false">Welcome to Krishi Mitra</string>
+    <string name="welcome_title" translatable="false">Welcome to Krishi AI</string>
     <string name="welcome_subtitle" translatable="false">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
 
     <!-- Features -->
@@ -76,7 +76,7 @@
     <string name="live_connecting">Connecting…</string>
     <string name="live_listening">Listening…</string>
     <string name="live_processing">Thinking…</string>
-    <string name="live_speaking">Krishi Mitra is speaking</string>
+    <string name="live_speaking">Krishi AI is speaking</string>
     <string name="live_ended">Conversation ended</string>
     <string name="live_error">Something went wrong</string>
     <string name="live_listening_hint">Speak now, I\'m listening</string>
