@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { Bot, Mic, Camera, TrendingUp, History, Globe, Smartphone, MessageSquare } from 'lucide-react';
 import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button } from '@/components';
 
@@ -12,6 +13,7 @@ const services = [
     icon: Bot,
     title: 'AI Chat Assistant',
     description: 'Get instant, accurate answers to all your farming questions. Our AI assistant is trained on comprehensive agricultural knowledge and understands the specific needs of Indian farmers.',
+    screenshot: '/screenshots/hero-screenshot.png',
     features: [
       'Expert advice on crop cultivation',
       'Soil health and fertilizer recommendations',
@@ -24,6 +26,7 @@ const services = [
     icon: Mic,
     title: 'Voice Conversations',
     description: 'Speak naturally to Krishi AI in your preferred language. No need to type — just talk and get spoken responses. Perfect for hands-free use while working in the fields.',
+    screenshot: '/screenshots/voice-assistant.png',
     features: [
       'Real-time voice recognition',
       'Natural language understanding',
@@ -36,6 +39,7 @@ const services = [
     icon: Camera,
     title: 'Crop Disease Diagnosis',
     description: 'Take a photo of your affected crop and get instant disease identification. Our AI analyzes the image and provides detailed information about the disease and recommended treatments.',
+    screenshot: '/screenshots/crop-scan.png',
     features: [
       'Instant disease identification',
       'Detailed disease information',
@@ -48,6 +52,7 @@ const services = [
     icon: TrendingUp,
     title: 'Live Mandi Prices',
     description: 'Access real-time agricultural commodity prices from mandis across Maharashtra. Make informed decisions about when and where to sell your produce for the best returns.',
+    screenshot: '/screenshots/market-prices.png',
     features: [
       'Real-time price updates',
       'Multiple commodities tracked',
@@ -60,6 +65,7 @@ const services = [
     icon: History,
     title: 'Chat History',
     description: 'All your conversations with Krishi AI are saved securely. Revisit previous advice, recommendations, and information whenever you need it.',
+    screenshot: '/screenshots/history.png',
     features: [
       'Automatic conversation saving',
       'Easy search and retrieval',
@@ -72,6 +78,7 @@ const services = [
     icon: Globe,
     title: 'Multilingual Support',
     description: 'Krishi AI speaks your language. Get farming advice in Hindi, Marathi, Telugu, Tamil, Kannada, or English — making agricultural knowledge accessible to all.',
+    screenshot: '/screenshots/voice-assistant.png',
     features: [
       'Hindi (हिंदी)',
       'Marathi (मराठी)',
@@ -136,13 +143,20 @@ export default function ServicesPage() {
                   </ul>
                 </div>
                 
-                {/* Placeholder Image */}
+                {/* Screenshot */}
                 <div className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center p-8">
-                      <service.icon className="w-20 h-20 text-primary/40 mx-auto mb-4" />
-                      <p className="text-gray-400 text-sm">App Screenshot</p>
+                  <div className="relative mx-auto max-w-xs">
+                    <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
+                      <Image
+                        src={service.screenshot}
+                        alt={`${service.title} Screenshot`}
+                        width={280}
+                        height={600}
+                        className="w-full h-auto"
+                      />
                     </div>
+                    {/* Decorative shadow */}
+                    <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[3rem] -z-10 blur-2xl"></div>
                   </div>
                 </div>
               </div>

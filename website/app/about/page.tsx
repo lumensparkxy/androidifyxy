@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { Target, Eye, Heart, Users, Lightbulb, Award } from 'lucide-react';
 import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button } from '@/components';
 
@@ -75,14 +76,19 @@ export default function AboutPage() {
               </p>
             </div>
             
-            {/* Image Placeholder */}
-            <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl aspect-square flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="w-24 h-24 bg-primary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Target className="w-12 h-12 text-primary" />
-                </div>
-                <p className="text-gray-500">Mission Image</p>
+            {/* App Screenshot */}
+            <div className="relative mx-auto max-w-xs">
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
+                <Image
+                  src="/screenshots/hero-screenshot.png"
+                  alt="Krishi AI App"
+                  width={280}
+                  height={600}
+                  className="w-full h-auto"
+                />
               </div>
+              {/* Decorative shadow */}
+              <div className="absolute -inset-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[3rem] -z-10 blur-2xl"></div>
             </div>
           </div>
         </Container>
@@ -92,14 +98,19 @@ export default function AboutPage() {
       <section className="py-16 md:py-24 bg-gray-50">
         <Container>
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Image Placeholder */}
-            <div className="bg-gradient-to-br from-secondary/10 to-tertiary/10 rounded-2xl aspect-square flex items-center justify-center lg:order-1">
-              <div className="text-center p-8">
-                <div className="w-24 h-24 bg-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Eye className="w-12 h-12 text-secondary" />
-                </div>
-                <p className="text-gray-500">Vision Image</p>
+            {/* App Screenshot */}
+            <div className="relative mx-auto max-w-xs lg:order-1">
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
+                <Image
+                  src="/screenshots/crop-scan.png"
+                  alt="Krishi AI Crop Scan Feature"
+                  width={280}
+                  height={600}
+                  className="w-full h-auto"
+                />
               </div>
+              {/* Decorative shadow */}
+              <div className="absolute -inset-4 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-[3rem] -z-10 blur-2xl"></div>
             </div>
             
             <div className="lg:order-2">

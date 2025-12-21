@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Bot, Mic, Camera, TrendingUp, Smartphone, Globe, Shield, Zap } from 'lucide-react';
 import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button, PlayStoreBadge } from '@/components';
 
@@ -76,20 +77,19 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Hero Image Placeholder */}
+            {/* Hero Image */}
             <div className="relative">
               <div className="relative mx-auto w-64 md:w-80">
-                {/* Phone Mockup */}
-                <div className="bg-gray-900 rounded-[3rem] p-3 shadow-2xl">
-                  <div className="bg-gradient-to-br from-primary to-secondary rounded-[2.5rem] aspect-[9/19] flex items-center justify-center">
-                    <div className="text-center text-white p-6">
-                      <div className="w-20 h-20 bg-white/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                        <Bot className="w-10 h-10" />
-                      </div>
-                      <p className="text-lg font-semibold">Krishi AI</p>
-                      <p className="text-sm opacity-80">कृषि AI</p>
-                    </div>
-                  </div>
+                {/* Phone Screenshot */}
+                <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
+                  <Image
+                    src="/screenshots/hero-screenshot.png"
+                    alt="Krishi AI App Screenshot"
+                    width={320}
+                    height={680}
+                    className="w-full h-auto"
+                    priority
+                  />
                 </div>
                 {/* Decorative Elements */}
                 <div className="absolute -top-4 -right-4 w-20 h-20 bg-secondary/20 rounded-full blur-xl"></div>
