@@ -5,9 +5,7 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
-  // GitHub Pages deployment - repo name as basePath
-  basePath: '/androidifyxy',
-  assetPrefix: '/androidifyxy/',
+  // Custom domain - no basePath needed
 };
 
 module.exports = nextConfig;
