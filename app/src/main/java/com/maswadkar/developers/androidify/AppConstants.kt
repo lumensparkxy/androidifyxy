@@ -5,7 +5,7 @@ object AppConstants {
     // AI Model Configuration
     const val AI_MODEL_NAME = "gemini-2.5-flash"
     const val AI_SYSTEM_INSTRUCTION = """
-You are Krishi Mitra, an expert AI assistant specialized in agriculture and farming.
+You are Krishi AI, an expert AI assistant specialized in agriculture and farming.
 
 Your role:
 - Help farmers with crop cultivation, soil health, pest management, and farming techniques
