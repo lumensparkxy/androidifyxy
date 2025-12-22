@@ -301,3 +301,31 @@ async function updateSyncMetadata(recordCount) {
   });
 }
 
+/**
+ * Placeholder callable to gate offer activation (max 20 active per supplier).
+ * TODO: implement transactional logic once offer schema is live.
+ */
+exports.publishOffer = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 30,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    const { offerId } = data || {};
+    if (!offerId) {
+      throw new functions.https.HttpsError("invalid-argument", "offerId is required");
+    }
+
+    // NOTE: Implementation will:
+    // 1) Check supplier verificationStatus == APPROVED
+    // 2) Count active offers for this supplier
+    // 3) If < 20, set offer status=ACTIVE, set activatedAt, priceNormalized, supplierApproved=true
+    // For now, respond with a not-implemented stub to keep deploys passing.
+    return { ok: false, message: "publishOffer not implemented yet" };
+  });
+
