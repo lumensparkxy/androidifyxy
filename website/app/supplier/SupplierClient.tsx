@@ -717,10 +717,6 @@ export default function SupplierClient() {
                 <Plus className="w-4 h-4" />
                 Save draft offer
               </Button>
-              <p className="text-sm text-gray-600">
-                Drafts are saved. Publishing/activation is handled by backend
-                and enforces the 20-active limit.
-              </p>
             </div>
           </Card>
         )}
