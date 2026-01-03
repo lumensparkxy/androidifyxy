@@ -17,6 +17,7 @@ import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
+import com.maswadkar.developers.androidify.ui.screens.OffersScreen
 
 @Composable
 fun AppNavigation(
@@ -73,6 +74,7 @@ fun AppNavigation(
                 onNewChat = { chatViewModel.startNewConversation() },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
+                onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
                 onSignOut = { authViewModel.signOut() }
             )
@@ -98,6 +100,12 @@ fun AppNavigation(
 
         composable(Screen.MandiPrices.route) {
             MandiPricesScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Offers.route) {
+            OffersScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

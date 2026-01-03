@@ -1,14 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Drawer Menu - Marathi -->
     <string name="menu_new_chat">नवीन चॅट</string>
     <string name="menu_history">मागील संभाषणे</string>
+    <string name="menu_mandi_prices">मंडी भाव</string>
+    <string name="menu_offers">ऑफर</string>
     <string name="menu_other">इतर</string>
     <string name="sign_out">साइन आउट</string>
     <string name="open_drawer">नेव्हिगेशन ड्रॉवर उघडा</string>
-    <string name="close_drawer">नेव्हिगेशन ड्रॉवर बंद करा</string>
+    <string name="close_drawer" tools:override="true">नेव्हिगेशन ड्रॉवर बंद करा</string>
     <string name="history_title">अलीकडील संभाषणे</string>
     <string name="no_history">अद्याप कोणतेही संभाषण नाही।\nआपला इतिहास जतन करण्यासाठी चॅट करा!</string>
     <string name="delete_conversation">संभाषण हटवा</string>
+
+    <!-- Mandi Prices Screen -->
+    <string name="back">मागे</string>
+    <string name="clear_filters">फिल्टर साफ करा</string>
+    <string name="filter_state">राज्य</string>
+    <string name="filter_district">जिल्हा</string>
+    <string name="filter_commodity">पीक</string>
+    <string name="filter_market">मंडी</string>
+    <string name="search">शोधा</string>
+    <string name="price_min">किमान किंमत</string>
+    <string name="price_max">कमाल किंमत</string>
+    <string name="price_modal">सरासरी किंमत</string>
+    <string name="arrival_date">आगमन: %1$s</string>
+    <string name="data_as_of">माहिती: %1$s पर्यंत</string>
+    <string name="select_state_prompt">मंडी भाव पाहण्यासाठी राज्य निवडा</string>
+    <string name="search_prompt">पीक निवडा आणि भाव पाहण्यासाठी शोधा टॅप करा</string>
+    <string name="no_prices_found">निवडलेल्या फिल्टरसाठी कोणतेही भाव सापडले नाहीत</string>
+    <string name="dismiss">रद्द करा</string>
+    <string name="change_location">बदला</string>
+    <string name="change_location_title">स्थान बदला</string>
+    <string name="cancel">रद्द करा</string>
+    <string name="menu_mandi_settings">मंडी प्राधान्ये</string>
+    <string name="preferences_description">प्रत्येक वेळी राज्य आणि जिल्हा न निवडता जलद मंडी भाव पाहण्यासाठी आपले डीफॉल्ट स्थान सेट करा.</string>
+    <string name="current_location">सध्याचे स्थान</string>
+    <string name="save_preferences">प्राधान्ये जतन करा</string>
+
+    <!-- Live Conversation Screen -->
+    <string name="live_conversation">व्हॉइस चॅट</string>
+    <string name="end_call">कॉल संपवा</string>
+    <string name="mic_button">व्हॉइस संभाषण</string>
+    <string name="live_idle">तयार</string>
+    <string name="live_connecting">कनेक्ट होत आहे…</string>
+    <string name="live_listening">ऐकत आहे…</string>
+    <string name="live_processing">विचार करत आहे…</string>
+    <string name="live_speaking">कृषी AI बोलत आहे</string>
+    <string name="live_ended">संभाषण संपले</string>
+    <string name="live_error">काहीतरी चूक झाली</string>
+    <string name="live_listening_hint">आता बोला, मी ऐकत आहे</string>
+    <string name="live_speaking_hint">कृपया थांबा, मी उत्तर देत आहे</string>
+    <string name="mic_permission_required">व्हॉइस चॅटसाठी मायक्रोफोन परवानगी आवश्यक आहे</string>
+
+    <!-- Offers Screen -->
+    <string name="filter_category">श्रेणी</string>
+    <string name="all_districts">सर्व जिल्हे</string>
+    <string name="all_categories">सर्व श्रेणी</string>
+    <string name="sort_by">क्रम:</string>
+    <string name="sort_price">किंमत</string>
+    <string name="sort_date">तारीख</string>
+    <string name="no_offers_found">कोणतेही ऑफर सापडले नाहीत</string>
+    <string name="no_offers_hint">आपले फिल्टर बदलण्याचा प्रयत्न करा</string>
+    <string name="offer_details">ऑफर तपशील</string>
+    <string name="supplier_details">पुरवठादार तपशील</string>
+    <string name="pack_size">पॅक आकार</string>
+    <string name="price_retail">किंमत</string>
+    <string name="npk_ratio">NPK प्रमाण</string>
+    <string name="price_per_kg">किंमत/किलो</string>
+    <string name="location">स्थान</string>
+    <string name="posted_on">पोस्ट केले: %1$s</string>
+    <string name="contact_whatsapp">WhatsApp</string>
+    <string name="contact_call">कॉल करा</string>
+    <string name="supplier_contact_unavailable">संपर्क माहिती उपलब्ध नाही</string>
 </resources>
 

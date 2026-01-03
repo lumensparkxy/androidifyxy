@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Krishi AI</string>
 
     <!-- Login Screen -->
@@ -38,9 +38,10 @@
     <string name="menu_new_chat">New Chat</string>
     <string name="menu_history">Historical Conversations</string>
     <string name="menu_mandi_prices">Mandi Prices</string>
+    <string name="menu_offers">Offers</string>
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
-    <string name="close_drawer">Close navigation drawer</string>
+    <string name="close_drawer" tools:override="true">Close navigation drawer</string>
     <string name="user_photo" translatable="false">User photo</string>
 
     <!-- Mandi Prices Screen -->
@@ -82,4 +83,25 @@
     <string name="live_listening_hint">Speak now, I\'m listening</string>
     <string name="live_speaking_hint">Please wait while I respond</string>
     <string name="mic_permission_required">Microphone permission is required for voice chat</string>
+
+    <!-- Offers Screen -->
+    <string name="filter_category">Category</string>
+    <string name="all_districts">All Districts</string>
+    <string name="all_categories">All Categories</string>
+    <string name="sort_by">Sort by:</string>
+    <string name="sort_price">Price</string>
+    <string name="sort_date">Date</string>
+    <string name="no_offers_found">No offers found</string>
+    <string name="no_offers_hint">Try adjusting your filters</string>
+    <string name="offer_details">Offer Details</string>
+    <string name="supplier_details">Supplier Details</string>
+    <string name="pack_size">Pack Size</string>
+    <string name="price_retail">Price</string>
+    <string name="npk_ratio">NPK Ratio</string>
+    <string name="price_per_kg">Price/kg</string>
+    <string name="location">Location</string>
+    <string name="posted_on">Posted on %1$s</string>
+    <string name="contact_whatsapp">WhatsApp</string>
+    <string name="contact_call">Call</string>
+    <string name="supplier_contact_unavailable">Contact information not available</string>
 </resources>

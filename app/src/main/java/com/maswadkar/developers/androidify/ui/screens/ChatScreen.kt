@@ -1,3 +1,5 @@
+@file:Suppress("UnusedAssignment")
+
 package com.maswadkar.developers.androidify.ui.screens
 
 import android.Manifest
@@ -60,6 +62,7 @@ import com.maswadkar.developers.androidify.ui.components.WelcomeScreen
 import kotlinx.coroutines.launch
 import java.io.File
 
+@Suppress("UNUSED_VALUE")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
@@ -68,6 +71,7 @@ fun ChatScreen(
     onNewChat: () -> Unit,
     onHistoryClick: () -> Unit,
     onMandiPricesClick: () -> Unit,
+    onOffersClick: () -> Unit,
     onMandiSettingsClick: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -210,6 +214,7 @@ fun ChatScreen(
                         DrawerItem.NewChat -> onNewChat()
                         DrawerItem.History -> onHistoryClick()
                         DrawerItem.MandiPrices -> onMandiPricesClick()
+                        DrawerItem.Offers -> onOffersClick()
                         DrawerItem.MandiSettings -> onMandiSettingsClick()
                         DrawerItem.SignOut -> onSignOut()
                     }
@@ -285,9 +290,7 @@ fun ChatScreen(
                 if (messages.isEmpty()) {
                     WelcomeScreen(
                         onExampleClick = { question ->
-                            inputText = question
                             onSendMessage(question, null)
-                            inputText = ""
                         },
                         modifier = Modifier.fillMaxSize()
                     )
