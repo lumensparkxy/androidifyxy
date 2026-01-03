@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.auth.AuthRepository
 import com.maswadkar.developers.androidify.auth.AuthState
@@ -30,6 +31,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialize Mobile Ads SDK
+        MobileAds.initialize(this) {}
 
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
@@ -86,4 +90,3 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_CONVERSATION_ID = "conversation_id"
     }
 }
-
