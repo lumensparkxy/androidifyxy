@@ -1,7 +1,7 @@
 package com.maswadkar.developers.androidify.ui.components
 
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -91,16 +91,15 @@ fun OfferDetailBottomSheet(
                 // Contact Buttons
                 if (supplier.phone.isNotEmpty()) {
                     ContactButtons(
-                        phone = supplier.phone,
                         onWhatsAppClick = {
                             val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://wa.me/${supplier.phone.replace("+", "").replace(" ", "")}")
+                                data = "https://wa.me/${supplier.phone.replace("+", "").replace(" ", "")}".toUri()
                             }
                             context.startActivity(intent)
                         },
                         onCallClick = {
                             val intent = Intent(Intent.ACTION_DIAL).apply {
-                                data = Uri.parse("tel:${supplier.phone}")
+                                data = "tel:${supplier.phone}".toUri()
                             }
                             context.startActivity(intent)
                         }
@@ -193,7 +192,7 @@ private fun ProductInfoSection(
 
                 DetailItem(
                     label = stringResource(R.string.price_per_kg),
-                    value = "₹${String.format("%.2f", offer.priceNormalized)}/kg"
+                    value = "₹${String.format(Locale.getDefault(), "%.2f", offer.priceNormalized)}/kg"
                 )
             }
         }
@@ -283,7 +282,6 @@ private fun SupplierInfoSection(
 
 @Composable
 private fun ContactButtons(
-    phone: String,
     onWhatsAppClick: () -> Unit,
     onCallClick: () -> Unit,
     modifier: Modifier = Modifier

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Krishi AI</string>
 
     <!-- Login Screen -->
@@ -41,7 +41,7 @@
     <string name="menu_offers">Offers</string>
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
-    <string name="close_drawer">Close navigation drawer</string>
+    <string name="close_drawer" tools:override="true">Close navigation drawer</string>
     <string name="user_photo" translatable="false">User photo</string>
 
     <!-- Mandi Prices Screen -->
