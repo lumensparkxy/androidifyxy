@@ -24,6 +24,7 @@ import com.maswadkar.developers.androidify.data.FilterOption
 import com.maswadkar.developers.androidify.data.Offer
 import com.maswadkar.developers.androidify.data.OfferFilters
 import com.maswadkar.developers.androidify.data.OfferRepository
+import com.maswadkar.developers.androidify.ui.components.NativeAdCard
 import com.maswadkar.developers.androidify.ui.components.OfferDetailBottomSheet
 import java.text.SimpleDateFormat
 import java.util.*
@@ -99,6 +100,11 @@ fun OffersScreen(
             )
 
             HorizontalDivider()
+
+            // Native Ad Unit
+            NativeAdCard(
+                adUnitId = "ca-app-pub-6317522941728465/6769905906"
+            )
 
             // Results Section
             Box(
