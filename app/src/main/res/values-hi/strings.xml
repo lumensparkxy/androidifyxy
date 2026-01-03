@@ -53,6 +53,21 @@
     <string name="live_speaking_hint">कृपया प्रतीक्षा करें, मैं जवाब दे रहा हूं</string>
     <string name="mic_permission_required">वॉइस चैट के लिए माइक्रोफोन अनुमति आवश्यक है</string>
 
+    <!-- Carbon Credits Screen -->
+    <string name="menu_carbon_credits">कार्बन क्रेडिट</string>
+    <string name="carbon_credits_headline">अपने खेत के कार्बन क्रेडिट से पैसे कमाएं</string>
+    <string name="carbon_credits_body">कार्बन क्रेडिट किसानों के लिए टिकाऊ कृषि पद्धतियों को अपनाकर अतिरिक्त आय अर्जित करने का एक तरीका है। रासायनिक उपयोग कम करके, पेड़ लगाकर और हरित कृषि विधियों को लागू करके, आप कार्बन क्रेडिट उत्पन्न कर सकते हैं जिन्हें कंपनियां अपने उत्सर्जन को संतुलित करने के लिए खरीदती हैं।\n\nकार्बन क्रेडिट कैसे काम करते हैं और आप इनसे कैसे लाभ उठा सकते हैं, जानने के लिए नीचे दिया गया वीडियो देखें।</string>
+    <string name="calculate_carbon_credit_button">मेरे कार्बन क्रेडिट मूल्य का अनुमान लगाएं</string>
+    <string name="land_size_label">भूमि का आकार (एकड़ में)</string>
+    <string name="tree_count_label">बड़े पेड़ों की संख्या</string>
+    <string name="green_farming_label">क्या आप रासायनिक उपयोग कम करने में रुचि रखते हैं?</string>
+    <string name="phone_number_label">फोन नंबर</string>
+    <string name="submit">सबमिट करें</string>
+    <string name="submit_success_message">धन्यवाद! हम जल्द ही आपके कार्बन क्रेडिट अनुमान के साथ संपर्क करेंगे।</string>
+    <string name="carbon_form_title">अपना कार्बन क्रेडिट अनुमान प्राप्त करें</string>
+    <string name="field_required">यह फ़ील्ड आवश्यक है</string>
+    <string name="invalid_phone">कृपया एक वैध फोन नंबर दर्ज करें</string>
+
     <!-- Offers Screen -->
     <string name="filter_category">श्रेणी</string>
     <string name="all_districts">सभी जिले</string>

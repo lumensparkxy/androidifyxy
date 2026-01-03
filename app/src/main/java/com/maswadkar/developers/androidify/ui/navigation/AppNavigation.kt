@@ -13,6 +13,7 @@ import com.maswadkar.developers.androidify.ChatViewModel
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
+import com.maswadkar.developers.androidify.ui.screens.CarbonCreditsScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
@@ -75,6 +76,7 @@ fun AppNavigation(
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
+                onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
                 onSignOut = { authViewModel.signOut() }
             )
@@ -112,6 +114,12 @@ fun AppNavigation(
 
         composable(Screen.MandiSettings.route) {
             MandiPreferencesScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.CarbonCredits.route) {
+            CarbonCreditsScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
