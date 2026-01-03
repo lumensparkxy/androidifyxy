@@ -104,34 +104,30 @@ fun MandiPricesScreen(
             )
 
             // Results Section
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        CircularProgressIndicator()
                     }
                     uiState.error != null -> {
                         ErrorMessage(
                             message = uiState.error!!,
-                            onDismiss = viewModel::clearError,
-                            modifier = Modifier.align(Alignment.Center)
+                            onDismiss = viewModel::clearError
                         )
                     }
                     uiState.prices.isEmpty() && uiState.selectedState != null && uiState.selectedDistrict != null -> {
-                        EmptyState(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        EmptyState()
                     }
                     !uiState.isCompactMode && uiState.selectedState == null -> {
-                        SelectStatePrompt(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        SelectStatePrompt()
                     }
                     uiState.isCompactMode && uiState.prices.isEmpty() -> {
-                        SearchPrompt(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        SearchPrompt()
                     }
                     else -> {
                         PricesList(

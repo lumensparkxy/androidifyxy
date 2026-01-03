@@ -101,24 +101,24 @@ fun OffersScreen(
             HorizontalDivider()
 
             // Results Section
-            Box(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        CircularProgressIndicator()
                     }
                     uiState.error != null -> {
                         ErrorMessage(
                             message = uiState.error!!,
-                            onDismiss = viewModel::clearError,
-                            modifier = Modifier.align(Alignment.Center)
+                            onDismiss = viewModel::clearError
                         )
                     }
                     uiState.offers.isEmpty() -> {
-                        EmptyOffersState(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        EmptyOffersState()
                     }
                     else -> {
                         OffersList(
