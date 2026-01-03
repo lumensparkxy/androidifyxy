@@ -12,8 +12,10 @@ service cloud.firestore {
     }
 
     // Supplier profile — only the owner can manage their document.
+    // Public can read approved suppliers for offer contact info.
     match /suppliers/{supplierId} {
-      allow read: if request.auth != null && request.auth.uid == supplierId;
+      allow read: if resource.data.verificationStatus == 'APPROVED'
+        || (request.auth != null && request.auth.uid == supplierId);
 
       allow create: if request.auth != null
         && request.auth.uid == supplierId
@@ -27,9 +29,9 @@ service cloud.firestore {
         && request.resource.data.verificationStatus == resource.data.verificationStatus;
     }
 
-    // Offers — public reads only for active & approved. Owners can manage drafts/inactive but cannot activate directly.
+    // Offers — public reads only for approved offers from approved suppliers. Owners can manage their own offers.
     match /offers/{offerId} {
-      allow read: if (resource.data.status == 'ACTIVE' && resource.data.supplierApproved == true)
+      allow read: if (resource.data.status == 'APPROVED' && resource.data.supplierApproved == true)
         || (request.auth != null && resource.data.supplierId == request.auth.uid);
 
       // Suppliers create drafts only.
