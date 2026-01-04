@@ -39,9 +39,10 @@ android {
     defaultConfig {
         applicationId = "com.maswadkar.developers.androidify"
         minSdk = 29
+
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 106
+        versionName = "0.1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
