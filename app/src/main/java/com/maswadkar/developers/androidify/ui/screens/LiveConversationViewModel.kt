@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /**
  * ViewModel for managing Gemini Live API voice conversations.
@@ -47,6 +48,9 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
 
     private var liveSession: LiveSession? = null
 
+    // Get device locale for language fallback hint
+    private val deviceLocale: String = Locale.getDefault().toLanguageTag()
+
     // Configure the Live Model with audio input/output
     private val liveModel by lazy {
         Firebase.ai(backend = GenerativeBackend.vertexAI())
@@ -56,7 +60,7 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
                     speechConfig = SpeechConfig(voice = Voice("Kore"))
                     responseModality = ResponseModality.AUDIO
                 },
-                systemInstruction = content { text(AppConstants.AI_SYSTEM_INSTRUCTION) }
+                systemInstruction = content { text(AppConstants.getSystemInstruction(deviceLocale)) }
             )
     }
 
