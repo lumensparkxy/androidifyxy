@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class ChatViewModel(
     application: Application,
@@ -72,10 +73,13 @@ class ChatViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Get device locale for language fallback hint
+    private val deviceLocale: String = Locale.getDefault().toLanguageTag()
+
     private val model = Firebase.ai(backend = GenerativeBackend.vertexAI())
         .generativeModel(
             modelName = AppConstants.AI_MODEL_NAME,
-            systemInstruction = content { text(AppConstants.AI_SYSTEM_INSTRUCTION) }
+            systemInstruction = content { text(AppConstants.getSystemInstruction(deviceLocale)) }
         )
 
     // Chat instance for multi-turn conversations with context

@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,29 +9,52 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+// Function to get properties from local.properties
+fun readLocalProperties(): Properties {
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(FileInputStream(localPropertiesFile))
+    }
+    return properties
+}
+
+val localProperties = readLocalProperties()
+
 android {
     namespace = "com.maswadkar.developers.androidify"
     compileSdk {
         version = release(36)
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(localProperties.getProperty("keystore.file", "my-release-key.keystore"))
+            storePassword = localProperties.getProperty("keystore.password", "")
+            keyAlias = localProperties.getProperty("key.alias", "")
+            keyPassword = localProperties.getProperty("key.password", "")
+        }
+    }
+
     defaultConfig {
         applicationId = "com.maswadkar.developers.androidify"
         minSdk = 29
+
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 106
+        versionName = "0.1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

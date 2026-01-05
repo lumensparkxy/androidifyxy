@@ -84,6 +84,21 @@
     <string name="live_speaking_hint">Please wait while I respond</string>
     <string name="mic_permission_required">Microphone permission is required for voice chat</string>
 
+    <!-- Carbon Credits Screen -->
+    <string name="menu_carbon_credits">Carbon Credits</string>
+    <string name="carbon_credits_headline">Earn Money from Your Farm\'s Carbon Credits</string>
+    <string name="carbon_credits_body">Carbon credits are a way for farmers to earn additional income by adopting sustainable farming practices. By reducing chemical usage, planting trees, and implementing green farming methods, you can generate carbon credits that companies buy to offset their emissions.\n\nWatch the video below to learn more about how carbon credits work and how you can benefit from them.</string>
+    <string name="calculate_carbon_credit_button">Calculate My Carbon Credit Worth Estimation</string>
+    <string name="land_size_label">Land Size (in acres)</string>
+    <string name="tree_count_label">Number of Big Trees</string>
+    <string name="green_farming_label">Interested in reducing chemical usage?</string>
+    <string name="phone_number_label">Phone Number</string>
+    <string name="submit">Submit</string>
+    <string name="submit_success_message">Thank you! We will contact you soon with your carbon credit estimation.</string>
+    <string name="carbon_form_title">Get Your Carbon Credit Estimation</string>
+    <string name="field_required">This field is required</string>
+    <string name="invalid_phone">Please enter a valid phone number</string>
+
     <!-- Offers Screen -->
     <string name="filter_category">Category</string>
     <string name="all_districts">All Districts</string>

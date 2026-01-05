@@ -40,6 +40,7 @@ sealed class DrawerItem(
     data object History : DrawerItem(R.drawable.ic_chat, R.string.menu_history)
     data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
     data object Offers : DrawerItem(R.drawable.ic_offer, R.string.menu_offers)
+    data object CarbonCredits : DrawerItem(R.drawable.ic_carbon, R.string.menu_carbon_credits)
     data object MandiSettings : DrawerItem(R.drawable.ic_settings, R.string.menu_mandi_settings)
     data object SignOut : DrawerItem(R.drawable.ic_logout, R.string.sign_out)
 }
@@ -109,6 +110,19 @@ fun AppDrawerContent(
             label = { Text(stringResource(DrawerItem.Offers.labelRes)) },
             selected = selectedItem == DrawerItem.Offers,
             onClick = { onItemClick(DrawerItem.Offers) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.CarbonCredits.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.CarbonCredits.labelRes)) },
+            selected = selectedItem == DrawerItem.CarbonCredits,
+            onClick = { onItemClick(DrawerItem.CarbonCredits) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 
