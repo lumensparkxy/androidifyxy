@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Welcome Screen - Marathi -->
+    <string name="welcome_title">कृषी AI मध्ये आपले स्वागत आहे</string>
+    <string name="welcome_subtitle">तुमचा AI-संचालित कृषी सहाय्यक।\nतुमच्या स्थानिक भाषेत प्रश्न विचारा!</string>
+
+    <!-- Features -->
+    <string name="features_title">मी यात तुम्हाला मदत करू शकतो</string>
+    <string name="feature_1">पीक लागवड, मातीचे आरोग्य आणि शेती तंत्रांवर तज्ञ सल्ला मिळवा</string>
+    <string name="feature_2">तुमच्या स्थानिक भाषेत विचारा - हिंदी, मराठी, तेलुगु, तमिळ आणि इतर</string>
+    <string name="feature_3">कृषी संशोधन दस्तऐवजांमधून सत्यापित माहिती मिळवा</string>
+    <string name="feature_4">कीटक नियंत्रण, खते, सिंचन आणि बाजार भावांवर टिप्स मिळवा</string>
+
+    <!-- Example Questions -->
+    <string name="try_asking_title">असे विचारा:</string>
+    <string name="example_question_1">"माझ्या गव्हाच्या पिकाला पिवळेपणा येत आहे, काय करू?"</string>
+    <string name="example_question_2">"महाराष्ट्रात कापूस पेरण्याची सर्वोत्तम वेळ कोणती?"</string>
+    <string name="example_question_3">"टोमॅटो पिकासाठी कोणते खत वापरावे?"</string>
+
+    <!-- Input -->
+    <string name="input_hint">शेती, पिके, हवामानाबद्दल विचारा…</string>
+    <string name="send_button">पाठवा</string>
+
     <!-- Drawer Menu - Marathi -->
     <string name="menu_new_chat">नवीन चॅट</string>
     <string name="menu_history">मागील संभाषणे</string>
     <string name="menu_mandi_prices">मंडी भाव</string>
     <string name="menu_offers">ऑफर</string>
+    <string name="menu_knowledge_base">माहिती भांडार</string>
     <string name="menu_other">इतर</string>
     <string name="sign_out">साइन आउट</string>
     <string name="open_drawer">नेव्हिगेशन ड्रॉवर उघडा</string>
@@ -88,5 +110,19 @@
     <string name="contact_whatsapp">WhatsApp</string>
     <string name="contact_call">कॉल करा</string>
     <string name="supplier_contact_unavailable">संपर्क माहिती उपलब्ध नाही</string>
+
+    <!-- Voice Quota -->
+    <string name="voice_quota_remaining">या महिन्यात %1$d मिनिटे शिल्लक</string>
+    <string name="voice_quota_exceeded">मासिक व्हॉइस मर्यादा गाठली.\nतुमचा कोटा पुढील महिन्यात रीसेट होईल.</string>
+    <string name="voice_quota_exceeded_title">मर्यादा गाठली</string>
+    <string name="close">बंद करा</string>
+
+    <!-- Knowledge Base Screen -->
+    <string name="knowledge_documents_title">दस्तऐवज</string>
+    <string name="knowledge_error">सामग्री लोड करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.</string>
+    <string name="knowledge_no_crops">अद्याप कोणतेही पीक उपलब्ध नाही.</string>
+    <string name="knowledge_no_documents">या पिकासाठी कोणतेही दस्तऐवज उपलब्ध नाहीत.</string>
+    <string name="open_pdf_with">PDF उघडा</string>
+    <string name="retry">पुन्हा प्रयत्न करा</string>
 </resources>
 

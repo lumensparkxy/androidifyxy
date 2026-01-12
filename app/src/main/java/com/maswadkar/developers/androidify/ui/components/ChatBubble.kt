@@ -138,13 +138,8 @@ private fun MarkdownContent(
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val markdownColors = markdownColor(
-        text = textColor,
-        codeText = textColor,
-        linkText = MaterialTheme.colorScheme.primary,
-        codeBackground = MaterialTheme.colorScheme.surfaceVariant,
-        inlineCodeBackground = MaterialTheme.colorScheme.surfaceVariant,
-        dividerColor = MaterialTheme.colorScheme.outlineVariant
+    val colors = markdownColor(
+        text = textColor
     )
 
     val typography = markdownTypography(
@@ -154,7 +149,7 @@ private fun MarkdownContent(
 
     Markdown(
         content = markdown,
-        colors = markdownColors,
+        colors = colors,
         typography = typography,
         modifier = modifier
     )

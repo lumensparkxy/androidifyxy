@@ -8,25 +8,25 @@
     <string name="sign_out">Sign Out</string>
 
     <!-- Welcome Screen -->
-    <string name="welcome_title" translatable="false">Welcome to Krishi AI</string>
-    <string name="welcome_subtitle" translatable="false">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
+    <string name="welcome_title">Welcome to Krishi AI</string>
+    <string name="welcome_subtitle">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
 
     <!-- Features -->
-    <string name="features_title" translatable="false">What I can help you with</string>
-    <string name="feature_1" translatable="false">Get expert advice on crop cultivation, soil health, and farming techniques</string>
-    <string name="feature_2" translatable="false">Ask in your local language - Hindi, Marathi, Telugu, Tamil, and more</string>
-    <string name="feature_3" translatable="false">Access verified information from agricultural research documents</string>
-    <string name="feature_4" translatable="false">Get tips on pest control, fertilizers, irrigation, and market prices</string>
+    <string name="features_title">What I can help you with</string>
+    <string name="feature_1">Get expert advice on crop cultivation, soil health, and farming techniques</string>
+    <string name="feature_2">Ask in your local language - Hindi, Marathi, Telugu, Tamil, and more</string>
+    <string name="feature_3">Access verified information from agricultural research documents</string>
+    <string name="feature_4">Get tips on pest control, fertilizers, irrigation, and market prices</string>
 
     <!-- Example Questions -->
-    <string name="try_asking_title" translatable="false">Try asking:</string>
-    <string name="example_question_1" translatable="false">"मेरी गेहूं की फसल में पीलापन आ रहा है, क्या करूं?"</string>
-    <string name="example_question_2" translatable="false">"What is the best time to sow cotton in Maharashtra?"</string>
-    <string name="example_question_3" translatable="false">"ಟೊಮೆಟೊ ಬೆಳೆಗೆ ಯಾವ ಗೊಬ್ಬರ ಬಳಸಬೇಕು?"</string>
+    <string name="try_asking_title">Try asking:</string>
+    <string name="example_question_1">"मेरी गेहूं की फसल में पीलापन आ रहा है, क्या करूं?"</string>
+    <string name="example_question_2">"What is the best time to sow cotton in Maharashtra?"</string>
+    <string name="example_question_3">"ಟೊಮೆಟೊ ಬೆಳೆಗೆ ಯಾವ ಗೊಬ್ಬರ ಬಳಸಬೇಕು?"</string>
 
     <!-- Input -->
-    <string name="input_hint" translatable="false">Ask about farming, crops, weather…</string>
-    <string name="send_button" translatable="false">Send</string>
+    <string name="input_hint">Ask about farming, crops, weather…</string>
+    <string name="send_button">Send</string>
 
     <!-- Chat History -->
     <string name="history_title">Recent Conversations</string>
@@ -39,6 +39,7 @@
     <string name="menu_history">Historical Conversations</string>
     <string name="menu_mandi_prices">Mandi Prices</string>
     <string name="menu_offers">Offers</string>
+    <string name="menu_knowledge_base">Knowledge Base</string>
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
     <string name="close_drawer" tools:override="true">Close navigation drawer</string>
@@ -125,4 +126,12 @@
     <string name="contact_whatsapp">WhatsApp</string>
     <string name="contact_call">Call</string>
     <string name="supplier_contact_unavailable">Contact information not available</string>
+
+    <!-- Knowledge Base Screen -->
+    <string name="knowledge_documents_title">Documents</string>
+    <string name="knowledge_error">Failed to load content. Please try again.</string>
+    <string name="knowledge_no_crops">No crops available yet.</string>
+    <string name="knowledge_no_documents">No documents available for this crop.</string>
+    <string name="open_pdf_with">Open PDF with</string>
+    <string name="retry">Retry</string>
 </resources>

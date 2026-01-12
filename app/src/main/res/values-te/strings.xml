@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Welcome Screen - Telugu -->
+    <string name="welcome_title">కృషి AI కి స్వాగతం</string>
+    <string name="welcome_subtitle">మీ AI-ఆధారిత వ్యవసాయ సహాయకుడు.\nమీ స్థానిక భాషలో ప్రశ్నలు అడగండి!</string>
+
+    <!-- Features -->
+    <string name="features_title">నేను దీనిలో మీకు సహాయం చేయగలను</string>
+    <string name="feature_1">పంట సాగు, నేల ఆరోగ్యం మరియు వ్యవసాయ పద్ధతులపై నిపుణుల సలహా పొందండి</string>
+    <string name="feature_2">మీ స్థానిక భాషలో అడగండి - హిందీ, మరాఠీ, తెలుగు, తమిళం మరియు ఇతరులు</string>
+    <string name="feature_3">వ్యవసాయ పరిశోధన పత్రాల నుండి ధృవీకరించబడిన సమాచారం ప���ందండి</string>
+    <string name="feature_4">పురుగుల నియంత్రణ, ఎరువులు, నీటిపారుదల మరియు మార్కెట్ ధరలపై చిట్కాలు పొందండి</string>
+
+    <!-- Example Questions -->
+    <string name="try_asking_title">ఇలా అడగండి:</string>
+    <string name="example_question_1">"నా గోధుమ పంటకు పసుపు రంగు వస్తోంది, ఏమి చేయాలి?"</string>
+    <string name="example_question_2">"మహారాష్ట్రలో పత్తి విత్తడానికి ఉత్తమ సమయం ఏది?"</string>
+    <string name="example_question_3">"టమాటో పంటకు ఏ ఎరువు వాడాలి?"</string>
+
+    <!-- Input -->
+    <string name="input_hint">వ్యవసాయం, పంటలు, వాతావరణం గురించి అడగండి…</string>
+    <string name="send_button">పంపండి</string>
+
+    <!-- Drawer Menu - Telugu -->
+    <string name="menu_new_chat">కొత్త చాట్</string>
+    <string name="menu_history">గత సంభాషణలు</string>
+    <string name="menu_mandi_prices">మండి ధరలు</string>
+    <string name="menu_offers">ఆఫర్లు</string>
+    <string name="menu_knowledge_base">జ్ఞాన భాండాగారం</string>
+    <string name="menu_other">ఇతర</string>
+    <string name="sign_out">సైన్ అవుట్</string>
+    <string name="open_drawer">నావిగేషన్ డ్రాయర్ తెరవండి</string>
+    <string name="close_drawer" tools:override="true">నావిగేషన్ డ్రాయర్ మూసివేయండి</string>
+    <string name="history_title">ఇటీవలి సంభాషణలు</string>
+    <string name="no_history">ఇంకా సంభాషణలు లేవు.\nమీ చరిత్రను సేవ్ చేయడానికి చాట్ ప్రారంభించండి!</string>
+    <string name="delete_conversation">సంభాషణ తొలగించండి</string>
+
+    <!-- Mandi Prices Screen -->
+    <string name="back">వెనుకకు</string>
+    <string name="clear_filters">ఫిల్టర్లు క్లియర్ చేయండి</string>
+    <string name="filter_state">రాష్ట్రం</string>
+    <string name="filter_district">జిల్లా</string>
+    <string name="filter_commodity">పంట</string>
+    <string name="filter_market">మండి</string>
+    <string name="search">శోధించండి</string>
+    <string name="price_min">కనిష్ట ధర</string>
+    <string name="price_max">గరిష్ట ధర</string>
+    <string name="price_modal">సగటు ధర</string>
+    <string name="arrival_date">రాక: %1$s</string>
+    <string name="data_as_of">డేటా: %1$s వరకు</string>
+    <string name="select_state_prompt">మండి ధరలు చూడటానికి రాష్ట్రం ఎంచుకోండి</string>
+    <string name="search_prompt">పంట ఎంచుకోండి మరియు ధరలు చూడటానికి శోధించండి టాప్ చేయండి</string>
+    <string name="no_prices_found">ఎంచుకున్న ఫిల్టర్లకు ధరలు కనుగొనబడలేదు</string>
+    <string name="dismiss">తొలగించు</string>
+    <string name="change_location">మార్చండి</string>
+    <string name="change_location_title">స్థానం మార్చండి</string>
+    <string name="cancel">రద్దు చేయండి</string>
+    <string name="menu_mandi_settings">మండి ప్రాధాన్యతలు</string>
+    <string name="preferences_description">ప్రతిసారి రాష్ట్రం మరియు జిల్లా ఎంచుకోకుండా త్వరగా మండి ధరలు చూడటానికి మీ డిఫాల్ట్ స్థానం సెట్ చేయండి.</string>
+    <string name="current_location">ప్రస్తుత స్థానం</string>
+    <string name="save_preferences">ప్రాధాన్యతలు సేవ్ చేయండి</string>
+
+    <!-- Live Conversation Screen -->
+    <string name="live_conversation">వాయిస్ చాట్</string>
+    <string name="end_call">కాల్ ముగించండి</string>
+    <string name="mic_button">వాయిస్ సంభాషణ</string>
+    <string name="live_idle">సిద్ధంగా ఉంది</string>
+    <string name="live_connecting">కనెక్ట్ అవుతోంది…</string>
+    <string name="live_listening">వింటున్నాను…</string>
+    <string name="live_processing">ఆలోచిస్తున్నాను…</string>
+    <string name="live_speaking">కృషి AI మాట్లాడుతోంది</string>
+    <string name="live_ended">సంభాషణ ముగిసింది</string>
+    <string name="live_error">ఏదో తప్పు జరిగింది</string>
+    <string name="live_listening_hint">ఇప్పుడు మాట్లాడండి, నేను వింటున్నాను</string>
+    <string name="live_speaking_hint">దయచేసి వేచి ఉండండి, నేను సమాధానం ఇస్తున్నాను</string>
+    <string name="mic_permission_required">వాయిస్ చాట్ కోసం మైక్రోఫోన్ అనుమతి అవసరం</string>
+
+    <!-- Voice Quota -->
+    <string name="voice_quota_remaining">ఈ నెల %1$d నిమిషాలు మిగిలి ఉన్నాయి</string>
+    <string name="voice_quota_exceeded">మాసిక వాయిస్ పరిమితి చేరుకుంది.\nమీ కోటా వచ్చే నెల రీసెట్ అవుతుంది.</string>
+    <string name="voice_quota_exceeded_title">పరిమితి చేరుకుంది</string>
+    <string name="close">మూసివేయండి</string>
+
+    <!-- Carbon Credits Screen -->
+    <string name="menu_carbon_credits">కార్బన్ క్రెడిట్స్</string>
+    <string name="carbon_credits_headline">మీ వ్యవసాయ భూమి కార్బన్ క్రెడిట్ల నుండి డబ్బు సంపాదించండి</string>
+    <string name="carbon_credits_body">కార్బన్ క్రెడిట్లు రైతులు స్థిరమైన వ్యవసాయ పద్ధతులను అవలంబించడం ద్వారా అదనపు ఆదాయం పొందే మార్గం. రసాయన వినియోగం తగ్గించడం, చెట్లు నాటడం మరియు హరిత వ్యవసాయ పద్ధతులను అమలు చేయడం ద్వారా, మీరు కార్బన్ క్రెడిట్లను ఉత్పత్తి చేయవచ్చు, వాటిని కంపెనీలు తమ ఉద్గారాలను సమతుల్యం చేయడానికి కొనుగోలు చేస్తాయి.\n\nకార్బన్ క్రెడిట్లు ఎలా పని చేస్తాయి మరియు మీరు వాటి నుండి ఎలా లాభం పొందవచ్చో తెలుసుకోవడానికి క్రింది వీడియో చూడండి.</string>
+    <string name="calculate_carbon_credit_button">నా కార్బన్ క్రెడిట్ విలువ అంచనా లెక్కించండి</string>
+    <string name="land_size_label">భూమి పరిమాణం (ఎకరాలలో)</string>
+    <string name="tree_count_label">పెద్ద చెట్ల సంఖ్య</string>
+    <string name="green_farming_label">రసాయన వినియోగం తగ్గించడంలో ఆసక్తి ఉందా?</string>
+    <string name="phone_number_label">ఫోన్ నంబర్</string>
+    <string name="submit">సమర్పించండి</string>
+    <string name="submit_success_message">ధన్యవాదాలు! మీ కార్బన్ క్రెడిట్ అంచనాతో మేము త్వరలో సంప్రదిస్తాము.</string>
+    <string name="carbon_form_title">మీ కార్బన్ క్రెడిట్ అంచనా పొందండి</string>
+    <string name="field_required">ఈ ఫీల్డ్ అవసరం</string>
+    <string name="invalid_phone">దయచేసి చెల్లుబాటు అయ్యే ఫోన్ నంబర్ నమోదు చేయండి</string>
+
+    <!-- Offers Screen -->
+    <string name="filter_category">వర్గం</string>
+    <string name="all_districts">అన్ని జిల్లాలు</string>
+    <string name="all_categories">అన్ని వర్గాలు</string>
+    <string name="sort_by">క్రమం:</string>
+    <string name="sort_price">ధర</string>
+    <string name="sort_date">తేదీ</string>
+    <string name="no_offers_found">ఆఫర్లు కనుగొనబడలేదు</string>
+    <string name="no_offers_hint">మీ ఫిల్టర్లను సర్దుబాటు చేయడానికి ప్రయత్నించండి</string>
+    <string name="offer_details">ఆఫర్ వివరాలు</string>
+    <string name="supplier_details">సరఫరాదారు వివరాలు</string>
+    <string name="pack_size">ప్యాక్ పరిమాణం</string>
+    <string name="price_retail">ధర</string>
+    <string name="npk_ratio">NPK నిష్పత్తి</string>
+    <string name="price_per_kg">ధర/కిలో</string>
+    <string name="location">స్థానం</string>
+    <string name="posted_on">పోస్ట్ చేసిన తేదీ: %1$s</string>
+    <string name="contact_whatsapp">WhatsApp</string>
+    <string name="contact_call">కాల్ చేయండి</string>
+    <string name="supplier_contact_unavailable">సంప్రదింపు సమాచారం అందుబాటులో లేదు</string>
+
+    <!-- Knowledge Base Screen -->
+    <string name="knowledge_documents_title">పత్రాలు</string>
+    <string name="knowledge_error">కంటెంట్ లోడ్ చేయడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.</string>
+    <string name="knowledge_no_crops">ఇంకా పంటలు అందుబాటులో లేవు.</string>
+    <string name="knowledge_no_documents">ఈ పంటకు పత్రాలు అందుబాటులో లేవు.</string>
+    <string name="open_pdf_with">PDF తెరవండి</string>
+    <string name="retry">మళ్ళీ ప్రయత్నించండి</string>
+</resources>
+

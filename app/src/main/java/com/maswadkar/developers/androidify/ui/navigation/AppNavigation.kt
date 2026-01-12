@@ -7,14 +7,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.maswadkar.developers.androidify.ChatViewModel
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
 import com.maswadkar.developers.androidify.ui.screens.CarbonCreditsScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
+import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
+import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
@@ -77,6 +81,7 @@ fun AppNavigation(
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
+                onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
                 onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
                 onSignOut = { authViewModel.signOut() }
             )
@@ -120,6 +125,33 @@ fun AppNavigation(
 
         composable(Screen.CarbonCredits.route) {
             CarbonCreditsScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.KnowledgeBase.route) {
+            KnowledgeBaseScreen(
+                onBackClick = { navController.popBackStack() },
+                onCropClick = { cropId, cropName ->
+                    navController.navigate(Screen.KnowledgeDocuments.createRoute(cropId, cropName))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.KnowledgeDocuments.route,
+            arguments = listOf(
+                navArgument("cropId") { type = NavType.StringType },
+                navArgument("cropName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val cropId = backStackEntry.arguments?.getString("cropId") ?: ""
+            val cropName = backStackEntry.arguments?.getString("cropName")?.let {
+                Screen.KnowledgeDocuments.decodeCropName(it)
+            } ?: ""
+            KnowledgeDocumentsScreen(
+                cropId = cropId,
+                cropName = cropName,
                 onBackClick = { navController.popBackStack() }
             )
         }

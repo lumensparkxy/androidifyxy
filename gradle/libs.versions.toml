@@ -1,7 +1,7 @@
 [versions]
 activityCompose = "1.12.2"
 agp = "8.13.2"
-composeBom = "2025.01.01"
+composeBom = "2025.12.01"
 coilCompose = "2.7.0"
 credentials = "1.5.0"
 exifinterface = "1.4.2"
@@ -21,7 +21,7 @@ material = "1.13.0"
 activity = "1.12.2"
 constraintlayout = "2.2.1"
 multiplatformMarkdownRenderer = "0.28.0"
-multiplatformMarkdownRendererM3 = "0.28.0"
+multiplatformMarkdownRendererM3 = "0.39.0"
 navigationCompose = "2.9.6"
 playServicesAds = "24.9.0"
 
@@ -48,6 +48,7 @@ firebase-ai = { module = "com.google.firebase:firebase-ai", version.ref = "fireb
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
