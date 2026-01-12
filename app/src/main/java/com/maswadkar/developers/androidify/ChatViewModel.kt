@@ -76,7 +76,7 @@ class ChatViewModel(
     // Get device locale for language fallback hint
     private val deviceLocale: String = Locale.getDefault().toLanguageTag()
 
-    private val model = Firebase.ai(backend = GenerativeBackend.vertexAI())
+    private val model = Firebase.ai(backend = GenerativeBackend.vertexAI("global"))
         .generativeModel(
             modelName = AppConstants.AI_MODEL_NAME,
             systemInstruction = content { text(AppConstants.getSystemInstruction(deviceLocale)) }

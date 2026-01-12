@@ -3,7 +3,7 @@ package com.maswadkar.developers.androidify
 object AppConstants {
 
     // AI Model Configuration
-    const val AI_MODEL_NAME = "gemini-2.5-flash"
+    const val AI_MODEL_NAME = "gemini-3-flash-preview"
     const val AI_SYSTEM_INSTRUCTION_BASE = """
 You are Krishi AI, an expert AI assistant specialized in agriculture and farming.
 

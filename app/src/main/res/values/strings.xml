@@ -84,6 +84,12 @@
     <string name="live_speaking_hint">Please wait while I respond</string>
     <string name="mic_permission_required">Microphone permission is required for voice chat</string>
 
+    <!-- Voice Quota -->
+    <string name="voice_quota_remaining">%1$d min remaining this month</string>
+    <string name="voice_quota_exceeded">Monthly voice limit reached.\nYour quota resets next month.</string>
+    <string name="voice_quota_exceeded_title">Limit Reached</string>
+    <string name="close">Close</string>
+
     <!-- Carbon Credits Screen -->
     <string name="menu_carbon_credits">Carbon Credits</string>
     <string name="carbon_credits_headline">Earn Money from Your Farm\'s Carbon Credits</string>

@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.CallEnd
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maswadkar.developers.androidify.R
+import com.maswadkar.developers.androidify.data.VoiceUsage
 
 @Composable
 fun LiveConversationScreen(
@@ -50,15 +53,17 @@ fun LiveConversationScreen(
     viewModel: LiveConversationViewModel = viewModel()
 ) {
     val sessionState by viewModel.sessionState.collectAsState()
+    val voiceUsage by viewModel.voiceUsageFlow.collectAsState()
+    val quotaExceeded by viewModel.quotaExceeded.collectAsState()
 
     // Handle back press
     BackHandler {
         viewModel.endSession()
     }
 
-    // Start session when screen is shown
+    // Start session when screen is shown (only if quota not exceeded)
     LaunchedEffect(Unit) {
-        if (viewModel.hasRecordPermission()) {
+        if (viewModel.hasRecordPermission() && !quotaExceeded) {
             viewModel.startSession()
         }
     }
@@ -89,9 +94,18 @@ fun LiveConversationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Remaining quota indicator at the top
+            QuotaIndicator(
+                voiceUsage = voiceUsage,
+                quotaExceeded = quotaExceeded
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             // Status indicator
             AnimatedStatusIndicator(
                 state = sessionState,
+                quotaExceeded = quotaExceeded,
                 modifier = Modifier.size(200.dp)
             )
 
@@ -99,7 +113,11 @@ fun LiveConversationScreen(
 
             // Status text
             Text(
-                text = getStatusText(sessionState),
+                text = if (quotaExceeded && sessionState is LiveSessionState.Idle) {
+                    stringResource(R.string.voice_quota_exceeded_title)
+                } else {
+                    getStatusText(sessionState)
+                },
                 style = MaterialTheme.typography.headlineSmall,
                 color = Color.White,
                 textAlign = TextAlign.Center
@@ -109,7 +127,11 @@ fun LiveConversationScreen(
 
             // Subtitle/hint
             Text(
-                text = getStatusHint(sessionState),
+                text = if (quotaExceeded && sessionState is LiveSessionState.Idle) {
+                    stringResource(R.string.voice_quota_exceeded)
+                } else {
+                    getStatusHint(sessionState)
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
@@ -119,7 +141,13 @@ fun LiveConversationScreen(
 
             // End call button
             FilledIconButton(
-                onClick = { viewModel.endSession() },
+                onClick = {
+                    if (quotaExceeded && sessionState is LiveSessionState.Idle) {
+                        onDismiss()
+                    } else {
+                        viewModel.endSession()
+                    }
+                },
                 modifier = Modifier.size(72.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = MaterialTheme.colorScheme.error,
@@ -137,7 +165,11 @@ fun LiveConversationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = stringResource(R.string.end_call),
+                text = if (quotaExceeded && sessionState is LiveSessionState.Idle) {
+                    stringResource(R.string.close)
+                } else {
+                    stringResource(R.string.end_call)
+                },
                 style = MaterialTheme.typography.labelLarge,
                 color = Color.White.copy(alpha = 0.7f)
             )
@@ -146,8 +178,46 @@ fun LiveConversationScreen(
 }
 
 @Composable
+private fun QuotaIndicator(
+    voiceUsage: VoiceUsage,
+    quotaExceeded: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val remainingMinutes = voiceUsage.remainingMinutes()
+    val backgroundColor = if (quotaExceeded) {
+        MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+    } else if (remainingMinutes < 10) {
+        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
+    } else {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    }
+
+    val textColor = if (quotaExceeded) {
+        MaterialTheme.colorScheme.error
+    } else if (remainingMinutes < 10) {
+        MaterialTheme.colorScheme.tertiary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = backgroundColor
+    ) {
+        Text(
+            text = stringResource(R.string.voice_quota_remaining, remainingMinutes.toInt()),
+            style = MaterialTheme.typography.labelLarge,
+            color = textColor,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+    }
+}
+
+@Composable
 private fun AnimatedStatusIndicator(
     state: LiveSessionState,
+    quotaExceeded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -178,7 +248,25 @@ private fun AnimatedStatusIndicator(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        when (state) {
+        // Show quota exceeded indicator when quota is exhausted and idle
+        if (quotaExceeded && state is LiveSessionState.Idle) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.error,
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MicOff,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = Color.White
+                )
+            }
+        } else when (state) {
             is LiveSessionState.Connecting -> {
                 CircularProgressIndicator(
                     modifier = Modifier.size(80.dp),
@@ -331,4 +419,3 @@ private fun getStatusHint(state: LiveSessionState): String {
         else -> ""
     }
 }
-
