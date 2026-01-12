@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.data.Crop
+import com.maswadkar.developers.androidify.ui.components.NativeAdCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,13 +95,23 @@ fun KnowledgeBaseScreen(
                     )
                 }
 else -> {
-                    CropsGrid(
-                        crops = uiState.crops,
-                        languageCode = languageCode,
-                        onCropClick = {
-                            onCropClick(it.id, it.getLocalizedName(languageCode))
-                        }
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        // Native Ad Unit
+                        NativeAdCard(
+                            adUnitId = "ca-app-pub-6317522941728465/6769905906"
+                        )
+
+                        CropsGrid(
+                            crops = uiState.crops,
+                            languageCode = languageCode,
+                            onCropClick = {
+                                onCropClick(it.id, it.getLocalizedName(languageCode))
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }

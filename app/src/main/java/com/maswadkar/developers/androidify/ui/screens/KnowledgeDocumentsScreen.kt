@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.data.KnowledgeDocument
+import com.maswadkar.developers.androidify.ui.components.NativeAdCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,12 +125,22 @@ fun KnowledgeDocumentsScreen(
                     )
                 }
                 else -> {
-                    DocumentsList(
-                        documents = uiState.documents,
-                        languageCode = languageCode,
-                        downloadingDocumentId = uiState.downloadingDocumentId,
-                        onDocumentClick = { viewModel.onDocumentClick(it) }
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        // Native Ad Unit
+                        NativeAdCard(
+                            adUnitId = "ca-app-pub-6317522941728465/6769905906"
+                        )
+
+                        DocumentsList(
+                            documents = uiState.documents,
+                            languageCode = languageCode,
+                            downloadingDocumentId = uiState.downloadingDocumentId,
+                            onDocumentClick = { viewModel.onDocumentClick(it) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
