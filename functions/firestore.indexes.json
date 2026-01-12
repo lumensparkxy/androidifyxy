@@ -189,6 +189,14 @@
         { "fieldPath": "supplierApproved", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "knowledge_documents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cropId", "order": "ASCENDING" },
+        { "fieldPath": "displayOrder", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

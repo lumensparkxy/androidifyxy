@@ -73,6 +73,7 @@ fun ChatScreen(
     onMandiPricesClick: () -> Unit,
     onOffersClick: () -> Unit,
     onCarbonCreditsClick: () -> Unit,
+    onKnowledgeBaseClick: () -> Unit,
     onMandiSettingsClick: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -217,6 +218,7 @@ fun ChatScreen(
                         DrawerItem.MandiPrices -> onMandiPricesClick()
                         DrawerItem.Offers -> onOffersClick()
                         DrawerItem.CarbonCredits -> onCarbonCreditsClick()
+                        DrawerItem.KnowledgeBase -> onKnowledgeBaseClick()
                         DrawerItem.MandiSettings -> onMandiSettingsClick()
                         DrawerItem.SignOut -> onSignOut()
                     }

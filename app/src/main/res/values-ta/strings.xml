@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Welcome Screen - Tamil -->
+    <string name="welcome_title">கிருஷி AI க்கு வரவேற்கிறோம்</string>
+    <string name="welcome_subtitle">உங்கள் AI-இயக்கப்படும் விவசாய உதவியாளர்.\nஉங்கள் உள்ளூர் மொழியில் கேள்விகள் கேளுங்கள்!</string>
+
+    <!-- Features -->
+    <string name="features_title">இதில் நான் உங்களுக்கு உதவ முடியும்</string>
+    <string name="feature_1">பயிர் சாகுபடி, மண் ஆரோக்கியம் மற்றும் விவசாய நுட்பங்கள் பற்றிய நிபுணர் ஆலோசனை பெறுங்கள்</string>
+    <string name="feature_2">உங்கள் உள்ளூர் மொழியில் கேளுங்கள் - இந்தி, மராத்தி, தெலுங்கு, தமிழ் மற்றும் பிற</string>
+    <string name="feature_3">விவசாய ஆராய்ச்சி ஆவணங்களிலிருந்து சரிபார்க்கப்பட்ட தகவல்களைப் பெறுங்கள்</string>
+    <string name="feature_4">பூச்சி கட்டுப்பாடு, உரங்கள், நீர்ப்பாசனம் மற்றும் சந்தை விலைகள் பற்றிய குறிப்புகளைப் பெறுங்கள்</string>
+
+    <!-- Example Questions -->
+    <string name="try_asking_title">இப்படி கேளுங்கள்:</string>
+    <string name="example_question_1">"என் கோதுமை பயிருக்கு மஞ்சள் நிறம் வருகிறது, என்ன செய்வது?"</string>
+    <string name="example_question_2">"மகாராஷ்டிராவில் பருத்தி விதைக்க சிறந்த நேரம் எது?"</string>
+    <string name="example_question_3">"தக்காளி பயிருக்கு எந்த உரம் பயன்படுத்த வேண்டும்?"</string>
+
+    <!-- Input -->
+    <string name="input_hint">விவசாயம், பயிர்கள், வானிலை பற்றி கேளுங்கள்…</string>
+    <string name="send_button">அனுப்பு</string>
+
+    <!-- Drawer Menu - Tamil -->
+    <string name="menu_new_chat">புதிய அரட்டை</string>
+    <string name="menu_history">முந்தைய உரையாடல்கள்</string>
+    <string name="menu_mandi_prices">மண்டி விலைகள்</string>
+    <string name="menu_offers">சலுகைகள்</string>
+    <string name="menu_knowledge_base">அறிவுக் களஞ்சியம்</string>
+    <string name="menu_other">மற்றவை</string>
+    <string name="sign_out">வெளியேறு</string>
+    <string name="open_drawer">வழிசெலுத்தல் டிராயரை திறக்கவும்</string>
+    <string name="close_drawer" tools:override="true">வழிசெலுத்தல் டிராயரை மூடவும்</string>
+    <string name="history_title">சமீபத்திய உரையாடல்கள்</string>
+    <string name="no_history">இதுவரை உரையாடல்கள் இல்லை.\nஉங்கள் வரலாற்றை சேமிக்க அரட்டை தொடங்குங்கள்!</string>
+    <string name="delete_conversation">உரையாடலை நீக்கு</string>
+
+    <!-- Mandi Prices Screen -->
+    <string name="back">பின்செல்</string>
+    <string name="clear_filters">வடிகட்டிகளை அழிக்கவும்</string>
+    <string name="filter_state">மாநிலம்</string>
+    <string name="filter_district">மாவட்டம்</string>
+    <string name="filter_commodity">பயிர்</string>
+    <string name="filter_market">மண்டி</string>
+    <string name="search">தேடு</string>
+    <string name="price_min">குறைந்தபட்ச விலை</string>
+    <string name="price_max">அதிகபட்ச விலை</string>
+    <string name="price_modal">சராசரி விலை</string>
+    <string name="arrival_date">வருகை: %1$s</string>
+    <string name="data_as_of">தரவு: %1$s வரை</string>
+    <string name="select_state_prompt">மண்டி விலைகளைக் காண மாநிலத்தைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="search_prompt">பயிரைத் தேர்ந்தெடுத்து விலைகளைக் காண தேடு என்பதைத் தட்டவும்</string>
+    <string name="no_prices_found">தேர்ந்தெடுக்கப்பட்ட வடிகட்டிகளுக்கு விலைகள் கிடைக்கவில்லை</string>
+    <string name="dismiss">நிராகரிக்கவும்</string>
+    <string name="change_location">மாற்று</string>
+    <string name="change_location_title">இடத்தை மாற்றவும்</string>
+    <string name="cancel">ரத்து செய்</string>
+    <string name="menu_mandi_settings">மண்டி விருப்பத்தேர்வுகள்</string>
+    <string name="preferences_description">ஒவ்வொரு முறையும் மாநிலம் மற்றும் மாவட்டத்தைத் தேர்ந்தெடுக்காமல் மண்டி விலைகளை விரைவாகப் பார்க்க உங்கள் இயல்புநிலை இடத்தை அமைக்கவும்.</string>
+    <string name="current_location">தற்போதைய இடம்</string>
+    <string name="save_preferences">விருப்பத்தேர்வுகளை சேமி</string>
+
+    <!-- Live Conversation Screen -->
+    <string name="live_conversation">குரல் அரட்டை</string>
+    <string name="end_call">அழைப்பை முடி</string>
+    <string name="mic_button">குரல் உரையாடல்</string>
+    <string name="live_idle">தயார்</string>
+    <string name="live_connecting">இணைக்கிறது…</string>
+    <string name="live_listening">கேட்கிறேன்…</string>
+    <string name="live_processing">யோசிக்கிறேன்…</string>
+    <string name="live_speaking">கிருஷி AI பேசுகிறது</string>
+    <string name="live_ended">உரையாடல் முடிந்தது</string>
+    <string name="live_error">ஏதோ தவறு நடந்தது</string>
+    <string name="live_listening_hint">இப்போது பேசுங்கள், நான் கேட்கிறேன்</string>
+    <string name="live_speaking_hint">தயவுசெய்து காத்திருங்கள், நான் பதிலளிக்கிறேன்</string>
+    <string name="mic_permission_required">குரல் அரட்டைக்கு மைக்ரோஃபோன் அனுமதி தேவை</string>
+
+    <!-- Voice Quota -->
+    <string name="voice_quota_remaining">இந்த மாதம் %1$d நிமிடங்கள் மீதமுள்ளன</string>
+    <string name="voice_quota_exceeded">மாதாந்திர குரல் வரம்பு எட்டப்பட்டது.\nஉங்கள் ஒதுக்கீடு அடுத்த மாதம் மீட்டமைக்கப்படும்.</string>
+    <string name="voice_quota_exceeded_title">வரம்பு எட்டப்பட்டது</string>
+    <string name="close">மூடு</string>
+
+    <!-- Carbon Credits Screen -->
+    <string name="menu_carbon_credits">கார்பன் கிரெடிட்ஸ்</string>
+    <string name="carbon_credits_headline">உங்கள் பண்ணையின் கார்பன் கிரெடிட்களிலிருந்து பணம் சம்பாதியுங்கள்</string>
+    <string name="carbon_credits_body">கார்பன் கிரெடிட்கள் என்பது விவசாயிகள் நிலையான விவசாய நடைமுறைகளை பின்பற்றுவதன் மூலம் கூடுதல் வருமானம் ஈட்டுவதற்கான ஒரு வழியாகும். இரசாயன பயன்பாட்டைக் குறைப்பது, மரங்களை நடுவது மற்றும் பசுமை விவசாய முறைகளை செயல்படுத்துவதன் மூலம், நீங்கள் கார்பன் கிரெடிட்களை உருவாக்கலாம், அவற்றை நிறுவனங்கள் தங்கள் உமிழ்வுகளை ஈடுசெய்ய வாங்குகின்றன.\n\nகார்பன் கிரெடிட்கள் எவ்வாறு செயல்படுகின்றன மற்றும் நீங்கள் அவற்றிலிருந்து எவ்வாறு பயனடையலாம் என்பதை அறிய கீழே உள்ள வீடியோவைப் பாருங்கள்.</string>
+    <string name="calculate_carbon_credit_button">எனது கார்பன் கிரெடிட் மதிப்பு மதிப்பீட்டைக் கணக்கிடுங்கள்</string>
+    <string name="land_size_label">நில அளவு (ஏக்கர்களில்)</string>
+    <string name="tree_count_label">பெரிய மரங்களின் எண்ணிக்கை</string>
+    <string name="green_farming_label">இரசாயன பயன்பாட்டைக் குறைப்பதில் ஆர்வமா?</string>
+    <string name="phone_number_label">தொலைபேசி எண்</string>
+    <string name="submit">சமர்ப்பி</string>
+    <string name="submit_success_message">நன்றி! உங்கள் கார்பன் கிரெடிட் மதிப்பீட்டுடன் விரைவில் தொடர்பு கொள்வோம்.</string>
+    <string name="carbon_form_title">உங்கள் கார்பன் கிரெடிட் மதிப்பீட்டைப் பெறுங்கள்</string>
+    <string name="field_required">இந்த புலம் தேவை</string>
+    <string name="invalid_phone">சரியான தொலைபேசி எண்ணை உள்ளிடவும்</string>
+
+    <!-- Offers Screen -->
+    <string name="filter_category">வகை</string>
+    <string name="all_districts">அனைத்து மாவட்டங்கள்</string>
+    <string name="all_categories">அனைத்து வகைகள்</string>
+    <string name="sort_by">வரிசைப்படுத்து:</string>
+    <string name="sort_price">விலை</string>
+    <string name="sort_date">தேதி</string>
+    <string name="no_offers_found">சலுகைகள் கிடைக்கவில்லை</string>
+    <string name="no_offers_hint">உங்கள் வடிகட்டிகளை சரிசெய்ய முயற்சிக்கவும்</string>
+    <string name="offer_details">சலுகை விவரங்கள்</string>
+    <string name="supplier_details">சப்ளையர் விவரங்கள்</string>
+    <string name="pack_size">பேக் அளவு</string>
+    <string name="price_retail">விலை</string>
+    <string name="npk_ratio">NPK விகிதம்</string>
+    <string name="price_per_kg">விலை/கிலோ</string>
+    <string name="location">இடம்</string>
+    <string name="posted_on">பதிவிட்ட தேதி: %1$s</string>
+    <string name="contact_whatsapp">WhatsApp</string>
+    <string name="contact_call">அழைக்கவும்</string>
+    <string name="supplier_contact_unavailable">தொடர்பு தகவல் கிடைக்கவில்லை</string>
+
+    <!-- Knowledge Base Screen -->
+    <string name="knowledge_documents_title">ஆவணங்கள்</string>
+    <string name="knowledge_error">உள்ளடக்கத்தை ஏற்ற இயலவில்லை. மீண்டும் முயற்சிக்கவும்.</string>
+    <string name="knowledge_no_crops">இன்னும் பயிர்கள் எதுவும் இல்லை.</string>
+    <string name="knowledge_no_documents">இந்த பயிருக்கு ஆவணங்கள் எதுவும் இல்லை.</string>
+    <string name="open_pdf_with">PDF திறக்க</string>
+    <string name="retry">மீண்டும் முயற்சிக்கவும்</string>
+</resources>
+

@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Knowledge Base files - allow authenticated users to read
+    match /knowledge/{allPaths=**} {
+      allow read: if request.auth != null;
+      // Write is handled via Firebase Console only
+    }
+
+    // Deny everything else by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

@@ -23,9 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.maswadkar.developers.androidify.ChatMessage
@@ -141,58 +138,18 @@ private fun MarkdownContent(
     textColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val markdownColors = markdownColor(
-        text = textColor,
-        codeText = textColor,
-        linkText = MaterialTheme.colorScheme.primary,
-        codeBackground = MaterialTheme.colorScheme.surfaceVariant,
-        inlineCodeBackground = MaterialTheme.colorScheme.surfaceVariant,
-        dividerColor = MaterialTheme.colorScheme.outlineVariant
+    val colors = markdownColor(
+        text = textColor
     )
 
     val typography = markdownTypography(
-        h1 = MaterialTheme.typography.headlineMedium.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
-        h2 = MaterialTheme.typography.headlineSmall.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
-        h3 = MaterialTheme.typography.titleLarge.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
-        h4 = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
-        h5 = MaterialTheme.typography.titleSmall.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
-        h6 = MaterialTheme.typography.bodyLarge.copy(
-            fontWeight = FontWeight.Bold,
-            color = textColor
-        ),
         text = MaterialTheme.typography.bodyLarge.copy(color = textColor),
-        code = MaterialTheme.typography.bodyMedium.copy(
-            fontFamily = FontFamily.Monospace,
-            color = textColor
-        ),
-        quote = MaterialTheme.typography.bodyLarge.copy(
-            fontStyle = FontStyle.Italic,
-            color = textColor.copy(alpha = 0.8f)
-        ),
-        paragraph = MaterialTheme.typography.bodyLarge.copy(color = textColor),
-        ordered = MaterialTheme.typography.bodyLarge.copy(color = textColor),
-        bullet = MaterialTheme.typography.bodyLarge.copy(color = textColor),
-        list = MaterialTheme.typography.bodyLarge.copy(color = textColor)
+        paragraph = MaterialTheme.typography.bodyLarge.copy(color = textColor)
     )
 
     Markdown(
         content = markdown,
-        colors = markdownColors,
+        colors = colors,
         typography = typography,
         modifier = modifier
     )
@@ -220,4 +177,3 @@ fun ModelBubble(
         modifier = modifier
     )
 }
-

@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Welcome Screen - Hindi -->
+    <string name="welcome_title">कृषि AI में आपका स्वागत है</string>
+    <string name="welcome_subtitle">आपका AI-संचालित कृषि सहायक।\nअपनी स्थानीय भाषा में प्रश्न पूछें!</string>
+
+    <!-- Features -->
+    <string name="features_title">मैं इसमें आपकी मदद कर सकता हूं</string>
+    <string name="feature_1">फसल की खेती, मिट्टी के स्वास्थ्य और खेती की तकनीकों पर विशेषज्ञ सलाह प्राप्त करें</string>
+    <string name="feature_2">अपनी स्थानीय भाषा में पूछें - हिंदी, मराठी, तेलुगु, तमिल और अन्य</string>
+    <string name="feature_3">कृषि अनुसंधान दस्तावेज़ों से सत्यापित जानकारी प्राप्त करें</string>
+    <string name="feature_4">कीट नियंत्रण, उर्वरक, सिंचाई और बाजार भावों पर सुझाव प्राप्त करें</string>
+
+    <!-- Example Questions -->
+    <string name="try_asking_title">ऐसे पूछें:</string>
+    <string name="example_question_1">"मेरी गेहूं की फसल में पीलापन आ रहा है, क्या करूं?"</string>
+    <string name="example_question_2">"महाराष्ट्र में कपास बोने का सबसे अच्छा समय क्या है?"</string>
+    <string name="example_question_3">"टमाटर की फसल के लिए कौन सा खाद उपयोग करें?"</string>
+
+    <!-- Input -->
+    <string name="input_hint">खेती, फसल, मौसम के बारे में पूछें…</string>
+    <string name="send_button">भेजें</string>
+
     <!-- Drawer Menu - Hindi -->
     <string name="menu_new_chat">नई चैट</string>
     <string name="menu_history">पिछली बातचीत</string>
     <string name="menu_mandi_prices">मंडी भाव</string>
     <string name="menu_offers">ऑफर</string>
+    <string name="menu_knowledge_base">ज्ञान भंडार</string>
     <string name="menu_other">अन्य</string>
     <string name="sign_out">साइन आउट</string>
     <string name="open_drawer">नेविगेशन ड्रॉअर खोलें</string>
@@ -88,5 +110,19 @@
     <string name="contact_whatsapp">WhatsApp</string>
     <string name="contact_call">कॉल करें</string>
     <string name="supplier_contact_unavailable">संपर्क जानकारी उपलब्ध नहीं है</string>
+
+    <!-- Voice Quota -->
+    <string name="voice_quota_remaining">इस महीने %1$d मिनट शेष हैं</string>
+    <string name="voice_quota_exceeded">मासिक वॉइस सीमा पूरी हो गई।\nआपका कोटा अगले महीने रीसेट होगा।</string>
+    <string name="voice_quota_exceeded_title">सीमा पूरी हुई</string>
+    <string name="close">बंद करें</string>
+
+    <!-- Knowledge Base Screen -->
+    <string name="knowledge_documents_title">दस्तावेज़</string>
+    <string name="knowledge_error">सामग्री लोड करने में विफल। कृपया पुनः प्रयास करें।</string>
+    <string name="knowledge_no_crops">अभी तक कोई फसल उपलब्ध नहीं है।</string>
+    <string name="knowledge_no_documents">इस फसल के लिए कोई दस्तावेज़ उपलब्ध नहीं है।</string>
+    <string name="open_pdf_with">PDF खोलें</string>
+    <string name="retry">पुनः प्रयास करें</string>
 </resources>
 

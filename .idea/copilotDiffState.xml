@@ -53,15 +53,6 @@
             </PendingDiffInfo>
           </value>
         </entry>
-        <entry key="$PROJECT_DIR$/app/src/main/res/values-ta/strings.xml">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/app/src/main/res/values-ta/strings.xml" />
-              <option name="originalContent" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#10;&lt;resources&gt;&#10;    &lt;!-- Drawer Menu - Tamil --&gt;&#10;    &lt;string name=&quot;menu_new_chat&quot;&gt;புதிய அரட்டை&lt;/string&gt;&#10;    &lt;string name=&quot;menu_history&quot;&gt;முந்தைய உரையாடல்கள்&lt;/string&gt;&#10;    &lt;string name=&quot;menu_other&quot;&gt;மற்றவை&lt;/string&gt;&#10;    &lt;string name=&quot;sign_out&quot;&gt;வெளியேறு&lt;/string&gt;&#10;    &lt;string name=&quot;open_drawer&quot;&gt;வழிசெலுத்தல் டிராயரை திற&lt;/string&gt;&#10;    &lt;string name=&quot;close_drawer&quot;&gt;வழிசெலுத்தல் டிராயரை மூடு&lt;/string&gt;&#10;    &lt;string name=&quot;history_title&quot;&gt;சமீபத்திய உரையாடல்கள்&lt;/string&gt;&#10;    &lt;string name=&quot;no_history&quot;&gt;இதுவரை உரையாடல்கள் இல்லை.\nஉங்கள் வரலாற்றைச் சேமிக்க அரட்டை அடியுங்கள்!&lt;/string&gt;&#10;    &lt;string name=&quot;delete_conversation&quot;&gt;உரையாடலை நீக்கு&lt;/string&gt;&#10;&lt;/resources&gt;&#10;" />
-              <option name="updatedContent" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#10;&lt;resources&gt;&#10;    &lt;!-- Drawer Menu - Tamil --&gt;&#10;    &lt;string name=&quot;menu_new_chat&quot;&gt;புதிய அரட்டை&lt;/string&gt;&#10;    &lt;string name=&quot;menu_history&quot;&gt;முந்தைய உரையாடல்கள்&lt;/string&gt;&#10;    &lt;string name=&quot;menu_other&quot;&gt;மற்றவை&lt;/string&gt;&#10;    &lt;string name=&quot;sign_out&quot;&gt;வெளியேறு&lt;/string&gt;&#10;    &lt;string name=&quot;open_drawer&quot;&gt;வழிசெலுத்தல் டிராயரை திற&lt;/string&gt;&#10;    &lt;string name=&quot;close_drawer&quot;&gt;வழிசெலுத்தல் டிராயரை மூடு&lt;/string&gt;&#10;    &lt;string name=&quot;history_title&quot;&gt;சமீபத்திய உரையாடல்கள்&lt;/string&gt;&#10;    &lt;string name=&quot;no_history&quot;&gt;இதுவரை உரையாடல்கள் இல்லை.\nஉங்கள் வரலாற்றைச் சேமிக்க அரட்டை அடியுங்கள்!&lt;/string&gt;&#10;    &lt;string name=&quot;delete_conversation&quot;&gt;உரையாடலை நீக்கு&lt;/string&gt;&#10;&lt;/resources&gt;&#10;" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
       </map>
     </option>
   </component>
