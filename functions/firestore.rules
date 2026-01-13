@@ -112,6 +112,21 @@ service cloud.firestore {
       // Write is handled via Firebase Console only
     }
 
+    // Supplier click tracking — for monetization (pay-per-lead)
+    // Anyone can create clicks (including anonymous to catch edge cases for debugging)
+    // No client-side read/update/delete — aggregation done via Cloud Functions
+    match /supplier_clicks/{clickId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+
+    // Supplier stats — aggregated click counts per supplier
+    // Suppliers can read their own stats; writes only via Cloud Functions (admin SDK)
+    match /supplier_stats/{supplierId} {
+      allow read: if request.auth != null && request.auth.uid == supplierId;
+      allow write: if false;
+    }
+
     // Deny everything else by default
     match /{document=**} {
       allow read, write: if false;

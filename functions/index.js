@@ -329,3 +329,196 @@ exports.publishOffer = functions
     return { ok: false, message: "publishOffer not implemented yet" };
   });
 
+// ============================================================================
+// SUPPLIER CLICK TRACKING - Monetization (Pay-per-lead)
+// ============================================================================
+
+const SUPPLIER_CLICKS_COLLECTION = "supplier_clicks";
+const SUPPLIER_STATS_COLLECTION = "supplier_stats";
+const CLICK_RETENTION_DAYS = 360;
+
+/**
+ * Scheduled function to aggregate supplier clicks weekly
+ * Runs every Sunday at 00:00 IST
+ */
+exports.aggregateSupplierClicks = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 540,
+    memory: "256MB",
+  })
+  .pubsub.schedule("0 0 * * 0") // Every Sunday at midnight
+  .timeZone("Asia/Kolkata")
+  .onRun(async (context) => {
+    console.log("Starting weekly supplier click aggregation...");
+
+    try {
+      const result = await aggregateClicks();
+      console.log(`Aggregation completed. Processed ${result.suppliersUpdated} suppliers.`);
+      return null;
+    } catch (error) {
+      console.error("Error aggregating supplier clicks:", error);
+      throw error;
+    }
+  });
+
+/**
+ * HTTP endpoint to manually trigger click aggregation (for testing/admin)
+ */
+exports.aggregateSupplierClicksManual = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 540,
+    memory: "256MB",
+  })
+  .https.onRequest(async (req, res) => {
+    console.log("Manual supplier click aggregation triggered");
+
+    try {
+      const result = await aggregateClicks();
+      res.json({
+        success: true,
+        message: "Aggregation completed",
+        suppliersUpdated: result.suppliersUpdated,
+        totalClicks: result.totalClicks,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error in manual aggregation:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  });
+
+/**
+ * Aggregate clicks from the past 7 days and update supplier stats
+ */
+async function aggregateClicks() {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const cutoffTimestamp = admin.firestore.Timestamp.fromDate(sevenDaysAgo);
+
+  // Query all clicks from the past 7 days
+  const clicksSnapshot = await db
+    .collection(SUPPLIER_CLICKS_COLLECTION)
+    .where("timestamp", ">=", cutoffTimestamp)
+    .get();
+
+  console.log(`Found ${clicksSnapshot.size} clicks in the past 7 days`);
+
+  // Aggregate by supplierId and clickType
+  const supplierStats = {};
+
+  clicksSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const { supplierId, clickType } = data;
+
+    if (!supplierId) return;
+
+    if (!supplierStats[supplierId]) {
+      supplierStats[supplierId] = {
+        weeklyWhatsAppClicks: 0,
+        weeklyCallClicks: 0,
+      };
+    }
+
+    if (clickType === "WHATSAPP") {
+      supplierStats[supplierId].weeklyWhatsAppClicks++;
+    } else if (clickType === "CALL") {
+      supplierStats[supplierId].weeklyCallClicks++;
+    }
+  });
+
+  // Update supplier_stats collection
+  const supplierIds = Object.keys(supplierStats);
+  let suppliersUpdated = 0;
+
+  for (const supplierId of supplierIds) {
+    const stats = supplierStats[supplierId];
+    const statsRef = db.collection(SUPPLIER_STATS_COLLECTION).doc(supplierId);
+
+    // Get existing stats to update totals
+    const existingDoc = await statsRef.get();
+    const existingData = existingDoc.exists ? existingDoc.data() : {};
+
+    const updatedStats = {
+      weeklyWhatsAppClicks: stats.weeklyWhatsAppClicks,
+      weeklyCallClicks: stats.weeklyCallClicks,
+      totalWhatsAppClicks: (existingData.totalWhatsAppClicks || 0) + stats.weeklyWhatsAppClicks,
+      totalCallClicks: (existingData.totalCallClicks || 0) + stats.weeklyCallClicks,
+      lastAggregatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await statsRef.set(updatedStats, { merge: true });
+    suppliersUpdated++;
+
+    console.log(`Updated stats for supplier ${supplierId}: WhatsApp=${stats.weeklyWhatsAppClicks}, Call=${stats.weeklyCallClicks}`);
+  }
+
+  return {
+    suppliersUpdated,
+    totalClicks: clicksSnapshot.size,
+  };
+}
+
+/**
+ * Scheduled function to clean up old click records (older than 360 days)
+ * Runs every Sunday at 01:00 IST (after aggregation)
+ */
+exports.cleanupOldClicks = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 540,
+    memory: "256MB",
+  })
+  .pubsub.schedule("0 1 * * 0") // Every Sunday at 1 AM
+  .timeZone("Asia/Kolkata")
+  .onRun(async (context) => {
+    console.log(`Starting cleanup of clicks older than ${CLICK_RETENTION_DAYS} days...`);
+
+    try {
+      const deleted = await deleteOldClicks(CLICK_RETENTION_DAYS);
+      console.log(`Cleanup completed. Deleted ${deleted} old click records.`);
+      return null;
+    } catch (error) {
+      console.error("Error cleaning up old clicks:", error);
+      throw error;
+    }
+  });
+
+/**
+ * Delete click records older than specified days
+ */
+async function deleteOldClicks(daysToKeep) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
+
+  const collectionRef = db.collection(SUPPLIER_CLICKS_COLLECTION);
+  let totalDeleted = 0;
+
+  while (true) {
+    const oldClicksSnapshot = await collectionRef
+      .where("timestamp", "<", cutoffTimestamp)
+      .limit(500)
+      .get();
+
+    if (oldClicksSnapshot.empty) {
+      break;
+    }
+
+    const batch = db.batch();
+    oldClicksSnapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    totalDeleted += oldClicksSnapshot.size;
+    console.log(`Deleted ${totalDeleted} old click records so far...`);
+  }
+
+  return totalDeleted;
+}
+
