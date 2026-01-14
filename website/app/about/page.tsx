@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
-import { Target, Eye, Heart, Users, Lightbulb, Award } from 'lucide-react';
+import { Target, Eye, Heart, Users, Lightbulb, Award, Linkedin, Code, Smartphone, Brain } from 'lucide-react';
 import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button } from '@/components';
 
 export const metadata: Metadata = {
@@ -183,21 +183,89 @@ export default function AboutPage() {
       {/* Team Section */}
       <section className="py-16 md:py-24 bg-gray-50">
         <Container>
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Built by Maswadkar Developers
-            </h2>
-            <p className="text-lg text-gray-600 mb-8">
-              Krishi AI is developed by Maswadkar Developers, a team passionate about using 
-              technology to solve real-world problems in India. We combine our expertise in 
-              mobile development, AI, and agriculture to create tools that truly make a difference.
-            </p>
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+          <SectionHeading
+            title="Meet the Founder"
+            subtitle="The person behind Krishi AI's mission to empower Indian farmers."
+          />
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="md:flex">
+                {/* Photo Section */}
+                <div className="md:w-1/3 bg-gradient-to-br from-primary/10 to-secondary/10 p-8 flex items-center justify-center">
+                  <div className="relative">
+                    <Image
+                      src="/team/founder.jpg"
+                      alt="Vivek Maswadkar"
+                      width={192}
+                      height={192}
+                      className="w-48 h-48 rounded-full object-cover shadow-xl"
+                    />
+                    {/* Decorative ring */}
+                    <div className="absolute -inset-2 rounded-full border-4 border-primary/20"></div>
+                  </div>
+                </div>
+                
+                {/* Content Section */}
+                <div className="md:w-2/3 p-8">
+                  <div className="mb-4">
+                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900">Vivek Maswadkar</h3>
+                    <p className="text-primary font-semibold text-lg">Founder & Developer</p>
+                  </div>
+                  
+                  <div className="space-y-4 text-gray-600 mb-6">
+                    <p>
+                      Vivek Maswadkar is the founder and sole developer behind Krishi AI, bringing together 
+                      his passion for technology and commitment to empowering Indian farmers. With expertise 
+                      in Android development, AI/ML integration, and cloud technologies, he has built Krishi AI 
+                      from the ground up as a solo venture.
+                    </p>
+                    <p>
+                      His vision is to democratize agricultural knowledge by making AI-powered farming assistance 
+                      accessible to millions of farmers across India, in their native languages. Vivek handles 
+                      everything from app development and AI integration to backend infrastructure and product strategy.
+                    </p>
+                    <p>
+                      Prior to Krishi AI, he gained experience in mobile development and has a deep interest in 
+                      building technology solutions that address real-world challenges in emerging markets. He is 
+                      based in India and continues to iterate on Krishi AI based on direct farmer feedback.
+                    </p>
+                  </div>
+                  
+                  {/* Skills/Expertise Tags */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                      <Smartphone className="w-3 h-3" /> Android Development
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                      <Brain className="w-3 h-3" /> AI/ML Integration
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                      <Code className="w-3 h-3" /> Full Stack
+                    </span>
+                  </div>
+                  
+                  {/* Social Links */}
+                  <a
+                    href="https://www.linkedin.com/in/maswadkar"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A66C2] text-white rounded-lg hover:bg-[#004182] transition-colors font-medium"
+                  >
+                    <Linkedin className="w-5 h-5" />
+                    Connect on LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quote */}
+            <div className="mt-8 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
               <p className="text-gray-600 italic text-lg">
                 &quot;We believe that the farmers who feed our nation deserve access to the best 
-                technology available. Krishi AI is our contribution to making that vision a reality.&quot;
+                technology available. Krishi AI is my contribution to making that vision a reality.&quot;
               </p>
-              <p className="text-primary font-semibold mt-4">— Maswadkar Developers Team</p>
+              <p className="text-primary font-semibold mt-4">— Vivek Maswadkar</p>
             </div>
           </div>
         </Container>
