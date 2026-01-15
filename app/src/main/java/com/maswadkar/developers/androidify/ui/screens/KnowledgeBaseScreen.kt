@@ -154,7 +154,7 @@ private fun CropCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1f)
+            .aspectRatio(0.9f)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -162,7 +162,7 @@ private fun CropCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -171,20 +171,23 @@ private fun CropCard(
                     model = crop.iconUrl,
                     contentDescription = displayName,
                     modifier = Modifier
-                        .size(80.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Fit
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.Grass,
                     contentDescription = displayName,
-                    modifier = Modifier.size(80.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = displayName,
@@ -196,4 +199,3 @@ private fun CropCard(
         }
     }
 }
-

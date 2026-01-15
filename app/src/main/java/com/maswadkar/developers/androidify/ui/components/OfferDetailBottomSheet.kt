@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.maswadkar.developers.androidify.R
+import com.maswadkar.developers.androidify.data.ClickTrackingRepository
 import com.maswadkar.developers.androidify.data.Offer
 import com.maswadkar.developers.androidify.data.OfferFilters
 import com.maswadkar.developers.androidify.data.Supplier
@@ -92,12 +93,24 @@ fun OfferDetailBottomSheet(
                 if (supplier.phone.isNotEmpty()) {
                     ContactButtons(
                         onWhatsAppClick = {
+                            // Track click for monetization
+                            ClickTrackingRepository.getInstance().recordClick(
+                                supplierId = supplier.id,
+                                offerId = offer.id,
+                                clickType = ClickTrackingRepository.ClickType.WHATSAPP
+                            )
                             val intent = Intent(Intent.ACTION_VIEW).apply {
                                 data = "https://wa.me/${supplier.phone.replace("+", "").replace(" ", "")}".toUri()
                             }
                             context.startActivity(intent)
                         },
                         onCallClick = {
+                            // Track click for monetization
+                            ClickTrackingRepository.getInstance().recordClick(
+                                supplierId = supplier.id,
+                                offerId = offer.id,
+                                clickType = ClickTrackingRepository.ClickType.CALL
+                            )
                             val intent = Intent(Intent.ACTION_DIAL).apply {
                                 data = "tel:${supplier.phone}".toUri()
                             }

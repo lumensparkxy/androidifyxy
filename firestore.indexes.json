@@ -1,6 +1,21 @@
 {
   "indexes": [
     {
+      "collectionGroup": "supplier_clicks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "supplierId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "supplier_clicks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "mandi_prices",
       "queryScope": "COLLECTION",
       "fields": [
