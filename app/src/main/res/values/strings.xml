@@ -33,6 +33,9 @@
     <string name="no_history">No previous conversations yet.\nStart chatting to save your history!</string>
     <string name="new_chat" translatable="false">New Chat</string>
     <string name="delete_conversation">Delete conversation</string>
+    <string name="export_conversation">Export to PDF</string>
+    <string name="export_in_progress">Exporting conversation…</string>
+    <string name="export_error">Failed to export conversation</string>
 
     <!-- Drawer Menu -->
     <string name="menu_new_chat">New Chat</string>

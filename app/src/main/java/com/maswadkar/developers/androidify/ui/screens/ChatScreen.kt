@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -76,6 +77,7 @@ fun ChatScreen(
     onKnowledgeBaseClick: () -> Unit,
     onMandiSettingsClick: () -> Unit,
     onSignOut: () -> Unit,
+    onExportConversation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -244,6 +246,16 @@ fun ChatScreen(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = stringResource(R.string.open_drawer)
                             )
+                        }
+                    },
+                    actions = {
+                        if (messages.isNotEmpty()) {
+                            IconButton(onClick = onExportConversation) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = stringResource(R.string.export_conversation)
+                                )
+                            }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

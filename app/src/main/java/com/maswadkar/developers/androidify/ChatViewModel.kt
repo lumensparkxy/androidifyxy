@@ -241,6 +241,34 @@ class ChatViewModel(
     }
 
     /**
+     * Get the current conversation for export purposes
+     * Returns a Conversation object built from current messages, or null if no messages
+     */
+    fun getCurrentConversationForExport(): Conversation? {
+        val messages = _messages.value
+        if (messages.isEmpty() || messages.all { it.isLoading }) return null
+
+        val userId = currentUserId ?: return null
+        val title = Conversation.generateTitle(
+            messages.firstOrNull { it.isUser && !it.isLoading }?.text ?: "Conversation"
+        )
+
+        return Conversation(
+            id = currentConversationId ?: "",
+            userId = userId,
+            title = title,
+            messages = messages
+                .filter { !it.isLoading }
+                .map { msg ->
+                    Message(
+                        text = msg.text,
+                        isUser = msg.isUser
+                    )
+                }
+        )
+    }
+
+    /**
      * Save current conversation to Firestore (async version for regular use)
      */
     fun saveCurrentConversation() {

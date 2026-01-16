@@ -34,6 +34,9 @@
     <string name="history_title">ఇటీవలి సంభాషణలు</string>
     <string name="no_history">ఇంకా సంభాషణలు లేవు.\nమీ చరిత్రను సేవ్ చేయడానికి చాట్ ప్రారంభించండి!</string>
     <string name="delete_conversation">సంభాషణ తొలగించండి</string>
+    <string name="export_conversation">PDF కి ఎగుమతి చేయండి</string>
+    <string name="export_in_progress">సంభాషణ ఎగుమతి అవుతోంది…</string>
+    <string name="export_error">సంభాషణ ఎగుమతి చేయడంలో విఫలమైంది</string>
 
     <!-- Mandi Prices Screen -->
     <string name="back">వెనుకకు</string>

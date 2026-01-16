@@ -1,17 +1,24 @@
 package com.maswadkar.developers.androidify.ui.navigation
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.maswadkar.developers.androidify.ChatViewModel
+import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
@@ -23,6 +30,10 @@ import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
+import com.maswadkar.developers.androidify.util.PdfGenerator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppNavigation(
@@ -73,6 +84,13 @@ fun AppNavigation(
         }
 
         composable(Screen.Chat.route) {
+            val context = LocalContext.current
+            val scope = rememberCoroutineScope()
+
+            // Cache string resources using stringResource composable
+            val exportInProgressText = stringResource(R.string.export_in_progress)
+            val exportErrorText = stringResource(R.string.export_error)
+
             ChatScreen(
                 messages = messages,
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
@@ -83,7 +101,39 @@ fun AppNavigation(
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
                 onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
-                onSignOut = { authViewModel.signOut() }
+                onSignOut = { authViewModel.signOut() },
+                onExportConversation = {
+                    val conversation = chatViewModel.getCurrentConversationForExport()
+                    if (conversation != null) {
+                        scope.launch {
+                            Toast.makeText(context, exportInProgressText, Toast.LENGTH_SHORT).show()
+
+                            val pdfFile = withContext(Dispatchers.IO) {
+                                PdfGenerator.generatePdf(context, conversation)
+                            }
+
+                            if (pdfFile != null) {
+                                try {
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "com.maswadkar.developers.androidify.fileprovider",
+                                        pdfFile
+                                    )
+                                    // Open PDF directly in viewer
+                                    val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                                        setDataAndType(uri, "application/pdf")
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(viewIntent)
+                                } catch (_: Exception) {
+                                    Toast.makeText(context, exportErrorText, Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(context, exportErrorText, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
             )
         }
 
@@ -157,4 +207,3 @@ fun AppNavigation(
         }
     }
 }
-
