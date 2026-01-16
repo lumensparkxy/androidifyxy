@@ -175,7 +175,7 @@ private fun FiltersSection(
                     label = { Text(stringResource(R.string.filter_district)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = districtExpanded) },
                     modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
                     singleLine = true
                 )
@@ -216,7 +216,7 @@ private fun FiltersSection(
                     label = { Text(stringResource(R.string.filter_category)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
                     modifier = Modifier
-                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
                     singleLine = true
                 )
@@ -481,4 +481,3 @@ private fun ErrorMessage(
         }
     }
 }
-
