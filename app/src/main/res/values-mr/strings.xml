@@ -127,5 +127,15 @@
     <string name="knowledge_no_documents">या पिकासाठी कोणतेही दस्तऐवज उपलब्ध नाहीत.</string>
     <string name="open_pdf_with">PDF उघडा</string>
     <string name="retry">पुन्हा प्रयत्न करा</string>
-</resources>
 
+    <!-- Weather -->
+    <string name="menu_weather">हवामान</string>
+    <string name="weather_title">हवामान</string>
+    <string name="weather_forecast_3_days">3 दिवसांचा अंदाज</string>
+    <string name="weather_permission_required">तुमचा स्थानिक अंदाज दाखवण्यासाठी लोकेशन परवानगी आवश्यक आहे.</string>
+    <string name="weather_enable_location">लोकेशन सक्षम करा</string>
+    <string name="weather_refresh">रिफ्रेश</string>
+    <string name="weather_loading">अंदाज लोड होत आहे…</string>
+    <string name="weather_from_cache">कॅश केलेला अंदाज दाखवत आहोत</string>
+    <string name="weather_try_again">पुन्हा प्रयत्न करा</string>
+</resources>

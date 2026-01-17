@@ -39,6 +39,7 @@ sealed class DrawerItem(
     data object NewChat : DrawerItem(R.drawable.ic_add, R.string.menu_new_chat)
     data object History : DrawerItem(R.drawable.ic_chat, R.string.menu_history)
     data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
+    data object Weather : DrawerItem(R.drawable.ic_weather, R.string.menu_weather)
     data object Offers : DrawerItem(R.drawable.ic_offer, R.string.menu_offers)
     data object CarbonCredits : DrawerItem(R.drawable.ic_carbon, R.string.menu_carbon_credits)
     data object KnowledgeBase : DrawerItem(R.drawable.ic_knowledge, R.string.menu_knowledge_base)
@@ -98,6 +99,19 @@ fun AppDrawerContent(
             label = { Text(stringResource(DrawerItem.MandiPrices.labelRes)) },
             selected = selectedItem == DrawerItem.MandiPrices,
             onClick = { onItemClick(DrawerItem.MandiPrices) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.Weather.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.Weather.labelRes)) },
+            selected = selectedItem == DrawerItem.Weather,
+            onClick = { onItemClick(DrawerItem.Weather) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 
@@ -239,4 +253,3 @@ private fun DrawerHeader(
         }
     }
 }
-

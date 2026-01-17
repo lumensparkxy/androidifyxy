@@ -127,5 +127,16 @@
     <string name="knowledge_no_documents">ఈ పంటకు పత్రాలు అందుబాటులో లేవు.</string>
     <string name="open_pdf_with">PDF తెరవండి</string>
     <string name="retry">మళ్ళీ ప్రయత్నించండి</string>
+
+    <!-- Weather -->
+    <string name="menu_weather">వాతావరణం</string>
+    <string name="weather_title">వాతావరణం</string>
+    <string name="weather_forecast_3_days">3 రోజుల అంచనా</string>
+    <string name="weather_permission_required">మీ స్థానిక వాతావరణాన్ని చూపడానికి లొకేషన్ అనుమతి అవసరం.</string>
+    <string name="weather_enable_location">లొకేషన్ ప్రారంభించండి</string>
+    <string name="weather_refresh">రిఫ్రెష్</string>
+    <string name="weather_loading">అంచనా లోడ్ అవుతోంది…</string>
+    <string name="weather_from_cache">క్యాష్ చేసిన అంచనాను చూపిస్తున్నాము</string>
+    <string name="weather_try_again">మళ్లీ ప్రయత్నించండి</string>
 </resources>
 
