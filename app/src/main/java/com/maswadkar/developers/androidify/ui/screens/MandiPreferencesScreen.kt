@@ -6,7 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -196,7 +196,7 @@ private fun PreferencesDropdown(
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
             enabled = enabled && !isLoading,
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled && !isLoading)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled && !isLoading)
                 .fillMaxWidth()
         )
 
@@ -216,4 +216,3 @@ private fun PreferencesDropdown(
         }
     }
 }
-

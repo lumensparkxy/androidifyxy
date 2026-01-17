@@ -34,6 +34,9 @@
     <string name="history_title">हाल की बातचीत</string>
     <string name="no_history">अभी तक कोई बातचीत नहीं।\nअपना इतिहास सहेजने के लिए चैट करें!</string>
     <string name="delete_conversation">बातचीत हटाएं</string>
+    <string name="export_conversation">PDF में निर्यात करें</string>
+    <string name="export_in_progress">बातचीत निर्यात हो रही है…</string>
+    <string name="export_error">बातचीत निर्यात करने में विफल</string>
 
     <!-- Mandi Prices Screen -->
     <string name="back">वापस</string>

@@ -34,6 +34,9 @@
     <string name="history_title">சமீபத்திய உரையாடல்கள்</string>
     <string name="no_history">இதுவரை உரையாடல்கள் இல்லை.\nஉங்கள் வரலாற்றை சேமிக்க அரட்டை தொடங்குங்கள்!</string>
     <string name="delete_conversation">உரையாடலை நீக்கு</string>
+    <string name="export_conversation">PDF க்கு ஏற்றுமதி செய்</string>
+    <string name="export_in_progress">உரையாடல் ஏற்றுமதி செய்யப்படுகிறது…</string>
+    <string name="export_error">உரையாடலை ஏற்றுமதி செய்வதில் தோல்வி</string>
 
     <!-- Mandi Prices Screen -->
     <string name="back">பின்செல்</string>

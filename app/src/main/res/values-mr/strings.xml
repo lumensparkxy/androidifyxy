@@ -34,6 +34,9 @@
     <string name="history_title">अलीकडील संभाषणे</string>
     <string name="no_history">अद्याप कोणतेही संभाषण नाही।\nआपला इतिहास जतन करण्यासाठी चॅट करा!</string>
     <string name="delete_conversation">संभाषण हटवा</string>
+    <string name="export_conversation">PDF मध्ये निर्यात करा</string>
+    <string name="export_in_progress">संभाषण निर्यात होत आहे…</string>
+    <string name="export_error">संभाषण निर्यात करण्यात अयशस्वी</string>
 
     <!-- Mandi Prices Screen -->
     <string name="back">मागे</string>
