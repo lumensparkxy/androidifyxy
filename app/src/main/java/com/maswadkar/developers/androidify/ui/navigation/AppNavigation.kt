@@ -30,6 +30,7 @@ import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
+import com.maswadkar.developers.androidify.ui.screens.WeatherScreen
 import com.maswadkar.developers.androidify.util.PdfGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,6 +98,7 @@ fun AppNavigation(
                 onNewChat = { chatViewModel.startNewConversation() },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
+                onWeatherClick = { navController.navigate(Screen.Weather.route) },
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
@@ -134,6 +136,12 @@ fun AppNavigation(
                         }
                     }
                 }
+            )
+        }
+
+        composable(Screen.Weather.route) {
+            WeatherScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
 

@@ -137,4 +137,15 @@
     <string name="knowledge_no_documents">No documents available for this crop.</string>
     <string name="open_pdf_with">Open PDF with</string>
     <string name="retry">Retry</string>
+
+    <!-- Weather -->
+    <string name="menu_weather">Weather</string>
+    <string name="weather_title">Weather</string>
+    <string name="weather_forecast_3_days">3-day forecast</string>
+    <string name="weather_permission_required">Location permission is required to show your local forecast.</string>
+    <string name="weather_enable_location">Enable location</string>
+    <string name="weather_refresh">Refresh</string>
+    <string name="weather_loading">Loading forecast…</string>
+    <string name="weather_from_cache">Showing cached forecast</string>
+    <string name="weather_try_again">Try again</string>
 </resources>

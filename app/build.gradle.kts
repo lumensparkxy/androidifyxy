@@ -44,6 +44,13 @@ android {
         versionName = "0.1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // WeatherAPI.com key (kept in local.properties, not committed)
+        buildConfigField(
+            "String",
+            "WEATHER_API_KEY",
+            "\"${localProperties.getProperty("WEATHER_API_KEY", "")}\""
+        )
     }
 
     androidResources {
@@ -66,6 +73,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -126,4 +134,14 @@ dependencies {
 
     // Markdown rendering for Compose
     implementation(libs.multiplatform.markdown.renderer.m3)
+
+    // Weather (network + cache + coarse location)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.play.services.location)
 }

@@ -127,5 +127,16 @@
     <string name="knowledge_no_documents">இந்த பயிருக்கு ஆவணங்கள் எதுவும் இல்லை.</string>
     <string name="open_pdf_with">PDF திறக்க</string>
     <string name="retry">மீண்டும் முயற்சிக்கவும்</string>
+
+    <!-- Weather -->
+    <string name="menu_weather">வானிலை</string>
+    <string name="weather_title">வானிலை</string>
+    <string name="weather_forecast_3_days">3 நாள் முன்னறிவிப்பு</string>
+    <string name="weather_permission_required">உங்கள் உள்ளூர் வானிலையை காட்ட இட அனுமதி தேவையாகும்.</string>
+    <string name="weather_enable_location">இட சேவையை இயக்கு</string>
+    <string name="weather_refresh">புதுப்பி</string>
+    <string name="weather_loading">முன்னறிவிப்பு ஏற்றப்படுகிறது…</string>
+    <string name="weather_from_cache">கேச் செய்யப்பட்ட முன்னறிவிப்பு காட்டப்படுகிறது</string>
+    <string name="weather_try_again">மீண்டும் முயற்சிக்கவும்</string>
 </resources>
 

@@ -127,5 +127,16 @@
     <string name="knowledge_no_documents">इस फसल के लिए कोई दस्तावेज़ उपलब्ध नहीं है।</string>
     <string name="open_pdf_with">PDF खोलें</string>
     <string name="retry">पुनः प्रयास करें</string>
+
+    <!-- Weather -->
+    <string name="menu_weather">मौसम</string>
+    <string name="weather_title">मौसम</string>
+    <string name="weather_forecast_3_days">3 दिन का पूर्वानुमान</string>
+    <string name="weather_permission_required">स्थानीय मौसम दिखाने के लिए लोकेशन अनुमति आवश्यक है।</string>
+    <string name="weather_enable_location">लोकेशन सक्षम करें</string>
+    <string name="weather_refresh">रीफ्रेश</string>
+    <string name="weather_loading">पूर्वानुमान लोड हो रहा है…</string>
+    <string name="weather_from_cache">कैश किया हुआ पूर्वानुमान दिखाया जा रहा है</string>
+    <string name="weather_try_again">फिर से कोशिश करें</string>
 </resources>
 

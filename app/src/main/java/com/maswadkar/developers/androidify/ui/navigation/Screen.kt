@@ -13,6 +13,7 @@ sealed class Screen(val route: String) {
     data object Offers : Screen("offers")
     data object CarbonCredits : Screen("carbon_credits")
     data object KnowledgeBase : Screen("knowledge_base")
+    data object Weather : Screen("weather")
     data object KnowledgeDocuments : Screen("knowledge_documents/{cropId}/{cropName}") {
         fun createRoute(cropId: String, cropName: String): String {
             val encodedName = URLEncoder.encode(cropName, StandardCharsets.UTF_8.toString())
@@ -24,4 +25,3 @@ sealed class Screen(val route: String) {
         }
     }
 }
-
