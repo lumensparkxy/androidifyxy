@@ -69,6 +69,7 @@ import java.io.File
 fun ChatScreen(
     messages: List<ChatMessage>,
     onSendMessage: (String, Uri?) -> Unit,
+    onHomeClick: () -> Unit,
     onNewChat: () -> Unit,
     onPlantDiagnosisClick: () -> Unit,
     onHistoryClick: () -> Unit,
@@ -217,6 +218,7 @@ fun ChatScreen(
                 onItemClick = { item ->
                     scope.launch { drawerState.close() }
                     when (item) {
+                        DrawerItem.Home -> onHomeClick()
                         DrawerItem.NewChat -> onNewChat()
                         DrawerItem.PlantDiagnosis -> onPlantDiagnosisClick()
                         DrawerItem.History -> onHistoryClick()

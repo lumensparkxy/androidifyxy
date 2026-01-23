@@ -4,6 +4,27 @@
     <string name="welcome_title">கிருஷி AI க்கு வரவேற்கிறோம்</string>
     <string name="welcome_subtitle">உங்கள் AI-இயக்கப்படும் விவசாய உதவியாளர்.\nஉங்கள் உள்ளூர் மொழியில் கேள்விகள் கேளுங்கள்!</string>
 
+    <!-- Home Screen -->
+    <string name="home_greeting">வணக்கம், %1$s!</string>
+    <string name="home_greeting_default_name">விவசாயி</string>
+    <string name="home_subtitle">இன்று நீங்கள் என்ன செய்ய விரும்புகிறீர்கள்?</string>
+    <string name="home_feature_chat_title">AI அரட்டை</string>
+    <string name="home_feature_chat_desc">எந்த மொழியிலும் விவசாய கேள்விகள் கேளுங்கள்</string>
+    <string name="home_feature_diagnosis_title">தாவர நோய் கண்டறிதல்</string>
+    <string name="home_feature_diagnosis_desc">புகைப்படங்களிலிருந்து நோய்களைக் கண்டறியுங்கள்</string>
+    <string name="home_feature_mandi_title">மண்டி விலைகள்</string>
+    <string name="home_feature_mandi_desc">பயிர்களின் நேரடி சந்தை விலைகள்</string>
+    <string name="home_feature_weather_title">வானிலை</string>
+    <string name="home_feature_weather_desc">உள்ளூர் வானிலை முன்னறிவிப்பு</string>
+    <string name="home_feature_knowledge_title">அறிவுக் களஞ்சியம்</string>
+    <string name="home_feature_knowledge_desc">விவசாய வழிகாட்டிகள் மற்றும் ஆவணங்கள்</string>
+    <string name="home_feature_offers_title">சலுகைகள்</string>
+    <string name="home_feature_offers_desc">விதைகள் மற்றும் உரங்களில் சலுகைகள்</string>
+    <string name="home_feature_carbon_title">கார்பன் கிரெடிட்</string>
+    <string name="home_feature_carbon_desc">நிலையான விவசாயத்திலிருந்து சம்பாதியுங்கள்</string>
+    <string name="home_feature_history_title">அரட்டை வரலாறு</string>
+    <string name="home_feature_history_desc">முந்தைய உரையாடல்களைக் காணுங்கள்</string>
+
     <!-- Features -->
     <string name="features_title">இதில் நான் உங்களுக்கு உதவ முடியும்</string>
     <string name="feature_1">பயிர் சாகுபடி, மண் ஆரோக்கியம் மற்றும் விவசாய நுட்பங்கள் பற்றிய நிபுணர் ஆலோசனை பெறுங்கள்</string>
@@ -22,6 +43,7 @@
     <string name="send_button">அனுப்பு</string>
 
     <!-- Drawer Menu - Tamil -->
+    <string name="menu_home">முகப்பு</string>
     <string name="menu_new_chat">புதிய அரட்டை</string>
     <string name="menu_plant_diagnosis">தாவர நோய் கண்டறிதல்</string>
     <string name="menu_history">முந்தைய உரையாடல்கள்</string>

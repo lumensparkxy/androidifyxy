@@ -24,6 +24,7 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
 import com.maswadkar.developers.androidify.ui.screens.CarbonCreditsScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
+import com.maswadkar.developers.androidify.ui.screens.HomeScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
@@ -53,7 +54,7 @@ fun AppNavigation(
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Authenticated -> {
-                navController.navigate(Screen.Chat.route) {
+                navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             }
@@ -85,6 +86,24 @@ fun AppNavigation(
             )
         }
 
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onChatClick = {
+                    chatViewModel.startNewConversation()
+                    navController.navigate(Screen.Chat.route)
+                },
+                onPlantDiagnosisClick = { navController.navigate(Screen.PlantDiagnosis.route) },
+                onHistoryClick = { navController.navigate(Screen.History.route) },
+                onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
+                onWeatherClick = { navController.navigate(Screen.Weather.route) },
+                onOffersClick = { navController.navigate(Screen.Offers.route) },
+                onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
+                onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
+                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onSignOut = { authViewModel.signOut() }
+            )
+        }
+
         composable(Screen.Chat.route) {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
@@ -96,6 +115,11 @@ fun AppNavigation(
             ChatScreen(
                 messages = messages,
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
+                onHomeClick = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
                 onNewChat = { chatViewModel.startNewConversation() },
                 onPlantDiagnosisClick = { navController.navigate(Screen.PlantDiagnosis.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },

@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
 
         // Determine start destination based on auth state
         val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
-        val startDestination = if (isLoggedIn) Screen.Chat.route else Screen.Login.route
+        val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
 
         // Handle intent for loading specific conversation
         val conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)

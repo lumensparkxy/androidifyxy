@@ -11,6 +11,27 @@
     <string name="welcome_title">Welcome to Krishi AI</string>
     <string name="welcome_subtitle">Your AI-powered agriculture assistant.\nAsk questions in your local language!</string>
 
+    <!-- Home Screen -->
+    <string name="home_greeting">Hello, %1$s!</string>
+    <string name="home_greeting_default_name">Farmer</string>
+    <string name="home_subtitle">What would you like to do today?</string>
+    <string name="home_feature_chat_title">AI Chat</string>
+    <string name="home_feature_chat_desc">Ask farming questions in any language</string>
+    <string name="home_feature_diagnosis_title">Plant Diagnosis</string>
+    <string name="home_feature_diagnosis_desc">Detect diseases from plant photos</string>
+    <string name="home_feature_mandi_title">Mandi Prices</string>
+    <string name="home_feature_mandi_desc">Live market rates for crops</string>
+    <string name="home_feature_weather_title">Weather</string>
+    <string name="home_feature_weather_desc">Local weather forecast</string>
+    <string name="home_feature_knowledge_title">Knowledge Base</string>
+    <string name="home_feature_knowledge_desc">Farming guides &amp; documents</string>
+    <string name="home_feature_offers_title">Offers</string>
+    <string name="home_feature_offers_desc">Deals on seeds &amp; fertilizers</string>
+    <string name="home_feature_carbon_title">Carbon Credits</string>
+    <string name="home_feature_carbon_desc">Earn from sustainable farming</string>
+    <string name="home_feature_history_title">Chat History</string>
+    <string name="home_feature_history_desc">View past conversations</string>
+
     <!-- Features -->
     <string name="features_title">What I can help you with</string>
     <string name="feature_1">Get expert advice on crop cultivation, soil health, and farming techniques</string>
@@ -38,6 +59,7 @@
     <string name="export_error">Failed to export conversation</string>
 
     <!-- Drawer Menu -->
+    <string name="menu_home">Home</string>
     <string name="menu_new_chat">New Chat</string>
     <string name="menu_plant_diagnosis">Plant Diagnosis</string>
     <string name="menu_history">Historical Conversations</string>
