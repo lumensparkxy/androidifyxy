@@ -30,6 +30,7 @@ import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
+import com.maswadkar.developers.androidify.ui.screens.PlantDiagnosisScreen
 import com.maswadkar.developers.androidify.ui.screens.WeatherScreen
 import com.maswadkar.developers.androidify.util.PdfGenerator
 import kotlinx.coroutines.Dispatchers
@@ -96,6 +97,7 @@ fun AppNavigation(
                 messages = messages,
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
                 onNewChat = { chatViewModel.startNewConversation() },
+                onPlantDiagnosisClick = { navController.navigate(Screen.PlantDiagnosis.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onWeatherClick = { navController.navigate(Screen.Weather.route) },
@@ -142,6 +144,22 @@ fun AppNavigation(
         composable(Screen.Weather.route) {
             WeatherScreen(
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.PlantDiagnosis.route) {
+            val diagnosisPrompt = stringResource(R.string.plant_diagnosis_prompt)
+
+            PlantDiagnosisScreen(
+                onBackClick = { navController.popBackStack() },
+                onAnalyze = { imageUri ->
+                    // Start a new conversation for the diagnosis
+                    chatViewModel.startNewConversation()
+                    // Send the image with the diagnosis prompt
+                    chatViewModel.sendMessage(diagnosisPrompt, imageUri)
+                    // Navigate back to chat to see the result
+                    navController.popBackStack()
+                }
             )
         }
 

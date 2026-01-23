@@ -23,6 +23,7 @@
 
     <!-- Drawer Menu - Telugu -->
     <string name="menu_new_chat">కొత్త చాట్</string>
+    <string name="menu_plant_diagnosis">మొక్క రోగ నిర్ధారణ</string>
     <string name="menu_history">గత సంభాషణలు</string>
     <string name="menu_mandi_prices">మండి ధరలు</string>
     <string name="menu_offers">ఆఫర్లు</string>
@@ -138,5 +139,14 @@
     <string name="weather_loading">అంచనా లోడ్ అవుతోంది…</string>
     <string name="weather_from_cache">క్యాష్ చేసిన అంచనాను చూపిస్తున్నాము</string>
     <string name="weather_try_again">మళ్లీ ప్రయత్నించండి</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">మొక్క రోగ నిర్ధారణ</string>
+    <string name="plant_diagnosis_description">మీ ప్రభావిత పంట లేదా మొక్క ఫోటో తీసి తక్షణ వ్యాధి గుర్తింపు, పురుగుల గుర్తింపు మరియు చికిత్స సిఫార్సులు పొందండి.</string>
+    <string name="plant_diagnosis_hint">మీ మొక్క చిత్రాన్ని ఎంచుకోండి లేదా తీయండి</string>
+    <string name="take_photo">ఫోటో తీయండి</string>
+    <string name="choose_gallery">గ్యాలరీ నుండి ఎంచుకోండి</string>
+    <string name="analyze_plant">మొక్క విశ్లేషించండి</string>
+    <string name="plant_diagnosis_prompt">ఈ పంట/మొక్క చిత్రాన్ని జాగ్రత్తగా విశ్లేషించండి. ఏదైనా వ్యాధులు, పురుగులు, పోషక లోపాలు లేదా ఇతర సమస్యలను గుర్తించండి. అందించండి:\n1. నిర్ధారణ (సమస్య ఏమిటి)\n2. సంభావ్య కారణాలు\n3. చికిత్స సిఫార్సులు\n4. భవిష్యత్తు కోసం నివారణ చర్యలు</string>
 </resources>
 

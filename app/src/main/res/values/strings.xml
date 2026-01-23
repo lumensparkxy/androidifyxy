@@ -39,6 +39,7 @@
 
     <!-- Drawer Menu -->
     <string name="menu_new_chat">New Chat</string>
+    <string name="menu_plant_diagnosis">Plant Diagnosis</string>
     <string name="menu_history">Historical Conversations</string>
     <string name="menu_mandi_prices">Mandi Prices</string>
     <string name="menu_offers">Offers</string>
@@ -148,4 +149,13 @@
     <string name="weather_loading">Loading forecast…</string>
     <string name="weather_from_cache">Showing cached forecast</string>
     <string name="weather_try_again">Try again</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">Plant Diagnosis</string>
+    <string name="plant_diagnosis_description">Take a photo of your affected crop or plant to get instant disease identification, pest detection, and treatment recommendations.</string>
+    <string name="plant_diagnosis_hint">Select or capture an image of your plant</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_gallery">Choose from Gallery</string>
+    <string name="analyze_plant">Analyze Plant</string>
+    <string name="plant_diagnosis_prompt">Analyze this crop/plant image carefully. Identify any diseases, pests, nutrient deficiencies, or other issues visible. Provide:\n1. Diagnosis (what is the problem)\n2. Possible causes\n3. Treatment recommendations\n4. Preventive measures for the future</string>
 </resources>

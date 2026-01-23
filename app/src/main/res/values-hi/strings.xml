@@ -23,6 +23,7 @@
 
     <!-- Drawer Menu - Hindi -->
     <string name="menu_new_chat">नई चैट</string>
+    <string name="menu_plant_diagnosis">पौधा निदान</string>
     <string name="menu_history">पिछली बातचीत</string>
     <string name="menu_mandi_prices">मंडी भाव</string>
     <string name="menu_offers">ऑफर</string>
@@ -138,5 +139,14 @@
     <string name="weather_loading">पूर्वानुमान लोड हो रहा है…</string>
     <string name="weather_from_cache">कैश किया हुआ पूर्वानुमान दिखाया जा रहा है</string>
     <string name="weather_try_again">फिर से कोशिश करें</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">पौधा निदान</string>
+    <string name="plant_diagnosis_description">अपनी प्रभावित फसल या पौधे की फोटो लें और तुरंत रोग पहचान, कीट पता लगाने और उपचार की सिफारिशें प्राप्त करें।</string>
+    <string name="plant_diagnosis_hint">अपने पौधे की तस्वीर चुनें या कैप्चर करें</string>
+    <string name="take_photo">फोटो लें</string>
+    <string name="choose_gallery">गैलरी से चुनें</string>
+    <string name="analyze_plant">पौधा विश्लेषण करें</string>
+    <string name="plant_diagnosis_prompt">इस फसल/पौधे की तस्वीर का ध्यान से विश्लेषण करें। किसी भी बीमारी, कीट, पोषक तत्वों की कमी या अन्य समस्याओं की पहचान करें। बताएं:\n1. निदान (समस्या क्या है)\n2. संभावित कारण\n3. उपचार की सिफारिशें\n4. भविष्य के लिए निवारक उपाय</string>
 </resources>
 

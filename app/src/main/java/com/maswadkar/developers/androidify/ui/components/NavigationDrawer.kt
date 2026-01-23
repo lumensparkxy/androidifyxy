@@ -37,6 +37,7 @@ sealed class DrawerItem(
     val labelRes: Int
 ) {
     data object NewChat : DrawerItem(R.drawable.ic_add, R.string.menu_new_chat)
+    data object PlantDiagnosis : DrawerItem(R.drawable.ic_camera, R.string.menu_plant_diagnosis)
     data object History : DrawerItem(R.drawable.ic_chat, R.string.menu_history)
     data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
     data object Weather : DrawerItem(R.drawable.ic_weather, R.string.menu_weather)
@@ -73,6 +74,19 @@ fun AppDrawerContent(
             label = { Text(stringResource(DrawerItem.NewChat.labelRes)) },
             selected = selectedItem == DrawerItem.NewChat,
             onClick = { onItemClick(DrawerItem.NewChat) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.PlantDiagnosis.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.PlantDiagnosis.labelRes)) },
+            selected = selectedItem == DrawerItem.PlantDiagnosis,
+            onClick = { onItemClick(DrawerItem.PlantDiagnosis) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 

@@ -70,6 +70,7 @@ fun ChatScreen(
     messages: List<ChatMessage>,
     onSendMessage: (String, Uri?) -> Unit,
     onNewChat: () -> Unit,
+    onPlantDiagnosisClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onMandiPricesClick: () -> Unit,
     onWeatherClick: () -> Unit,
@@ -217,6 +218,7 @@ fun ChatScreen(
                     scope.launch { drawerState.close() }
                     when (item) {
                         DrawerItem.NewChat -> onNewChat()
+                        DrawerItem.PlantDiagnosis -> onPlantDiagnosisClick()
                         DrawerItem.History -> onHistoryClick()
                         DrawerItem.MandiPrices -> onMandiPricesClick()
                         DrawerItem.Weather -> onWeatherClick()

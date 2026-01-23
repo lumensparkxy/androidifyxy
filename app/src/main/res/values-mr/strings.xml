@@ -23,6 +23,7 @@
 
     <!-- Drawer Menu - Marathi -->
     <string name="menu_new_chat">नवीन चॅट</string>
+    <string name="menu_plant_diagnosis">वनस्पती निदान</string>
     <string name="menu_history">मागील संभाषणे</string>
     <string name="menu_mandi_prices">मंडी भाव</string>
     <string name="menu_offers">ऑफर</string>
@@ -138,4 +139,13 @@
     <string name="weather_loading">अंदाज लोड होत आहे…</string>
     <string name="weather_from_cache">कॅश केलेला अंदाज दाखवत आहोत</string>
     <string name="weather_try_again">पुन्हा प्रयत्न करा</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">वनस्पती निदान</string>
+    <string name="plant_diagnosis_description">आपल्या प्रभावित पिकाचा किंवा वनस्पतीचा फोटो घ्या आणि त्वरित रोग ओळख, कीटक शोध आणि उपचार शिफारसी मिळवा.</string>
+    <string name="plant_diagnosis_hint">आपल्या वनस्पतीची प्रतिमा निवडा किंवा घ्या</string>
+    <string name="take_photo">फोटो घ्या</string>
+    <string name="choose_gallery">गॅलरीतून निवडा</string>
+    <string name="analyze_plant">वनस्पती विश्लेषण करा</string>
+    <string name="plant_diagnosis_prompt">या पीक/वनस्पतीच्या प्रतिमेचे काळजीपूर्वक विश्लेषण करा. कोणतेही रोग, कीटक, पोषक तत्वांची कमतरता किंवा इतर समस्या ओळखा. प्रदान करा:\n1. निदान (समस्या काय आहे)\n2. संभाव्य कारणे\n3. उपचार शिफारसी\n4. भविष्यासाठी प्रतिबंधात्मक उपाय</string>
 </resources>
