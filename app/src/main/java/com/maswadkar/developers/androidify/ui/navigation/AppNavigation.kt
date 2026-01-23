@@ -192,7 +192,10 @@ fun AppNavigation(
                 conversations = conversations,
                 onConversationClick = { conversation ->
                     chatViewModel.loadConversation(conversation.id)
-                    navController.popBackStack()
+                    navController.navigate(Screen.Chat.route) {
+                        // Pop up to Home to avoid building up a large back stack
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
                 },
                 onDeleteConversation = { conversation ->
                     chatViewModel.deleteConversation(conversation.id)
