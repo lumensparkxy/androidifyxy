@@ -24,12 +24,14 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
 import com.maswadkar.developers.androidify.ui.screens.CarbonCreditsScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
+import com.maswadkar.developers.androidify.ui.screens.HomeScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
+import com.maswadkar.developers.androidify.ui.screens.PlantDiagnosisScreen
 import com.maswadkar.developers.androidify.ui.screens.WeatherScreen
 import com.maswadkar.developers.androidify.util.PdfGenerator
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +54,7 @@ fun AppNavigation(
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Authenticated -> {
-                navController.navigate(Screen.Chat.route) {
+                navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             }
@@ -84,6 +86,24 @@ fun AppNavigation(
             )
         }
 
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onChatClick = {
+                    chatViewModel.startNewConversation()
+                    navController.navigate(Screen.Chat.route)
+                },
+                onPlantDiagnosisClick = { navController.navigate(Screen.PlantDiagnosis.route) },
+                onHistoryClick = { navController.navigate(Screen.History.route) },
+                onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
+                onWeatherClick = { navController.navigate(Screen.Weather.route) },
+                onOffersClick = { navController.navigate(Screen.Offers.route) },
+                onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
+                onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
+                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onSignOut = { authViewModel.signOut() }
+            )
+        }
+
         composable(Screen.Chat.route) {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
@@ -95,7 +115,13 @@ fun AppNavigation(
             ChatScreen(
                 messages = messages,
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
+                onHomeClick = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                    }
+                },
                 onNewChat = { chatViewModel.startNewConversation() },
+                onPlantDiagnosisClick = { navController.navigate(Screen.PlantDiagnosis.route) },
                 onHistoryClick = { navController.navigate(Screen.History.route) },
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onWeatherClick = { navController.navigate(Screen.Weather.route) },
@@ -142,6 +168,22 @@ fun AppNavigation(
         composable(Screen.Weather.route) {
             WeatherScreen(
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.PlantDiagnosis.route) {
+            val diagnosisPrompt = stringResource(R.string.plant_diagnosis_prompt)
+
+            PlantDiagnosisScreen(
+                onBackClick = { navController.popBackStack() },
+                onAnalyze = { imageUri ->
+                    // Start a new conversation for the diagnosis
+                    chatViewModel.startNewConversation()
+                    // Send the image with the diagnosis prompt
+                    chatViewModel.sendMessage(diagnosisPrompt, imageUri)
+                    // Navigate back to chat to see the result
+                    navController.popBackStack()
+                }
             )
         }
 

@@ -4,6 +4,27 @@
     <string name="welcome_title">कृषि AI में आपका स्वागत है</string>
     <string name="welcome_subtitle">आपका AI-संचालित कृषि सहायक।\nअपनी स्थानीय भाषा में प्रश्न पूछें!</string>
 
+    <!-- Home Screen -->
+    <string name="home_greeting">नमस्ते, %1$s!</string>
+    <string name="home_greeting_default_name">किसान</string>
+    <string name="home_subtitle">आज आप क्या करना चाहेंगे?</string>
+    <string name="home_feature_chat_title">AI चैट</string>
+    <string name="home_feature_chat_desc">किसी भी भाषा में खेती के सवाल पूछें</string>
+    <string name="home_feature_diagnosis_title">पौधा निदान</string>
+    <string name="home_feature_diagnosis_desc">फोटो से बीमारियों का पता लगाएं</string>
+    <string name="home_feature_mandi_title">मंडी भाव</string>
+    <string name="home_feature_mandi_desc">फसलों के लाइव बाजार भाव</string>
+    <string name="home_feature_weather_title">मौसम</string>
+    <string name="home_feature_weather_desc">स्थानीय मौसम का पूर्वानुमान</string>
+    <string name="home_feature_knowledge_title">ज्ञान भंडार</string>
+    <string name="home_feature_knowledge_desc">खेती गाइड और दस्तावेज़</string>
+    <string name="home_feature_offers_title">ऑफर</string>
+    <string name="home_feature_offers_desc">बीज और खाद पर डील</string>
+    <string name="home_feature_carbon_title">कार्बन क्रेडिट</string>
+    <string name="home_feature_carbon_desc">टिकाऊ खेती से कमाई करें</string>
+    <string name="home_feature_history_title">चैट इतिहास</string>
+    <string name="home_feature_history_desc">पुरानी बातचीत देखें</string>
+
     <!-- Features -->
     <string name="features_title">मैं इसमें आपकी मदद कर सकता हूं</string>
     <string name="feature_1">फसल की खेती, मिट्टी के स्वास्थ्य और खेती की तकनीकों पर विशेषज्ञ सलाह प्राप्त करें</string>
@@ -22,7 +43,9 @@
     <string name="send_button">भेजें</string>
 
     <!-- Drawer Menu - Hindi -->
+    <string name="menu_home">होम</string>
     <string name="menu_new_chat">नई चैट</string>
+    <string name="menu_plant_diagnosis">पौधा निदान</string>
     <string name="menu_history">पिछली बातचीत</string>
     <string name="menu_mandi_prices">मंडी भाव</string>
     <string name="menu_offers">ऑफर</string>
@@ -138,5 +161,14 @@
     <string name="weather_loading">पूर्वानुमान लोड हो रहा है…</string>
     <string name="weather_from_cache">कैश किया हुआ पूर्वानुमान दिखाया जा रहा है</string>
     <string name="weather_try_again">फिर से कोशिश करें</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">पौधा निदान</string>
+    <string name="plant_diagnosis_description">अपनी प्रभावित फसल या पौधे की फोटो लें और तुरंत रोग पहचान, कीट पता लगाने और उपचार की सिफारिशें प्राप्त करें।</string>
+    <string name="plant_diagnosis_hint">अपने पौधे की तस्वीर चुनें या कैप्चर करें</string>
+    <string name="take_photo">फोटो लें</string>
+    <string name="choose_gallery">गैलरी से चुनें</string>
+    <string name="analyze_plant">पौधा विश्लेषण करें</string>
+    <string name="plant_diagnosis_prompt">इस फसल/पौधे की तस्वीर का ध्यान से विश्लेषण करें। किसी भी बीमारी, कीट, पोषक तत्वों की कमी या अन्य समस्याओं की पहचान करें। बताएं:\n1. निदान (समस्या क्या है)\n2. संभावित कारण\n3. उपचार की सिफारिशें\n4. भविष्य के लिए निवारक उपाय</string>
 </resources>
 

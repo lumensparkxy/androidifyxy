@@ -4,6 +4,27 @@
     <string name="welcome_title">కృషి AI కి స్వాగతం</string>
     <string name="welcome_subtitle">మీ AI-ఆధారిత వ్యవసాయ సహాయకుడు.\nమీ స్థానిక భాషలో ప్రశ్నలు అడగండి!</string>
 
+    <!-- Home Screen -->
+    <string name="home_greeting">నమస్కారం, %1$s!</string>
+    <string name="home_greeting_default_name">రైతు</string>
+    <string name="home_subtitle">ఈ రోజు మీరు ఏమి చేయాలనుకుంటున్నారు?</string>
+    <string name="home_feature_chat_title">AI చాట్</string>
+    <string name="home_feature_chat_desc">ఏ భాషలోనైనా వ్యవసాయ ప్రశ్నలు అడగండి</string>
+    <string name="home_feature_diagnosis_title">మొక్క రోగ నిర్ధారణ</string>
+    <string name="home_feature_diagnosis_desc">ఫోటోల నుండి వ్యాధులను గుర్తించండి</string>
+    <string name="home_feature_mandi_title">మండి ధరలు</string>
+    <string name="home_feature_mandi_desc">పంటల లైవ్ మార్కెట్ ధరలు</string>
+    <string name="home_feature_weather_title">వాతావరణం</string>
+    <string name="home_feature_weather_desc">స్థానిక వాతావరణ సూచన</string>
+    <string name="home_feature_knowledge_title">జ్ఞాన భాండాగారం</string>
+    <string name="home_feature_knowledge_desc">వ్యవసాయ గైడ్లు మరియు పత్రాలు</string>
+    <string name="home_feature_offers_title">ఆఫర్లు</string>
+    <string name="home_feature_offers_desc">విత్తనాలు మరియు ఎరువులపై డీల్స్</string>
+    <string name="home_feature_carbon_title">కార్బన్ క్రెడిట్</string>
+    <string name="home_feature_carbon_desc">సుస్థిర వ్యవసాయం నుండి సంపాదించండి</string>
+    <string name="home_feature_history_title">చాట్ చరిత్ర</string>
+    <string name="home_feature_history_desc">గత సంభాషణలు చూడండి</string>
+
     <!-- Features -->
     <string name="features_title">నేను దీనిలో మీకు సహాయం చేయగలను</string>
     <string name="feature_1">పంట సాగు, నేల ఆరోగ్యం మరియు వ్యవసాయ పద్ధతులపై నిపుణుల సలహా పొందండి</string>
@@ -22,7 +43,9 @@
     <string name="send_button">పంపండి</string>
 
     <!-- Drawer Menu - Telugu -->
+    <string name="menu_home">హోమ్</string>
     <string name="menu_new_chat">కొత్త చాట్</string>
+    <string name="menu_plant_diagnosis">మొక్క రోగ నిర్ధారణ</string>
     <string name="menu_history">గత సంభాషణలు</string>
     <string name="menu_mandi_prices">మండి ధరలు</string>
     <string name="menu_offers">ఆఫర్లు</string>
@@ -138,5 +161,14 @@
     <string name="weather_loading">అంచనా లోడ్ అవుతోంది…</string>
     <string name="weather_from_cache">క్యాష్ చేసిన అంచనాను చూపిస్తున్నాము</string>
     <string name="weather_try_again">మళ్లీ ప్రయత్నించండి</string>
+
+    <!-- Plant Diagnosis Screen -->
+    <string name="plant_diagnosis_title">మొక్క రోగ నిర్ధారణ</string>
+    <string name="plant_diagnosis_description">మీ ప్రభావిత పంట లేదా మొక్క ఫోటో తీసి తక్షణ వ్యాధి గుర్తింపు, పురుగుల గుర్తింపు మరియు చికిత్స సిఫార్సులు పొందండి.</string>
+    <string name="plant_diagnosis_hint">మీ మొక్క చిత్రాన్ని ఎంచుకోండి లేదా తీయండి</string>
+    <string name="take_photo">ఫోటో తీయండి</string>
+    <string name="choose_gallery">గ్యాలరీ నుండి ఎంచుకోండి</string>
+    <string name="analyze_plant">మొక్క విశ్లేషించండి</string>
+    <string name="plant_diagnosis_prompt">ఈ పంట/మొక్క చిత్రాన్ని జాగ్రత్తగా విశ్లేషించండి. ఏదైనా వ్యాధులు, పురుగులు, పోషక లోపాలు లేదా ఇతర సమస్యలను గుర్తించండి. అందించండి:\n1. నిర్ధారణ (సమస్య ఏమిటి)\n2. సంభావ్య కారణాలు\n3. చికిత్స సిఫార్సులు\n4. భవిష్యత్తు కోసం నివారణ చర్యలు</string>
 </resources>
 

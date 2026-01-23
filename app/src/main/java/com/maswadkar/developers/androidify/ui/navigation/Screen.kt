@@ -6,7 +6,9 @@ import java.nio.charset.StandardCharsets
 
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
+    data object Home : Screen("home")
     data object Chat : Screen("chat")
+    data object PlantDiagnosis : Screen("plant_diagnosis")
     data object History : Screen("history")
     data object MandiPrices : Screen("mandi_prices")
     data object MandiSettings : Screen("mandi_settings")

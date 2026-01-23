@@ -36,8 +36,10 @@ sealed class DrawerItem(
     val iconRes: Int,
     val labelRes: Int
 ) {
+    data object Home : DrawerItem(R.drawable.ic_home, R.string.menu_home)
     data object NewChat : DrawerItem(R.drawable.ic_add, R.string.menu_new_chat)
-    data object History : DrawerItem(R.drawable.ic_chat, R.string.menu_history)
+    data object PlantDiagnosis : DrawerItem(R.drawable.ic_camera, R.string.menu_plant_diagnosis)
+    data object History : DrawerItem(R.drawable.ic_history, R.string.menu_history)
     data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
     data object Weather : DrawerItem(R.drawable.ic_weather, R.string.menu_weather)
     data object Offers : DrawerItem(R.drawable.ic_offer, R.string.menu_offers)
@@ -62,6 +64,22 @@ fun AppDrawerContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Home item
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.Home.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.Home.labelRes)) },
+            selected = selectedItem == DrawerItem.Home,
+            onClick = { onItemClick(DrawerItem.Home) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
         // Main items
         NavigationDrawerItem(
             icon = {
@@ -73,6 +91,19 @@ fun AppDrawerContent(
             label = { Text(stringResource(DrawerItem.NewChat.labelRes)) },
             selected = selectedItem == DrawerItem.NewChat,
             onClick = { onItemClick(DrawerItem.NewChat) },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+        )
+
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = DrawerItem.PlantDiagnosis.iconRes),
+                    contentDescription = null
+                )
+            },
+            label = { Text(stringResource(DrawerItem.PlantDiagnosis.labelRes)) },
+            selected = selectedItem == DrawerItem.PlantDiagnosis,
+            onClick = { onItemClick(DrawerItem.PlantDiagnosis) },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )
 
