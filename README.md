@@ -49,6 +49,10 @@ androidifyxy/
 └── build.gradle.kts    # Root build configuration
 ```
 
+## 📦 Releases
+
+See `docs/ANDROID_RELEASE.md` for Android production release guidance (branching, versioning, signing, and Play Store notes).
+
 ## 🏁 Getting Started
 
 ### Prerequisites

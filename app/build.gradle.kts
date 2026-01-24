@@ -40,8 +40,8 @@ android {
         minSdk = 29
 
         targetSdk = 36
-        versionCode = 109
-        versionName = "0.1.9"
+        versionCode = 110
+        versionName = "0.10.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -137,11 +137,10 @@ dependencies {
 
     // Weather (network + cache + coarse location)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.moshi)
+    implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
-    implementation(libs.moshi)
-    implementation(libs.moshi.kotlin)
+    implementation(libs.gson)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.play.services.location)
 }

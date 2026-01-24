@@ -2,8 +2,7 @@ package com.maswadkar.developers.androidify.weather
 
 import android.content.Context
 import com.maswadkar.developers.androidify.BuildConfig
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.google.gson.Gson
 
 class WeatherRepository private constructor(appContext: Context) {
 
@@ -24,11 +23,7 @@ class WeatherRepository private constructor(appContext: Context) {
     private val cache = WeatherCacheStore(context)
     private val locationRepo = LocationRepository(context)
 
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    private val responseAdapter = moshi.adapter(WeatherApiForecastResponse::class.java)
+    private val gson = Gson()
 
     private val api = WeatherApiClient.createService(isDebug = BuildConfig.DEBUG)
 
@@ -49,7 +44,7 @@ class WeatherRepository private constructor(appContext: Context) {
                 val distanceOk = distKm <= INVALIDATE_DISTANCE_KM
 
                 if (ageOk && distanceOk) {
-                    val parsed = responseAdapter.fromJson(cached.forecastJson)
+                    val parsed = gson.fromJson(cached.forecastJson, WeatherApiForecastResponse::class.java)
                         ?: throw IllegalStateException("Cached data unreadable")
 
                     return parsed.toWeatherForecast(
@@ -72,7 +67,7 @@ class WeatherRepository private constructor(appContext: Context) {
             days = 3
         )
 
-        val json = responseAdapter.toJson(response)
+        val json = gson.toJson(response)
         cache.write(
             WeatherCacheStore.CachedForecast(
                 fetchedAtEpochMillis = now,

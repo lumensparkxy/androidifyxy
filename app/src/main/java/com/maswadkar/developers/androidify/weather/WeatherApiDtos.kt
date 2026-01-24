@@ -1,41 +1,41 @@
 package com.maswadkar.developers.androidify.weather
 
-import com.squareup.moshi.Json
+import com.google.gson.annotations.SerializedName
 
 internal data class WeatherApiForecastResponse(
-    @Json(name = "location") val location: LocationDto,
-    @Json(name = "forecast") val forecast: ForecastDto
+    @field:SerializedName("location") val location: LocationDto,
+    @field:SerializedName("forecast") val forecast: ForecastDto
 )
 
 internal data class LocationDto(
-    @Json(name = "name") val name: String,
-    @Json(name = "region") val region: String?,
-    @Json(name = "country") val country: String?
+    @field:SerializedName("name") val name: String,
+    @field:SerializedName("region") val region: String?,
+    @field:SerializedName("country") val country: String?
 )
 
 internal data class ForecastDto(
-    @Json(name = "forecastday") val forecastDays: List<ForecastDayDto>
+    @field:SerializedName("forecastday") val forecastDays: List<ForecastDayDto>
 )
 
 internal data class ForecastDayDto(
-    @Json(name = "date_epoch") val dateEpochSeconds: Long,
-    @Json(name = "day") val day: DayDto,
-    @Json(name = "astro") val astro: AstroDto?
+    @field:SerializedName("date_epoch") val dateEpochSeconds: Long,
+    @field:SerializedName("day") val day: DayDto,
+    @field:SerializedName("astro") val astro: AstroDto?
 )
 
 internal data class DayDto(
-    @Json(name = "mintemp_c") val minTempC: Double,
-    @Json(name = "maxtemp_c") val maxTempC: Double,
-    @Json(name = "condition") val condition: ConditionDto
+    @field:SerializedName("mintemp_c") val minTempC: Double,
+    @field:SerializedName("maxtemp_c") val maxTempC: Double,
+    @field:SerializedName("condition") val condition: ConditionDto
 )
 
 internal data class ConditionDto(
-    @Json(name = "text") val text: String,
-    @Json(name = "icon") val icon: String?
+    @field:SerializedName("text") val text: String,
+    @field:SerializedName("icon") val icon: String?
 )
 
 internal data class AstroDto(
-    @Json(name = "sunrise") val sunrise: String?,
-    @Json(name = "sunset") val sunset: String?,
-    @Json(name = "moon_phase") val moonPhase: String?
+    @field:SerializedName("sunrise") val sunrise: String?,
+    @field:SerializedName("sunset") val sunset: String?,
+    @field:SerializedName("moon_phase") val moonPhase: String?
 )

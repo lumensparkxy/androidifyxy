@@ -3,9 +3,7 @@ package com.maswadkar.developers.androidify.weather
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 
 internal object WeatherApiClient {
 
@@ -20,14 +18,10 @@ internal object WeatherApiClient {
             .addInterceptor(logging)
             .build()
 
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttp)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         return retrofit.create(WeatherApiService::class.java)
