@@ -12,12 +12,352 @@
       },
       "description": "Guide for Soybean Cultivation",
       "descriptions": {
-        "hi": "सोयाबीन गाइड विवरण",
-        "mr": "सोयाबीन Guide description",
-        "ta": "சோயாபீன் வழிகாட்டி விளக்கம்",
-        "te": "సోయాబీన్ గైడ్ వివరణ"
+        "hi": "सोयाबीन की खेती के लिए मार्गदर्शिका",
+        "mr": "सोयाबीन लागवडीसाठी मार्गदर्शक",
+        "ta": "சோயாபீன் சாகுபடி வழிகாட்டி",
+        "te": "సోయాబీన్ సాగు మార్గదర్శకం"
       },
       "storagePath": "knowledge/soybean/soybean_sowing.pdf",
+      "displayOrder": 1
+    },
+    {
+      "id": "vegetables_methi_sops",
+      "cropId": "vegetables",
+      "title": "Methi SOPs",
+      "titles": {
+        "hi": "मेथी SOPs",
+        "mr": "मेथी SOPs",
+        "ta": "வெந்தயம் SOPs",
+        "te": "మెంతి SOPs"
+      },
+      "description": "Standard operating procedure for Methi.",
+      "descriptions": {
+        "hi": "मेथी के लिए मानक संचालन प्रक्रिया.",
+        "mr": "मेथी साठी मानक कार्यपद्धती.",
+        "ta": "வெந்தயத்திற்கான நிலையான செயல்முறை.",
+        "te": "మెంతి కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/Methi SOPs.pdf",
+      "displayOrder": 1
+    },
+    {
+      "id": "vegetables_sop_gourd",
+      "cropId": "vegetables",
+      "title": "SOP Gourd",
+      "titles": {
+        "hi": "गॉर्ड SOP",
+        "mr": "गॉर्ड SOP",
+        "ta": "கோர்டு SOP",
+        "te": "గోర్డ్ SOP"
+      },
+      "description": "Standard operating procedure for Gourd.",
+      "descriptions": {
+        "hi": "गॉर्ड के लिए मानक संचालन प्रक्रिया.",
+        "mr": "गॉर्ड साठी मानक कार्यपद्धती.",
+        "ta": "கோர்டுக்கான நிலையான செயல்முறை.",
+        "te": "గోర్డ్ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_Gourd.pdf",
+      "displayOrder": 2
+    },
+    {
+      "id": "vegetables_sop_bitter_gourd",
+      "cropId": "vegetables",
+      "title": "SOP Bitter Gourd",
+      "titles": {
+        "hi": "करेला SOP",
+        "mr": "कारले SOP",
+        "ta": "பாகற்காய் SOP",
+        "te": "కాకరకాయ SOP"
+      },
+      "description": "Standard operating procedure for Bitter Gourd.",
+      "descriptions": {
+        "hi": "करेला के लिए मानक संचालन प्रक्रिया.",
+        "mr": "कारले साठी मानक कार्यपद्धती.",
+        "ta": "பாகற்காய்க்கான நிலையான செயல்முறை.",
+        "te": "కాకరకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_bitter_gourd.pdf",
+      "displayOrder": 3
+    },
+    {
+      "id": "vegetables_sop_bottle_gourd",
+      "cropId": "vegetables",
+      "title": "SOP Bottle Gourd",
+      "titles": {
+        "hi": "लौकी SOP",
+        "mr": "दुधी भोपळा SOP",
+        "ta": "சுரைக்காய் SOP",
+        "te": "సొరకాయ SOP"
+      },
+      "description": "Standard operating procedure for Bottle Gourd.",
+      "descriptions": {
+        "hi": "लौकी के लिए मानक संचालन प्रक्रिया.",
+        "mr": "दुधी भोपळ्यासाठी मानक कार्यपद्धती.",
+        "ta": "சுரைக்காய்க்கான நிலையான செயல்முறை.",
+        "te": "సొరకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_bottle_gourd.pdf",
+      "displayOrder": 4
+    },
+    {
+      "id": "vegetables_sop_brinjal",
+      "cropId": "vegetables",
+      "title": "SOP Brinjal",
+      "titles": {
+        "hi": "बैंगन SOP",
+        "mr": "वांगी SOP",
+        "ta": "கத்தரிக்காய் SOP",
+        "te": "వంకాయ SOP"
+      },
+      "description": "Standard operating procedure for Brinjal.",
+      "descriptions": {
+        "hi": "बैंगन के लिए मानक संचालन प्रक्रिया.",
+        "mr": "वांग्यासाठी मानक कार्यपद्धती.",
+        "ta": "கத்தரிக்காய்க்கான நிலையான செயல்முறை.",
+        "te": "వంకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_brinjal.pdf",
+      "displayOrder": 5
+    },
+    {
+      "id": "vegetables_sop_cabbage",
+      "cropId": "vegetables",
+      "title": "SOP Cabbage",
+      "titles": {
+        "hi": "पत्ता गोभी SOP",
+        "mr": "कोबी SOP",
+        "ta": "முட்டைகோஸ் SOP",
+        "te": "క్యాబేజీ SOP"
+      },
+      "description": "Standard operating procedure for Cabbage.",
+      "descriptions": {
+        "hi": "पत्ता गोभी के लिए मानक संचालन प्रक्रिया.",
+        "mr": "कोबीसाठी मानक कार्यपद्धती.",
+        "ta": "முட்டைகோசுக்கான நிலையான செயல்முறை.",
+        "te": "క్యాబేజీ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_cabbage.pdf",
+      "displayOrder": 6
+    },
+    {
+      "id": "vegetables_sop_chilli",
+      "cropId": "vegetables",
+      "title": "SOP Chilli",
+      "titles": {
+        "hi": "मिर्च SOP",
+        "mr": "मिरची SOP",
+        "ta": "மிளகாய் SOP",
+        "te": "మిర్చి SOP"
+      },
+      "description": "Standard operating procedure for Chilli.",
+      "descriptions": {
+        "hi": "मिर्च के लिए मानक संचालन प्रक्रिया.",
+        "mr": "मिरचीसाठी मानक कार्यपद्धती.",
+        "ta": "மிளகாய்க்கான நிலையான செயல்முறை.",
+        "te": "మిర్చి కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_chilli.pdf",
+      "displayOrder": 7
+    },
+    {
+      "id": "vegetables_sop_gawar",
+      "cropId": "vegetables",
+      "title": "SOP Gawar",
+      "titles": {
+        "hi": "ग्वार SOP",
+        "mr": "गवार SOP",
+        "ta": "கொத்தவரங்காய் SOP",
+        "te": "గోరు చిక్కుడు SOP"
+      },
+      "description": "Standard operating procedure for Gawar.",
+      "descriptions": {
+        "hi": "ग्वार के लिए मानक संचालन प्रक्रिया.",
+        "mr": "गवारसाठी मानक कार्यपद्धती.",
+        "ta": "கொத்தவரங்காய்க்கான நிலையான செயல்முறை.",
+        "te": "గోరు చిక్కుడు కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_gawar.pdf",
+      "displayOrder": 8
+    },
+    {
+      "id": "vegetables_sop_ladies_finger",
+      "cropId": "vegetables",
+      "title": "SOP Ladies Finger",
+      "titles": {
+        "hi": "भिंडी SOP",
+        "mr": "भेंडी SOP",
+        "ta": "வெண்டைக்காய் SOP",
+        "te": "బెండకాయ SOP"
+      },
+      "description": "Standard operating procedure for Ladies Finger.",
+      "descriptions": {
+        "hi": "भिंडी के लिए मानक संचालन प्रक्रिया.",
+        "mr": "भेंडीसाठी मानक कार्यपद्धती.",
+        "ta": "வெண்டைக்காய்க்கான நிலையான செயல்முறை.",
+        "te": "బెండకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_ladies_finger.pdf",
+      "displayOrder": 9
+    },
+    {
+      "id": "vegetables_sop_padval",
+      "cropId": "vegetables",
+      "title": "SOP Padval",
+      "titles": {
+        "hi": "पडवळ SOP",
+        "mr": "पडवळ SOP",
+        "ta": "புடலங்காய் SOP",
+        "te": "పొట్లకాయ SOP"
+      },
+      "description": "Standard operating procedure for Padval.",
+      "descriptions": {
+        "hi": "पडवळ के लिए मानक संचालन प्रक्रिया.",
+        "mr": "पडवळसाठी मानक कार्यपद्धती.",
+        "ta": "புடலங்காய்க்கான நிலையான செயல்முறை.",
+        "te": "పొట్లకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_padval.pdf",
+      "displayOrder": 10
+    },
+    {
+      "id": "vegetables_sop_peas",
+      "cropId": "vegetables",
+      "title": "SOP Peas",
+      "titles": {
+        "hi": "मटर SOP",
+        "mr": "वाटाणे SOP",
+        "ta": "பட்டாணி SOP",
+        "te": "బటాణీ SOP"
+      },
+      "description": "Standard operating procedure for Peas.",
+      "descriptions": {
+        "hi": "मटर के लिए मानक संचालन प्रक्रिया.",
+        "mr": "वाटाण्यासाठी मानक कार्यपद्धती.",
+        "ta": "பட்டாணிக்கான நிலையான செயல்முறை.",
+        "te": "బటాణీ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_peas.pdf",
+      "displayOrder": 11
+    },
+    {
+      "id": "vegetables_sop_potato",
+      "cropId": "vegetables",
+      "title": "SOP Potato",
+      "titles": {
+        "hi": "आलू SOP",
+        "mr": "बटाटा SOP",
+        "ta": "உருளைக்கிழங்கு SOP",
+        "te": "బంగాళదుంప SOP"
+      },
+      "description": "Standard operating procedure for Potato.",
+      "descriptions": {
+        "hi": "आलू के लिए मानक संचालन प्रक्रिया.",
+        "mr": "बटाट्यासाठी मानक कार्यपद्धती.",
+        "ta": "உருளைக்கிழங்கிற்கான நிலையான செயல்முறை.",
+        "te": "బంగాళదుంప కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_potato.pdf",
+      "displayOrder": 12
+    },
+    {
+      "id": "vegetables_sop_ridge_gourd",
+      "cropId": "vegetables",
+      "title": "SOP Ridge Gourd",
+      "titles": {
+        "hi": "तुरई SOP",
+        "mr": "दोडका SOP",
+        "ta": "பீர்க்கங்காய் SOP",
+        "te": "బీరకాయ SOP"
+      },
+      "description": "Standard operating procedure for Ridge Gourd.",
+      "descriptions": {
+        "hi": "तुरई के लिए मानक संचालन प्रक्रिया.",
+        "mr": "दोडक्यासाठी मानक कार्यपद्धती.",
+        "ta": "பீர்க்கங்காய்க்கான நிலையான செயல்முறை.",
+        "te": "బీరకాయ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_ridge_gourd.pdf",
+      "displayOrder": 13
+    },
+    {
+      "id": "vegetables_sop_spinach",
+      "cropId": "vegetables",
+      "title": "SOP Spinach",
+      "titles": {
+        "hi": "पालक SOP",
+        "mr": "पालक SOP",
+        "ta": "கீரை SOP",
+        "te": "పాలకూర SOP"
+      },
+      "description": "Standard operating procedure for Spinach.",
+      "descriptions": {
+        "hi": "पालक के लिए मानक संचालन प्रक्रिया.",
+        "mr": "पालकासाठी मानक कार्यपद्धती.",
+        "ta": "கீரைக்கான நிலையான செயல்முறை.",
+        "te": "పాలకూర కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_spinach.pdf",
+      "displayOrder": 14
+    },
+    {
+      "id": "vegetables_sop_tomato",
+      "cropId": "vegetables",
+      "title": "SOP Tomato",
+      "titles": {
+        "hi": "टमाटर SOP",
+        "mr": "टोमॅटो SOP",
+        "ta": "தக்காளி SOP",
+        "te": "టమాటా SOP"
+      },
+      "description": "Standard operating procedure for Tomato.",
+      "descriptions": {
+        "hi": "टमाटर के लिए मानक संचालन प्रक्रिया.",
+        "mr": "टोमॅटोसाठी मानक कार्यपद्धती.",
+        "ta": "தக்காளிக்கான நிலையான செயல்முறை.",
+        "te": "టమాటా కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/SOP_tometo.pdf",
+      "displayOrder": 15
+    },
+    {
+      "id": "vegetables_kothimbir",
+      "cropId": "vegetables",
+      "title": "कोथिंबीर",
+      "titles": {
+        "hi": "धनिया",
+        "mr": "कोथिंबीर",
+        "ta": "கொத்தமல்லி",
+        "te": "కొత్తిమీర"
+      },
+      "description": "Standard operating procedure for कोथिंबीर.",
+      "descriptions": {
+        "hi": "धनिया के लिए मानक संचालन प्रक्रिया.",
+        "mr": "कोथिंबीरसाठी मानक कार्यपद्धती.",
+        "ta": "கொத்தமல்லிக்கான நிலையான செயல்முறை.",
+        "te": "కొత్తిమీర కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/vegetables/कोथिंबीर.pdf",
+      "displayOrder": 16
+    },
+    {
+      "id": "wheat_sop",
+      "cropId": "wheat",
+      "title": "SOP Wheat",
+      "titles": {
+        "hi": "गेहूं SOP",
+        "mr": "गहू SOP",
+        "ta": "கோதுமை SOP",
+        "te": "గోధుమ SOP"
+      },
+      "description": "Standard operating procedure for Wheat.",
+      "descriptions": {
+        "hi": "गेहूं के लिए मानक संचालन प्रक्रिया.",
+        "mr": "गहूसाठी मानक कार्यपद्धती.",
+        "ta": "கோதுமைக்கான நிலையான செயல்முறை.",
+        "te": "గోధుమ కోసం ప్రమాణిత కార్యవిధానం."
+      },
+      "storagePath": "knowledge/wheat/SOP_wheat.pdf",
       "displayOrder": 1
     }
   ]

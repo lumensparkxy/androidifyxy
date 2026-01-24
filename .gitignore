@@ -14,3 +14,9 @@
 .cxx
 local.properties
 google-services.json
+.kotlin
+*.keystore
+*.jks
+*.aab
+.idea/
+.next/

@@ -1,6 +1,42 @@
 {
   "crops": [
     {
+      "id": "citrus",
+      "name": "Citrus",
+      "names": {
+        "hi": "नींबू वर्गीय फल",
+        "mr": "लिंबूवर्गीय फळे",
+        "ta": "சிட்ரஸ்",
+        "te": "సిట్రస్"
+      },
+      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fcitrus.png?alt=media&token=39e11f0d-c606-45ae-9ef0-438121d301b1",
+      "displayOrder": 1
+    },
+    {
+      "id": "fruits",
+      "name": "Fruits",
+      "names": {
+        "hi": "फल",
+        "mr": "फळे",
+        "ta": "பழங்கள்",
+        "te": "పండ్లు"
+      },
+      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Ffruits.png?alt=media&token=c2eecf53-bfb1-4827-bc18-fc5c1fa2c6ff",
+      "displayOrder": 2
+    },
+    {
+      "id": "pulses",
+      "name": "Pulses",
+      "names": {
+        "hi": "दालें",
+        "mr": "कडधान्ये",
+        "ta": "பருப்பு வகைகள்",
+        "te": "పప్పులు"
+      },
+      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fpulses.png?alt=media&token=ebc41fa7-5faf-41b2-84fb-7d228979d454",
+      "displayOrder": 3
+    },
+    {
       "id": "soybean",
       "name": "Soybean",
       "names": {
@@ -10,7 +46,7 @@
         "te": "సోయాబీన్"
       },
       "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fsoybean_icon.png?alt=media&token=57f12ffd-56f1-4c27-a93c-bc69546c7a02",
-      "displayOrder": 1
+      "displayOrder": 4
     },
     {
       "id": "turmeric",
@@ -22,103 +58,19 @@
         "te": "పసుపు"
       },
       "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fturmeric_icon.png?alt=media&token=2a8e188c-8c0f-4bc8-8421-fc65add93fad",
-      "displayOrder": 2
-    },
-    {
-      "id": "citrus",
-      "name": "Citrus",
-      "names": {
-        "hi": "नींबू वर्गीय फल",
-        "mr": "लिंबूवर्गीय फळे",
-        "ta": "சிட்ரஸ்",
-        "te": "సిట్రస్"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fcitrus.png?alt=media&token=39e11f0d-c606-45ae-9ef0-438121d301b1",
-      "displayOrder": 3
-    },
-    {
-      "id": "corn",
-      "name": "Corn",
-      "names": {
-        "hi": "मक्का",
-        "mr": "मका",
-        "ta": "சோளம்",
-        "te": "మొక్కజొన్న"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fcorn.png?alt=media&token=049dffa9-672f-48d3-a612-9e8abd7dea01",
-      "displayOrder": 4
-    },
-    {
-      "id": "guava",
-      "name": "Guava",
-      "names": {
-        "hi": "अमरूद",
-        "mr": "पेरू",
-        "ta": "கொய்யா",
-        "te": "జామ"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fguava.png?alt=media&token=55ea158f-14b2-4895-9f11-b1e1c9fcee7a",
       "displayOrder": 5
     },
     {
-      "id": "chickpea",
-      "name": "Chickpea (Harbara)",
+      "id": "vegetables",
+      "name": "Vegetables",
       "names": {
-        "hi": "चना",
-        "mr": "हरभरा",
-        "ta": "கொண்டைக்கடலை",
-        "te": "శనగలు"
+        "hi": "सब्जियां",
+        "mr": "भाज्या",
+        "ta": "காய்கறிகள்",
+        "te": "కూరగాయలు"
       },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fharbara.png?alt=media&token=f01b8734-f5fe-42f9-bf84-a38797437b94",
+      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fvegetables.png?alt=media&token=c32bde79-805b-4701-a139-432b44078234",
       "displayOrder": 6
-    },
-    {
-      "id": "mango",
-      "name": "Mango",
-      "names": {
-        "hi": "आम",
-        "mr": "आंबा",
-        "ta": "மாம்பழம்",
-        "te": "మామిడి"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fmango.png?alt=media&token=8779c0bd-a5db-420e-a714-957f8bd3ed4a",
-      "displayOrder": 7
-    },
-    {
-      "id": "onion",
-      "name": "Onion",
-      "names": {
-        "hi": "प्याज",
-        "mr": "कांदा",
-        "ta": "வெங்காயம்",
-        "te": "ఉల్లిపాయ"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fonion_icon.png?alt=media&token=f7d828ef-5566-4c0e-a430-faf6fb1e0f08",
-      "displayOrder": 8
-    },
-    {
-      "id": "livestock",
-      "name": "Livestock (Pashudhan)",
-      "names": {
-        "hi": "पशुधन",
-        "mr": "पशुधन",
-        "ta": "கால்நடை",
-        "te": "పశువులు"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fpashudhan.png?alt=media&token=9b9a2f5a-0cf2-4ae8-a674-90873ae485cd",
-      "displayOrder": 9
-    },
-    {
-      "id": "toor",
-      "name": "Pigeon Pea (Toor)",
-      "names": {
-        "hi": "अरहर/तूर",
-        "mr": "तूर",
-        "ta": "துவரை",
-        "te": "కందులు"
-      },
-      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Ftoor.png?alt=media&token=c711d1e5-20ba-4269-b2f6-03612eaa3446",
-      "displayOrder": 10
     },
     {
       "id": "wheat",
@@ -130,7 +82,19 @@
         "te": "గోధుమ"
       },
       "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fwheat_icon.png?alt=media&token=bd262114-cb8b-48e4-a35e-355f3cff6208",
-      "displayOrder": 11
+      "displayOrder": 7
+    },
+    {
+      "id": "pashudhan",
+      "name": "Pashudhan",
+      "names": {
+        "hi": "पशुधन",
+        "mr": "पशुधन",
+        "ta": "கால்நடை",
+        "te": "పశువులు"
+      },
+      "iconUrl": "https://firebasestorage.googleapis.com/v0/b/lumensparkxy.firebasestorage.app/o/knowledge%2Ficons%2Fpashudhan.png?alt=media&token=9b9a2f5a-0cf2-4ae8-a674-90873ae485cd",
+      "displayOrder": 8
     }
   ]
 }
