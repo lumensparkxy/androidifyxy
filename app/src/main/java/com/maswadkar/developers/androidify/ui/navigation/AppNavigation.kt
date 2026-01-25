@@ -181,8 +181,11 @@ fun AppNavigation(
                     chatViewModel.startNewConversation()
                     // Send the image with the diagnosis prompt
                     chatViewModel.sendMessage(diagnosisPrompt, imageUri)
-                    // Navigate back to chat to see the result
-                    navController.popBackStack()
+                    // Navigate to chat to see the result
+                    navController.navigate(Screen.Chat.route) {
+                        // Pop up to Home to avoid building up a large back stack
+                        popUpTo(Screen.Home.route) { inclusive = false }
+                    }
                 }
             )
         }
