@@ -20,3 +20,4 @@ google-services.json
 *.aab
 .idea/
 .next/
+.env

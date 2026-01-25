@@ -13,6 +13,8 @@ This directory contains Firebase Cloud Functions for the Androidify app.
 | `deleteAllKnowledgeCrops` | HTTP | Deletes all crops (use with caution) |
 | `deleteAllKnowledgeDocuments` | HTTP | Deletes all documents (use with caution) |
 | `aggregateSupplierClicks` | Scheduled | Weekly supplier click aggregation |
+| `aggregateSupplierClicksManual` | HTTP | Manual trigger for supplier click aggregation |
+| `cleanupOldClicks` | Scheduled | Cleanup old supplier click records |
 | `publishOffer` | Callable | Offer activation (placeholder) |
 
 ## Setup
@@ -53,9 +55,10 @@ firebase deploy --only functions
 ## Functions
 
 ### `syncMandiPrices` (Scheduled)
-- **Schedule**: Runs daily at 6:00 AM IST (00:30 UTC)
+- **Schedule**: Runs hourly between 1:00 PM and 8:00 PM IST
 - **Region**: asia-south1
 - **Purpose**: Automatically fetches and syncs all mandi prices from the government API to Firestore
+- **Filter**: Currently restricted to `Maharashtra` in `functions/index.js`
 
 ### `syncMandiPricesManual` (HTTP)
 - **Endpoint**: `https://asia-south1-<project-id>.cloudfunctions.net/syncMandiPricesManual`
@@ -237,6 +240,8 @@ Located in `/functions/seeds/`:
 ## API Source
 
 Data is fetched from: [data.gov.in - Daily Mandi Prices](https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070)
+
+The API key is currently defined in `functions/index.js` (`API_KEY`).
 
 ## Monitoring
 

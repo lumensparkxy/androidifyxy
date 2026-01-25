@@ -6,9 +6,16 @@
 
 *   **Real-time Mandi Prices**: Access daily market rates for various commodities across different states and districts, synced from [data.gov.in](https://data.gov.in).
 *   **AI Chat Assistant**: A smart, conversational AI powered by Firebase Genkit/Vertex AI to answer farming queries, provide crop advice, and interpret market trends.
+*   **Plant Diagnosis**: Capture a crop image and receive AI-assisted diagnosis and guidance.
 *   **Live Audio Conversation**: Voice-enabled interaction allows users to converse naturally with the assistant in multiple languages (Hindi, Marathi, Telugu, Tamil, etc.), making technology accessible even while working in the field.
+*   **Weather Forecasts**: Location-based current conditions and short-term forecasts to plan field work.
+*   **Knowledge Base**: Curated crop PDF guides with multi-language titles and descriptions.
 *   **Secure Authentication**: Seamless login experience using Google Sign-In via Firebase Authentication.
+*   **Phone OTP Sign-In**: Optional phone-based authentication for faster access.
 *   **History & Offline Support**: Save important conversations and access recently viewed prices.
+*   **Conversation Export**: Export chat history to PDF for easy sharing.
+*   **Offers & Promotions**: Regional input offers and supplier highlights.
+*   **Carbon Credits Info**: Learn about carbon credit opportunities for sustainable farming.
 *   **Clean & Modern UI**: Built with Jetpack Compose and Material 3 for a fluid and intuitive user experience.
 
 ## 🛠 Tech Stack
@@ -24,6 +31,8 @@
 *   **AI & ML**:
     *   **Firebase AI / Genkit**: For generative AI capabilities.
     *   **Google Identity Services**: For secure authentication.
+*   **Weather**:
+    *   **WeatherAPI.com**: Forecast data (API key stored in `local.properties`).
 *   **Tools**: Gradle (Kotlin DSL), Coroutines, Flow.
 
 ### Backend (`/functions`)
@@ -61,6 +70,7 @@ See `docs/ANDROID_RELEASE.md` for Android production release guidance (branching
 *   Node.js 22 (for Cloud Functions).
 *   Firebase Project with **Blaze** (Pay-as-you-go) plan (required for external API calls in Cloud Functions).
 *   API Key from [data.gov.in](https://data.gov.in).
+*   API Key from [WeatherAPI.com](https://www.weatherapi.com/).
 
 ### Installation & Setup
 
@@ -83,13 +93,20 @@ See `docs/ANDROID_RELEASE.md` for Android production release guidance (branching
         cd functions
         npm install
         ```
+    *   Update the Data.gov API key in `functions/index.js` (see `API_KEY`).
     *   Deploy the functions and indexes:
         ```bash
         firebase deploy --only functions,firestore:indexes
         ```
     *   *Note*: Refer to `functions/README.md` for scheduling and API key configuration.
 
-4.  **Run the App**
+4.  **Weather API Configuration**
+    *   Add your WeatherAPI key to `local.properties`:
+        ```
+        WEATHER_API_KEY=YOUR_KEY_HERE
+        ```
+
+5.  **Run the App**
     *   Open the project in Android Studio.
     *   Sync Gradle with Project.
     *   Select the `app` configuration and click **Run**.
