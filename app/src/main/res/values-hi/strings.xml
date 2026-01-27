@@ -170,5 +170,14 @@
     <string name="choose_gallery">गैलरी से चुनें</string>
     <string name="analyze_plant">पौधा विश्लेषण करें</string>
     <string name="plant_diagnosis_prompt">इस फसल/पौधे की तस्वीर का ध्यान से विश्लेषण करें। किसी भी बीमारी, कीट, पोषक तत्वों की कमी या अन्य समस्याओं की पहचान करें। बताएं:\n1. निदान (समस्या क्या है)\n2. संभावित कारण\n3. उपचार की सिफारिशें\n4. भविष्य के लिए निवारक उपाय</string>
+
+    <!-- Product Recommendation Tiles -->
+    <string name="product_recommendation_cta">सर्वोत्तम ऑफर देखें</string>
+    <string name="product_recommendation_whatsapp_message">नमस्ते, मुझे कृषि AI द्वारा सुझाए गए %1$s%2$s में रुचि है। कृपया सबसे अच्छे उपलब्ध ऑफर साझा करें।</string>
+    <string name="product_type_pesticide">कीटनाशक</string>
+    <string name="product_type_fertilizer">उर्वरक</string>
+    <string name="product_type_seed">बीज</string>
+    <string name="product_type_equipment">उपकरण</string>
+    <string name="product_type_other">उत्पाद</string>
 </resources>
 

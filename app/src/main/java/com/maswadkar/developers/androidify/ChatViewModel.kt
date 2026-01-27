@@ -16,6 +16,7 @@ import com.google.firebase.ai.type.content
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.data.ChatRepository
 import com.maswadkar.developers.androidify.data.Conversation
+import com.maswadkar.developers.androidify.data.ImageStorageRepository
 import com.maswadkar.developers.androidify.data.Message
 import com.maswadkar.developers.androidify.util.ImageUtils
 import kotlinx.coroutines.Job
@@ -44,9 +45,11 @@ class ChatViewModel(
         private const val TAG = "ChatViewModel"
         private const val MESSAGES_KEY = "chat_messages"
         private const val CONVERSATION_ID_KEY = "conversation_id"
+        private const val CONVERSATION_SAVED_KEY = "conversation_saved"
     }
 
     private val chatRepository = ChatRepository.getInstance()
+    private val imageStorageRepository = ImageStorageRepository.getInstance()
     private val currentUserId: String?
         get() = FirebaseAuth.getInstance().currentUser?.uid
 
@@ -55,8 +58,11 @@ class ChatViewModel(
     )
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
-    // Current conversation ID (null for new conversations)
+    // Current conversation ID (pre-generated UUID for new conversations)
     private var currentConversationId: String? = savedStateHandle.get<String>(CONVERSATION_ID_KEY)
+
+    // Track whether the current conversation has been saved to Firestore yet
+    private var isConversationSaved: Boolean = savedStateHandle.get<Boolean>(CONVERSATION_SAVED_KEY) ?: false
 
     // Reactive user ID flow for auth state changes
     private val _userIdFlow = MutableStateFlow(currentUserId)
@@ -157,27 +163,35 @@ class ChatViewModel(
 
     /**
      * Start a new conversation (saves current and clears messages)
+     * Generates a UUID upfront to allow immediate image uploads to consistent storage path.
      */
     fun startNewConversation() {
         saveCurrentConversation()
-        currentConversationId = null
-        savedStateHandle[CONVERSATION_ID_KEY] = null
+        // Generate UUID upfront for immediate image uploads
+        currentConversationId = imageStorageRepository.generateConversationId()
+        savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
+        isConversationSaved = false
+        savedStateHandle[CONVERSATION_SAVED_KEY] = false
         updateMessages(emptyList())
         // Reset chat for fresh context
         chat = model.startChat()
-        Log.d(TAG, "Started new conversation")
+        Log.d(TAG, "Started new conversation with pre-generated ID: $currentConversationId")
     }
 
     /**
      * Clear current conversation and start fresh (used after deleting current conversation)
+     * Generates a UUID upfront to allow immediate image uploads.
      */
     private fun clearCurrentConversation() {
-        currentConversationId = null
-        savedStateHandle[CONVERSATION_ID_KEY] = null
+        // Generate UUID upfront for immediate image uploads
+        currentConversationId = imageStorageRepository.generateConversationId()
+        savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
+        isConversationSaved = false
+        savedStateHandle[CONVERSATION_SAVED_KEY] = false
         updateMessages(emptyList())
         // Reset chat for fresh context
         chat = model.startChat()
-        Log.d(TAG, "Cleared current conversation")
+        Log.d(TAG, "Cleared current conversation, new pre-generated ID: $currentConversationId")
     }
 
     /**
@@ -193,10 +207,19 @@ class ChatViewModel(
                 if (conversation != null) {
                     currentConversationId = conversationId
                     savedStateHandle[CONVERSATION_ID_KEY] = conversationId
+                    // Mark as saved since it's loaded from Firestore
+                    isConversationSaved = true
+                    savedStateHandle[CONVERSATION_SAVED_KEY] = true
 
-                    // Convert Firestore messages to ChatMessage
+                    // Convert Firestore messages to ChatMessage (include imageUrl for history display)
                     val chatMessages = conversation.messages.map { msg ->
-                        ChatMessage(msg.text, msg.isUser, isLoading = false)
+                        ChatMessage(
+                            text = msg.text,
+                            isUser = msg.isUser,
+                            isLoading = false,
+                            imageUri = null,  // Local URI not available when loading from Firestore
+                            imageUrl = msg.imageUrl  // Remote URL for display
+                        )
                     }
                     updateMessages(chatMessages)
 
@@ -276,12 +299,13 @@ class ChatViewModel(
         // Capture values NOW to prevent race conditions with startNewConversation()
         val conversationIdToSave = currentConversationId
         val messagesToSave = _messages.value.toList()
+        val wasAlreadySaved = isConversationSaved
 
         // Don't save empty conversations or conversations with only loading messages
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         viewModelScope.launch {
-            saveConversationInternal(userId, conversationIdToSave, messagesToSave)
+            saveConversationInternal(userId, conversationIdToSave, messagesToSave, wasAlreadySaved)
         }
     }
 
@@ -294,11 +318,12 @@ class ChatViewModel(
         // Capture values NOW to prevent race conditions
         val conversationIdToSave = currentConversationId
         val messagesToSave = _messages.value.toList()
+        val wasAlreadySaved = isConversationSaved
 
         // Don't save empty conversations or conversations with only loading messages
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
-        saveConversationInternal(userId, conversationIdToSave, messagesToSave)
+        saveConversationInternal(userId, conversationIdToSave, messagesToSave, wasAlreadySaved)
     }
 
     /**
@@ -306,13 +331,15 @@ class ChatViewModel(
      * Uses NonCancellable to ensure save completes even when coroutine is cancelled.
      *
      * @param userId The user ID to save under
-     * @param conversationIdToSave The conversation ID captured at save request time (null for new)
+     * @param conversationIdToSave The conversation ID captured at save request time (pre-generated UUID)
      * @param messagesToSave The messages captured at save request time
+     * @param wasAlreadySaved Whether this conversation was already saved to Firestore
      */
     private suspend fun saveConversationInternal(
         userId: String,
         conversationIdToSave: String?,
-        messagesToSave: List<ChatMessage>
+        messagesToSave: List<ChatMessage>,
+        wasAlreadySaved: Boolean
     ) {
         withContext(NonCancellable) {
             saveMutex.withLock {
@@ -320,12 +347,13 @@ class ChatViewModel(
                 if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return@withLock
 
                 try {
-                    // Convert ChatMessages to Firestore Messages
+                    // Convert ChatMessages to Firestore Messages (include imageUrl for persistence)
                     val firestoreMessages = messagesToSave.filter { !it.isLoading }.map { msg ->
                         Message(
                             text = msg.text,
                             isUser = msg.isUser,
-                            timestamp = Timestamp.now()
+                            timestamp = Timestamp.now(),
+                            imageUrl = msg.imageUrl
                         )
                     }
 
@@ -335,24 +363,23 @@ class ChatViewModel(
                     } ?: "New Conversation"
 
                     val conversation = Conversation(
-                        id = conversationIdToSave ?: "",  // Use CAPTURED ID, not currentConversationId
+                        id = conversationIdToSave ?: "",  // Use pre-generated UUID
                         userId = userId,
                         title = title,
                         messages = firestoreMessages
                     )
 
-                    val savedId = chatRepository.saveConversation(conversation)
+                    // Pass isNew flag to handle pre-generated UUID correctly
+                    val isNew = !wasAlreadySaved && conversationIdToSave != null
+                    chatRepository.saveConversation(conversation, isNew = isNew)
 
-                    // Only update currentConversationId if:
-                    // 1. This was a new conversation (conversationIdToSave was null), AND
-                    // 2. The current conversation ID is STILL null (user hasn't started another new one)
-                    if (conversationIdToSave == null && currentConversationId == null) {
-                        currentConversationId = savedId
-                        savedStateHandle[CONVERSATION_ID_KEY] = savedId
-                        Log.d(TAG, "Set new conversation ID: $savedId")
+                    // Mark as saved after successful save
+                    if (!wasAlreadySaved) {
+                        isConversationSaved = true
+                        savedStateHandle[CONVERSATION_SAVED_KEY] = true
                     }
 
-                    Log.d(TAG, "Saved conversation: $savedId (was new: ${conversationIdToSave == null})")
+                    Log.d(TAG, "Saved conversation: ${conversationIdToSave ?: "new"} (isNew: $isNew)")
                 } catch (e: Exception) {
                     Log.e(TAG, "Error saving conversation: ${e.message}")
                 }
@@ -363,13 +390,23 @@ class ChatViewModel(
     fun sendMessage(userText: String, imageUri: Uri? = null) {
         if (userText.isBlank() && imageUri == null) return
 
-        // Add user message (with image URI if present)
+        val userId = currentUserId
+        // Ensure we have a conversation ID for image uploads
+        if (currentConversationId == null) {
+            currentConversationId = imageStorageRepository.generateConversationId()
+            savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
+            Log.d(TAG, "Generated conversation ID on first message: $currentConversationId")
+        }
+        val conversationId = currentConversationId!!
+
+        // Add user message (with image URI if present, imageUrl will be set after upload)
         val userMessage = ChatMessage(
             text = userText.ifBlank { "[Image attached]" },
             isUser = true,
             imageUri = imageUri?.toString()
         )
         val currentMessages = _messages.value.toMutableList()
+        val userMessageIndex = currentMessages.size
         currentMessages.add(userMessage)
 
         // Add loading message
@@ -383,6 +420,33 @@ class ChatViewModel(
         currentRequestJob?.cancel()
 
         currentRequestJob = viewModelScope.launch {
+            // Upload image immediately if present (parallel with AI call preparation)
+            var uploadedImageUrl: String? = null
+            if (imageUri != null && userId != null) {
+                try {
+                    Log.d(TAG, "Uploading image to Firebase Storage...")
+                    uploadedImageUrl = imageStorageRepository.uploadImage(
+                        getApplication<Application>().applicationContext,
+                        userId,
+                        conversationId,
+                        imageUri
+                    )
+                    Log.d(TAG, "Image uploaded successfully: $uploadedImageUrl")
+
+                    // Update the user message with the uploaded URL
+                    val updatedMessages = _messages.value.toMutableList()
+                    if (userMessageIndex < updatedMessages.size) {
+                        updatedMessages[userMessageIndex] = updatedMessages[userMessageIndex].copy(
+                            imageUrl = uploadedImageUrl
+                        )
+                        updateMessages(updatedMessages)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to upload image: ${e.message}", e)
+                    // Continue with AI call even if upload fails - image is still available locally
+                }
+            }
+
             val animationJob = launch {
                 while (isActive) {
                     delay(AppConstants.LOADING_MESSAGE_INTERVAL_MS)

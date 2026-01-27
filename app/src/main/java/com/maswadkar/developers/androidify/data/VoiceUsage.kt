@@ -27,7 +27,7 @@ data class VoiceUsage(
          * Default monthly limit in minutes.
          * Easy to change this value to adjust the free tier limit.
          */
-        const val DEFAULT_MONTHLY_LIMIT_MINUTES = 5.0
+        const val DEFAULT_MONTHLY_LIMIT_MINUTES = 2.0
 
         /**
          * Collection name in Firestore

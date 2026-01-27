@@ -51,6 +51,13 @@ android {
             "WEATHER_API_KEY",
             "\"${localProperties.getProperty("WEATHER_API_KEY", "")}\""
         )
+
+        // Supplier WhatsApp number fallback (Firebase Remote Config is primary)
+        buildConfigField(
+            "String",
+            "SUPPLIER_WHATSAPP_NUMBER",
+            "\"${localProperties.getProperty("SUPPLIER_WHATSAPP_NUMBER", "919403513382")}\""
+        )
     }
 
     androidResources {
@@ -97,6 +104,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.config)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     

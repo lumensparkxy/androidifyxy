@@ -180,4 +180,13 @@
     <string name="choose_gallery">Choose from Gallery</string>
     <string name="analyze_plant">Analyze Plant</string>
     <string name="plant_diagnosis_prompt">Analyze this crop/plant image carefully. Identify any diseases, pests, nutrient deficiencies, or other issues visible. Provide:\n1. Diagnosis (what is the problem)\n2. Possible causes\n3. Treatment recommendations\n4. Preventive measures for the future</string>
+
+    <!-- Product Recommendation Tiles -->
+    <string name="product_recommendation_cta">Check best offers</string>
+    <string name="product_recommendation_whatsapp_message">Hi, I\'m interested in %1$s%2$s as suggested by Krishi AI. Please share the best available offers.</string>
+    <string name="product_type_pesticide">Pesticide</string>
+    <string name="product_type_fertilizer">Fertilizer</string>
+    <string name="product_type_seed">Seed</string>
+    <string name="product_type_equipment">Equipment</string>
+    <string name="product_type_other">Product</string>
 </resources>

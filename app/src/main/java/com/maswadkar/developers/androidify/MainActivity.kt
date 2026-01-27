@@ -20,6 +20,7 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.navigation.AppNavigation
 import com.maswadkar.developers.androidify.ui.navigation.Screen
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
+import com.maswadkar.developers.androidify.util.AppConfigManager
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -34,6 +35,9 @@ class MainActivity : ComponentActivity() {
 
         // Initialize Mobile Ads SDK
         MobileAds.initialize(this) {}
+
+        // Initialize Remote Config for app configuration
+        AppConfigManager.initialize()
 
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
