@@ -170,5 +170,14 @@
     <string name="choose_gallery">గ్యాలరీ నుండి ఎంచుకోండి</string>
     <string name="analyze_plant">మొక్క విశ్లేషించండి</string>
     <string name="plant_diagnosis_prompt">ఈ పంట/మొక్క చిత్రాన్ని జాగ్రత్తగా విశ్లేషించండి. ఏదైనా వ్యాధులు, పురుగులు, పోషక లోపాలు లేదా ఇతర సమస్యలను గుర్తించండి. అందించండి:\n1. నిర్ధారణ (సమస్య ఏమిటి)\n2. సంభావ్య కారణాలు\n3. చికిత్స సిఫార్సులు\n4. భవిష్యత్తు కోసం నివారణ చర్యలు</string>
+
+    <!-- Product Recommendation Tiles -->
+    <string name="product_recommendation_cta">ఉత్తమ ఆఫర్లు చూడండి</string>
+    <string name="product_recommendation_whatsapp_message">నమస్కారం, కృషి AI సూచించిన %1$s%2$s పై నాకు ఆసక్తి ఉంది. దయచేసి ఉత్తమ అందుబాటులో ఉన్న ఆఫర్లను షేర్ చేయండి.</string>
+    <string name="product_type_pesticide">పురుగుమందు</string>
+    <string name="product_type_fertilizer">ఎరువు</string>
+    <string name="product_type_seed">విత్తనం</string>
+    <string name="product_type_equipment">పరికరాలు</string>
+    <string name="product_type_other">ఉత్పత్తి</string>
 </resources>
 

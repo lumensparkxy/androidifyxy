@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
@@ -20,7 +21,8 @@ import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.navigation.AppNavigation
 import com.maswadkar.developers.androidify.ui.navigation.Screen
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
-import kotlinx.coroutines.runBlocking
+import com.maswadkar.developers.androidify.util.AppConfigManager
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -34,6 +36,9 @@ class MainActivity : ComponentActivity() {
 
         // Initialize Mobile Ads SDK
         MobileAds.initialize(this) {}
+
+        // Initialize Remote Config for app configuration
+        AppConfigManager.initialize()
 
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
@@ -79,9 +84,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Use runBlocking to ensure save completes before app exits
-        // This blocks the main thread briefly but ensures data is not lost
-        runBlocking {
+        // Use lifecycleScope to save the conversation without blocking the main thread
+        // The coroutine uses NonCancellable context internally to ensure save completes
+        lifecycleScope.launch {
             chatViewModel.saveCurrentConversationSync()
         }
     }

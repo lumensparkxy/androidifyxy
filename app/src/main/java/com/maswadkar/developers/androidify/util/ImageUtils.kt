@@ -7,13 +7,11 @@ import android.graphics.Matrix
 import androidx.core.graphics.scale
 import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import java.io.ByteArrayOutputStream
 import kotlin.math.max
 
 object ImageUtils {
 
     private const val MAX_DIMENSION = 1024
-    private const val JPEG_QUALITY = 80
 
     /**
      * Load and compress an image from URI to a Bitmap with max dimension of 1024px
@@ -63,23 +61,6 @@ object ImageUtils {
         }
     }
 
-    /**
-     * Compress a Bitmap directly (used for camera captures)
-     */
-    @Suppress("unused")
-    fun compressBitmap(bitmap: Bitmap): Bitmap {
-        return scaleToMaxDimension(bitmap, MAX_DIMENSION)
-    }
-
-    /**
-     * Convert Bitmap to ByteArray with JPEG compression
-     */
-    @Suppress("unused")
-    fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
-        val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, outputStream)
-        return outputStream.toByteArray()
-    }
 
     private fun calculateSampleSize(width: Int, height: Int, maxDimension: Int): Int {
         var sampleSize = 1

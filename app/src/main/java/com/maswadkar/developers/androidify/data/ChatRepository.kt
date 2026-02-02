@@ -42,9 +42,13 @@ class ChatRepository {
     }
 
     /**
-     * Save or update a conversation
+     * Save or update a conversation.
+     * Handles both auto-generated Firestore IDs and pre-generated UUIDs for image storage paths.
+     *
+     * @param conversation The conversation to save
+     * @param isNew Whether this is a new conversation (uses set instead of update for pre-generated IDs)
      */
-    suspend fun saveConversation(conversation: Conversation): String {
+    suspend fun saveConversation(conversation: Conversation, isNew: Boolean = false): String {
         return try {
             val conversationData = hashMapOf(
                 "userId" to conversation.userId,
@@ -53,20 +57,30 @@ class ChatRepository {
                     hashMapOf(
                         "text" to msg.text,
                         "isUser" to msg.isUser,
-                        "timestamp" to msg.timestamp
+                        "timestamp" to msg.timestamp,
+                        "imageUrl" to msg.imageUrl
                     )
                 },
                 "updatedAt" to Timestamp.now()
             )
 
             if (conversation.id.isEmpty()) {
-                // New conversation
+                // New conversation without pre-generated ID (legacy path)
                 conversationData["createdAt"] = Timestamp.now()
                 val docRef = firestore.collection(CONVERSATIONS_COLLECTION)
                     .add(conversationData)
                     .await()
-                Log.d(TAG, "Created new conversation: ${docRef.id}")
+                Log.d(TAG, "Created new conversation (auto-ID): ${docRef.id}")
                 docRef.id
+            } else if (isNew) {
+                // New conversation with pre-generated UUID (for image storage path consistency)
+                conversationData["createdAt"] = Timestamp.now()
+                firestore.collection(CONVERSATIONS_COLLECTION)
+                    .document(conversation.id)
+                    .set(conversationData)
+                    .await()
+                Log.d(TAG, "Created new conversation (pre-generated ID): ${conversation.id}")
+                conversation.id
             } else {
                 // Update existing conversation
                 firestore.collection(CONVERSATIONS_COLLECTION)

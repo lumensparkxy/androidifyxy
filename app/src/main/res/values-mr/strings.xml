@@ -170,4 +170,13 @@
     <string name="choose_gallery">गॅलरीतून निवडा</string>
     <string name="analyze_plant">वनस्पती विश्लेषण करा</string>
     <string name="plant_diagnosis_prompt">या पीक/वनस्पतीच्या प्रतिमेचे काळजीपूर्वक विश्लेषण करा. कोणतेही रोग, कीटक, पोषक तत्वांची कमतरता किंवा इतर समस्या ओळखा. प्रदान करा:\n1. निदान (समस्या काय आहे)\n2. संभाव्य कारणे\n3. उपचार शिफारसी\n4. भविष्यासाठी प्रतिबंधात्मक उपाय</string>
+
+    <!-- Product Recommendation Tiles -->
+    <string name="product_recommendation_cta">सर्वोत्तम ऑफर पहा</string>
+    <string name="product_recommendation_whatsapp_message">नमस्कार, मला कृषी AI ने सुचवलेल्या %1$s%2$s मध्ये रस आहे. कृपया सर्वोत्तम उपलब्ध ऑफर शेअर करा.</string>
+    <string name="product_type_pesticide">कीटकनाशक</string>
+    <string name="product_type_fertilizer">खत</string>
+    <string name="product_type_seed">बियाणे</string>
+    <string name="product_type_equipment">उपकरणे</string>
+    <string name="product_type_other">उत्पादन</string>
 </resources>

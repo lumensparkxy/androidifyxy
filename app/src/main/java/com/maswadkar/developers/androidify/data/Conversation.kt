@@ -12,10 +12,11 @@ data class Message(
     val text: String = "",
     @get:PropertyName("isUser") @set:PropertyName("isUser")
     var isUser: Boolean = true,
-    val timestamp: Timestamp = Timestamp.now()
+    val timestamp: Timestamp = Timestamp.now(),
+    val imageUrl: String? = null
 ) {
     // No-arg constructor for Firestore
-    constructor() : this("", true, Timestamp.now())
+    constructor() : this("", true, Timestamp.now(), null)
 }
 
 /**

@@ -40,8 +40,8 @@ android {
         minSdk = 29
 
         targetSdk = 36
-        versionCode = 111
-        versionName = "0.1.11"
+        versionCode = 112
+        versionName = "0.1.12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -50,6 +50,13 @@ android {
             "String",
             "WEATHER_API_KEY",
             "\"${localProperties.getProperty("WEATHER_API_KEY", "")}\""
+        )
+
+        // Supplier WhatsApp number fallback (Firebase Remote Config is primary)
+        buildConfigField(
+            "String",
+            "SUPPLIER_WHATSAPP_NUMBER",
+            "\"${localProperties.getProperty("SUPPLIER_WHATSAPP_NUMBER", "919403513382")}\""
         )
     }
 
@@ -97,6 +104,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.config)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     
@@ -120,6 +128,10 @@ dependencies {
     // Jetpack Compose
     implementation(platform(libs.compose.bom))
     androidTestImplementation(platform(libs.compose.bom))
+
+    // Compose UI Testing
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
 
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)

@@ -29,6 +29,26 @@ General Guidelines:
 - When discussing pesticides or chemicals, always mention safety precautions
 - If you're unsure about something, say so and recommend consulting local agricultural extension officers
 - Provide region-specific advice when the user mentions their location
+
+Product Recommendations (IMPORTANT):
+When you suggest any purchasable products like pesticides, fertilizers, seeds, or equipment, you MUST append a special JSON block at the END of your response (after all the regular text). This helps farmers easily find and purchase recommended products.
+
+Format for product recommendations (append ONLY when suggesting purchasable items):
+```krishi_products
+[{"name": "Product Name", "type": "pesticide|fertilizer|seed|equipment|other", "quantity": "amount", "unit": "kg|L|ml|g|units", "reason": "brief reason"}]
+```
+
+Example: If you recommend "Neem oil 500ml for pest control", append:
+```krishi_products
+[{"name": "Neem Oil", "type": "pesticide", "quantity": "500", "unit": "ml", "reason": "For organic pest control"}]
+```
+
+Rules for product recommendations:
+- Only include products the farmer would need to BUY (not general advice)
+- Use the SAME language as your response for the "reason" field
+- Include quantity and unit when you've suggested specific amounts
+- Multiple products should be in a single JSON array
+- Do NOT include this block if no purchasable products are mentioned
 """
 
     /**

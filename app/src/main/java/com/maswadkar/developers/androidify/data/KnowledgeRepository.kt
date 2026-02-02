@@ -39,11 +39,6 @@ class KnowledgeRepository {
                 .get()
                 .await()
 
-            Log.d(TAG, "Got ${snapshot.documents.size} documents from Firestore")
-
-            snapshot.documents.forEach { doc ->
-                Log.d(TAG, "Document ${doc.id}: ${doc.data}")
-            }
 
             val crops = snapshot.documents.mapNotNull { doc ->
                 try {
@@ -74,11 +69,8 @@ class KnowledgeRepository {
                 .get()
                 .await()
 
-            Log.d(TAG, "Got ${snapshot.documents.size} documents from Firestore")
-
             val documents = snapshot.documents.mapNotNull { doc ->
                 try {
-                    Log.d(TAG, "Document ${doc.id}: ${doc.data}")
                     doc.toObject(KnowledgeDocument::class.java)?.copy(id = doc.id)
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing document ${doc.id}: ${e.message}")
@@ -99,13 +91,10 @@ class KnowledgeRepository {
      */
     suspend fun getDocumentDownloadUrl(storagePath: String): String? {
         return try {
-            Log.d(TAG, "Getting download URL for: $storagePath")
             val storageRef = storage.reference.child(storagePath)
-            val url = storageRef.downloadUrl.await().toString()
-            Log.d(TAG, "Download URL: $url")
-            url
+            storageRef.downloadUrl.await().toString()
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting download URL: ${e.message}", e)
+            Log.e(TAG, "Error getting download URL for $storagePath: ${e.message}")
             null
         }
     }

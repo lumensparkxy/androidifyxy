@@ -170,5 +170,14 @@
     <string name="choose_gallery">கேலரியில் இருந்து தேர்ந்தெடு</string>
     <string name="analyze_plant">தாவரத்தை பகுப்பாய்வு செய்</string>
     <string name="plant_diagnosis_prompt">இந்த பயிர்/தாவர படத்தை கவனமாக பகுப்பாய்வு செய்யுங்கள். நோய்கள், பூச்சிகள், ஊட்டச்சத்து குறைபாடுகள் அல்லது பிற பிரச்சனைகளை கண்டறியுங்கள். வழங்கவும்:\n1. நோயறிதல் (என்ன பிரச்சனை)\n2. சாத்தியமான காரணங்கள்\n3. சிகிச்சை பரிந்துரைகள்\n4. எதிர்காலத்திற்கான தடுப்பு நடவடிக்கைகள்</string>
+
+    <!-- Product Recommendation Tiles -->
+    <string name="product_recommendation_cta">சிறந்த சலுகைகளை பாருங்கள்</string>
+    <string name="product_recommendation_whatsapp_message">வணக்கம், கிருஷி AI பரிந்துரைத்த %1$s%2$s பற்றி ஆர்வமாக உள்ளேன். சிறந்த சலுகைகளை பகிரவும்.</string>
+    <string name="product_type_pesticide">பூச்சிக்கொல்லி</string>
+    <string name="product_type_fertilizer">உரம்</string>
+    <string name="product_type_seed">விதை</string>
+    <string name="product_type_equipment">கருவிகள்</string>
+    <string name="product_type_other">பொருள்</string>
 </resources>
 
