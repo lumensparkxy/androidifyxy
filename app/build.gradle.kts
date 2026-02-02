@@ -105,6 +105,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.config)
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.inappmessaging.display)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     

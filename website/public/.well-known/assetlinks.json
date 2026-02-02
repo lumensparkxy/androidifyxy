@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.maswadkar.developers.androidify",
+      "sha256_cert_fingerprints": [
+        "88:82:9D:28:66:46:ED:09:3A:75:DB:B5:E5:90:18:34:13:0B:D1:C7:B3:3E:32:F2:5D:BC:47:12:7B:4A:12:82",
+        "E9:93:05:10:B8:BF:95:7C:A6:89:E1:68:35:BE:E9:12:E6:B4:88:26:D9:FE:E4:9A:3F:4D:52:46:A8:74:C4:7D"
+      ]
+    }
+  }
+]

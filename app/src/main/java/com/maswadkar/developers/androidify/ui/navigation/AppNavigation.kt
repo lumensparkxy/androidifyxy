@@ -7,7 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -17,6 +20,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.maswadkar.developers.androidify.ChatViewModel
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.auth.AuthState
@@ -50,18 +54,26 @@ fun AppNavigation(
     val messages by chatViewModel.messages.collectAsState()
     val conversations by chatViewModel.conversationsFlow.collectAsState()
 
-    // Handle auth state changes
+    // Track if this is initial composition to avoid overriding deep link navigation
+    var isInitialLoad by remember { mutableStateOf(true) }
+
+    // Handle auth state changes (only after initial load)
     LaunchedEffect(authState) {
         when (authState) {
             is AuthState.Authenticated -> {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
+                if (!isInitialLoad) {
+                    // Only navigate to Home on auth state change (e.g., after login)
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
+                isInitialLoad = false
             }
             is AuthState.Unauthenticated -> {
                 navController.navigate(Screen.Login.route) {
                     popUpTo(0) { inclusive = true }
                 }
+                isInitialLoad = false
             }
             else -> {}
         }
@@ -235,7 +247,13 @@ fun AppNavigation(
             )
         }
 
-        composable(Screen.KnowledgeBase.route) {
+        composable(
+            route = Screen.KnowledgeBase.route,
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "krishiai://app/knowledge_base" },
+                navDeepLink { uriPattern = "https://maswadkar.com/app/knowledge_base" }
+            )
+        ) {
             KnowledgeBaseScreen(
                 onBackClick = { navController.popBackStack() },
                 onCropClick = { cropId, cropName ->
