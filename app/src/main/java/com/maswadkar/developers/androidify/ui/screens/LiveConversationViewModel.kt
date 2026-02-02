@@ -99,7 +99,7 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
 
     // Configure the Live Model with audio input/output
     private val liveModel by lazy {
-        Firebase.ai(backend = GenerativeBackend.vertexAI())
+        Firebase.ai(backend = GenerativeBackend.vertexAI("global"))
             .liveModel(
                 modelName = LIVE_MODEL_NAME,
                 generationConfig = liveGenerationConfig {

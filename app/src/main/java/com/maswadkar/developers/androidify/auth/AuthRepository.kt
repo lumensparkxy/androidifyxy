@@ -1,7 +1,6 @@
 package com.maswadkar.developers.androidify.auth
 
 import android.app.Activity
-import android.content.Context
 import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
@@ -22,12 +21,14 @@ import com.google.firebase.auth.PhoneAuthCredential
 import com.google.firebase.auth.PhoneAuthOptions
 import com.google.firebase.auth.PhoneAuthProvider
 import kotlinx.coroutines.tasks.await
+import java.security.MessageDigest
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-class AuthRepository(private val context: Context) {
+class AuthRepository(private val activity: Activity) {
 
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val credentialManager: CredentialManager = CredentialManager.create(context)
+    private val credentialManager: CredentialManager = CredentialManager.create(activity)
 
     // Web client ID from google-services.json (client_type: 3)
     companion object {
@@ -39,6 +40,17 @@ class AuthRepository(private val context: Context) {
         get() = firebaseAuth.currentUser
 
     fun isUserSignedIn(): Boolean = currentUser != null
+
+    /**
+     * Generate a nonce for credential requests (improves security and fixes some GMS issues)
+     */
+    private fun generateNonce(): String {
+        val rawNonce = UUID.randomUUID().toString()
+        val bytes = rawNonce.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        return digest.fold("") { str, it -> str + "%02x".format(it) }
+    }
 
     suspend fun signInWithGoogle(): Result<FirebaseUser> {
         return try {
@@ -52,11 +64,23 @@ class AuthRepository(private val context: Context) {
             Result.failure(Exception("Sign-in was cancelled"))
         } catch (e: GetCredentialException) {
             Log.e(TAG, "GetCredentialException: ${e.message}")
-            // Fallback to sign-in button flow
-            trySignInWithGoogleButton()
+            // Check for DEVELOPER_ERROR which indicates Firebase configuration issue
+            if (e.message?.contains("DEVELOPER_ERROR") == true ||
+                e.message?.contains("Unknown calling package") == true) {
+                Log.e(TAG, "DEVELOPER_ERROR: Check Firebase Console OAuth configuration")
+                Result.failure(Exception("Authentication configuration error. Please try again later."))
+            } else {
+                // Fallback to sign-in button flow for other errors
+                trySignInWithGoogleButton()
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Sign-in error: ${e.message}")
-            Result.failure(e)
+            // Handle SecurityException from GMS
+            if (e.message?.contains("Unknown calling package") == true) {
+                Result.failure(Exception("Authentication configuration error. Please try again later."))
+            } else {
+                Result.failure(e)
+            }
         }
     }
 
@@ -65,6 +89,7 @@ class AuthRepository(private val context: Context) {
             .setFilterByAuthorizedAccounts(true)
             .setServerClientId(WEB_CLIENT_ID)
             .setAutoSelectEnabled(true)
+            .setNonce(generateNonce())
             .build()
 
         val request = GetCredentialRequest.Builder()
@@ -73,7 +98,7 @@ class AuthRepository(private val context: Context) {
 
         val result = credentialManager.getCredential(
             request = request,
-            context = context as android.app.Activity
+            context = activity
         )
 
         return handleSignInResult(result)
@@ -82,6 +107,7 @@ class AuthRepository(private val context: Context) {
     private suspend fun trySignInWithGoogleButton(): Result<FirebaseUser> {
         return try {
             val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(WEB_CLIENT_ID)
+                .setNonce(generateNonce())
                 .build()
 
             val request = GetCredentialRequest.Builder()
@@ -90,7 +116,7 @@ class AuthRepository(private val context: Context) {
 
             val result = credentialManager.getCredential(
                 request = request,
-                context = context as android.app.Activity
+                context = activity
             )
 
             handleSignInResult(result)

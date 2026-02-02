@@ -162,49 +162,6 @@ class MandiPriceRepository {
     }
 
     /**
-     * Get the latest price for each commodity in a given location
-     * This is useful when today's data is not available - shows the most recent price
-     */
-    @Suppress("unused")
-    suspend fun getLatestPricePerCommodity(
-        state: String,
-        district: String,
-        market: String? = null
-    ): List<MandiPrice> {
-        return try {
-            var query: Query = firestore.collection(COLLECTION_NAME)
-                .whereEqualTo("state", state)
-                .whereEqualTo("district", district)
-
-            market?.let { query = query.whereEqualTo("market", it) }
-
-            // Order by date descending
-            query = query.orderBy("arrival_date_parsed", Query.Direction.DESCENDING)
-
-            val snapshot = query.get().await()
-
-            // Group by commodity and take latest for each
-            val prices = snapshot.documents.mapNotNull { doc ->
-                try {
-                    doc.toObject(MandiPrice::class.java)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing document ${doc.id}: ${e.message}")
-                    null
-                }
-            }
-
-            // Group by commodity+market+variety and take the first (latest) of each
-            prices.groupBy { "${it.commodity}_${it.market}_${it.variety}" }
-                .values
-                .mapNotNull { it.firstOrNull() }
-                .sortedBy { it.commodity }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching latest prices: ${e.message}")
-            emptyList()
-        }
-    }
-
-    /**
      * Get the data date (most recent arrival date in the dataset)
      */
     suspend fun getLatestDataDate(state: String, district: String): String? {
@@ -224,26 +181,6 @@ class MandiPriceRepository {
         }
     }
 
-    /**
-     * Search commodities by name
-     */
-    @Suppress("unused")
-    suspend fun searchCommodities(query: String): List<String> {
-        return try {
-            val snapshot = firestore.collection(COLLECTION_NAME)
-                .get()
-                .await()
-
-            snapshot.documents
-                .mapNotNull { it.getString("commodity") }
-                .distinct()
-                .filter { it.contains(query, ignoreCase = true) }
-                .sorted()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error searching commodities: ${e.message}")
-            emptyList()
-        }
-    }
 
     /**
      * Get user's saved Mandi preferences
