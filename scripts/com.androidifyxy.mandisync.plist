@@ -34,9 +34,9 @@
         <false/>
     </dict>
 
-    <!-- Throttle restarts (don't restart more than once per 60 seconds) -->
+    <!-- Throttle restarts (don't restart more than once per 100 seconds) -->
     <key>ThrottleInterval</key>
-    <integer>60</integer>
+    <integer>100</integer>
 
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
