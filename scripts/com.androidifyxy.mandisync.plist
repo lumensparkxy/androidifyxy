@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Unique identifier for the service -->
+    <key>Label</key>
+    <string>com.androidifyxy.mandisync</string>
+
+    <!-- Description -->
+    <key>ServiceDescription</key>
+    <string>Mandi Price Sync Service - Fetches agricultural market prices every hour</string>
+
+    <!-- Program to run -->
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Path to Python in the virtual environment -->
+        <string>/Users/m1/AndroidStudioProjects/androidifyxy/scripts/venv/bin/python</string>
+        <string>/Users/m1/AndroidStudioProjects/androidifyxy/scripts/mandi_sync_service.py</string>
+    </array>
+
+    <!-- Working directory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/m1/AndroidStudioProjects/androidifyxy/scripts</string>
+
+    <!-- Run at load (startup) -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep alive - restart if it crashes -->
+    <key>KeepAlive</key>
+    <dict>
+        <!-- Restart if it exits unexpectedly -->
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+
+    <!-- Throttle restarts (don't restart more than once per 60 seconds) -->
+    <key>ThrottleInterval</key>
+    <integer>60</integer>
+
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>FIREBASE_APPLICATION_CREDENTIALS</key>
+        <string>/Users/m1/AndroidStudioProjects/androidifyxy/scripts/serviceAccountKey.json</string>
+    </dict>
+
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>/tmp/mandisync.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/mandisync.log</string>
+
+    <!-- Nice level (lower priority to not affect other processes) -->
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <!-- Process type (Background = lower priority) -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

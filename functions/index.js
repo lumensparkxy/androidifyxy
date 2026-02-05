@@ -1,17 +1,41 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const fetch = require("node-fetch");
+const https = require("https");
+const dns = require("dns");
+const fs = require("fs/promises");
+const path = require("path");
+const os = require("os");
 
 admin.initializeApp();
 
 const db = admin.firestore();
 const COLLECTION_NAME = "mandi_prices";
 const REQUEST_TIMEOUT_MS = 60000; // 60s per API call
-const FETCH_RETRIES = 2;
+const FETCH_MAX_ATTEMPTS = 5;
+const FETCH_BASE_DELAY_MS = 1500; // 1.5s base delay
+const CACHE_FILENAME = "datagov_cache.json";
+const API_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+
+const API_HTTPS_AGENT = new https.Agent({
+  keepAlive: false,
+  maxSockets: 1,
+  lookup: (hostname, options, callback) => {
+    let lookupOptions = options;
+    let lookupCallback = callback;
+
+    if (typeof lookupOptions === "function") {
+      lookupCallback = lookupOptions;
+      lookupOptions = {};
+    }
+
+    return dns.lookup(hostname, { ...lookupOptions, family: 4 }, lookupCallback);
+  },
+});
 
 // API configuration
 const API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
-const API_KEY = "579b464db66ec23bdd0000015d0d42cb9328410e6bd0a1af77fa3f53";
+const API_KEY = process.env.DATA_GOV_API_KEY || "579b464db66ec23bdd0000015d0d42cb9328410e6bd0a1af77fa3f53";
 const BATCH_SIZE = 500; // Firestore batch write limit
 
 /**
@@ -57,6 +81,7 @@ exports.syncMandiPricesManual = functions
         success: true,
         message: "Sync completed",
         recordsProcessed: result.recordsProcessed,
+        states: result.states || [],
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
@@ -70,27 +95,43 @@ exports.syncMandiPricesManual = functions
 
 /**
  * Fetch data from API and store in Firestore
+ * Fetches ALL states since data availability varies by day
  */
 async function syncPricesFromAPI() {
   let offset = 0;
-  const limit = 10000;
+  const limit = 1000; // Smaller batches to avoid API timeouts
   let totalRecords = 0;
-  const stateFilter = "Maharashtra";  
   let hasMore = true;
 
   // Delete records older than 7 days (keep recent data for fallback)
   await deleteOldRecords(7);
 
+  const statesSeen = new Set();
+
   while (hasMore) {
-    const url = `${API_URL}?format=json&api-key=${API_KEY}&limit=${limit}&offset=${offset}&filters[state.keyword]=${stateFilter}`;
+    // Fetch all states - data availability varies by day
+    if (!API_KEY) {
+      throw new Error("DATA_GOV_API_KEY is missing. Set it in environment variables.");
+    }
+
+    const url = new URL(API_URL);
+    url.searchParams.set("format", "json");
+    url.searchParams.set("api-key", API_KEY);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(offset));
 
     console.log(`Fetching data with offset ${offset}...`);
-    const data = await fetchJsonWithRetry(url);
+    const data = await fetchJsonWithRetry(url.toString());
 
     if (!data.records || data.records.length === 0) {
       hasMore = false;
       break;
     }
+
+    // Track unique states
+    data.records.forEach(record => {
+      if (record.state) statesSeen.add(record.state);
+    });
 
     // Process records in batches
     await processBatch(data.records);
@@ -107,11 +148,12 @@ async function syncPricesFromAPI() {
   }
 
   console.log(`Total records synced: ${totalRecords}`);
+  console.log(`States with data: ${[...statesSeen].sort().join(', ')}`);
 
   // Update sync metadata
   await updateSyncMetadata(totalRecords);
 
-  return { recordsProcessed: totalRecords };
+  return { recordsProcessed: totalRecords, states: [...statesSeen] };
 }
 
 /**
@@ -215,40 +257,125 @@ function sanitizeForId(str) {
 /**
  * Fetch JSON with timeout and retries (handles gateway timeouts better)
  */
-async function fetchJsonWithRetry(url, retries = FETCH_RETRIES, timeoutMs = REQUEST_TIMEOUT_MS) {
-  let attempt = 0;
+async function fetchJsonWithRetry(url, timeoutMs = REQUEST_TIMEOUT_MS) {
+  const maxAttempts = FETCH_MAX_ATTEMPTS;
+  const cachePath = path.join(os.tmpdir(), CACHE_FILENAME);
   let lastError;
 
-  while (attempt <= retries) {
-    console.log(`Fetch attempt ${attempt + 1}/${retries + 1} starting...`);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    console.log(`Fetch attempt ${attempt}/${maxAttempts} starting...`);
 
     try {
-      // Use timeout option directly (node-fetch v2 supports it)
-      const response = await fetch(url, { timeout: timeoutMs });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      const response = await fetch(url, {
+        signal: controller.signal,
+        agent: API_HTTPS_AGENT,
+        headers: {
+          Accept: "application/json",
+          "User-Agent": API_USER_AGENT,
+          Connection: "close",
+        },
+      });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text().catch(() => "");
+        throw new Error(
+          `API request failed: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`
+        );
       }
 
       const data = await response.json();
-      console.log(`Fetch attempt ${attempt + 1} succeeded, got ${data.records?.length || 0} records`);
+      console.log(`Fetch attempt ${attempt} succeeded, got ${data.records?.length || 0} records`);
+
+      await fs.writeFile(cachePath, JSON.stringify(data), "utf-8");
       return data;
     } catch (error) {
-      lastError = error;
-      attempt++;
+      // Retry with HTTPS client if the remote endpoint resets the connection
+      if (error?.code === "ECONNRESET" || `${error?.message || ""}`.includes("ECONNRESET")) {
+        try {
+          const data = await fetchJsonWithHttps(url, timeoutMs);
+          console.log(`Fetch attempt ${attempt} succeeded via https fallback, got ${data.records?.length || 0} records`);
 
-      if (attempt > retries) {
-        console.error(`All ${retries + 1} fetch attempts failed. Last error: ${error.message}`);
-        throw lastError;
+          await fs.writeFile(cachePath, JSON.stringify(data), "utf-8");
+          return data;
+        } catch (fallbackError) {
+          lastError = fallbackError;
+        }
+      } else {
+        lastError = error;
       }
 
-      const backoffMs = 2000 * attempt; // 2s, 4s
-      console.warn(`Fetch attempt ${attempt} failed (${error.message}). Retrying in ${backoffMs}ms...`);
+      if (attempt === maxAttempts) {
+        break;
+      }
+
+      const jitter = Math.random() * 500;
+      const backoffMs = FETCH_BASE_DELAY_MS * Math.pow(2, attempt - 1) + jitter;
+      console.warn(`Fetch attempt ${attempt} failed (${error.message}). Retrying in ${Math.round(backoffMs)}ms...`);
       await new Promise((resolve) => setTimeout(resolve, backoffMs));
     }
   }
 
-  throw lastError;
+  try {
+    const cached = await fs.readFile(cachePath, "utf-8");
+    const data = JSON.parse(cached);
+    console.warn(`Warning: using cached data from ${cachePath} due to request failure: ${lastError?.message}`);
+    return data;
+  } catch (cacheError) {
+    console.error(`Warning: request failed and no cache found: ${lastError?.message}`);
+    throw lastError;
+  }
+}
+
+/**
+ * Fallback fetch using https module (helps with ECONNRESET from some gateways)
+ */
+function fetchJsonWithHttps(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      url,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "User-Agent": API_USER_AGENT,
+          Connection: "close",
+        },
+        agent: API_HTTPS_AGENT,
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+        res.on("end", () => {
+          if (res.statusCode < 200 || res.statusCode >= 300) {
+            return reject(
+              new Error(`API request failed: ${res.statusCode} ${res.statusMessage}${body ? ` - ${body}` : ""}`)
+            );
+          }
+
+          try {
+            const data = JSON.parse(body);
+            resolve(data);
+          } catch (parseError) {
+            reject(new Error(`Failed to parse JSON: ${parseError.message}`));
+          }
+        });
+      }
+    );
+
+    req.on("timeout", () => {
+      req.destroy(new Error("Request timed out"));
+    });
+    req.on("error", reject);
+    req.end();
+  });
 }
 
 /**

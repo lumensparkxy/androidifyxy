@@ -1,0 +1,10 @@
+# Mandi Sync Service Dependencies
+
+# HTTP requests with retry support
+requests>=2.31.0
+
+# Firebase Admin SDK
+firebase-admin>=6.4.0
+
+# For loading .env files (optional)
+python-dotenv>=1.0.0
