@@ -43,6 +43,9 @@
     <dict>
         <key>FIREBASE_APPLICATION_CREDENTIALS</key>
         <string>/Users/m1/AndroidStudioProjects/androidifyxy/scripts/serviceAccountKey.json</string>
+        <!-- Comma-separated list of states to sync (default: Maharashtra) -->
+        <key>MANDI_TARGET_STATES</key>
+        <string>Maharashtra</string>
     </dict>
 
     <!-- Log files -->

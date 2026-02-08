@@ -44,43 +44,10 @@ INITIAL_BACKOFF_SECONDS = 2
 # User agent to avoid being blocked
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
 
-# List of all Indian states for fetching data (API has 10k record limit, so we fetch per state)
-INDIAN_STATES = [
-    "Andaman and Nicobar",
-    "Andhra Pradesh",
-    "Arunachal Pradesh",
-    "Assam",
-    "Bihar",
-    "Chandigarh",
-    "Chattisgarh",
-    "Daman and Diu",
-    "Goa",
-    "Gujarat",
-    "Haryana",
-    "Himachal Pradesh",
-    "Jammu and Kashmir",
-    "Jharkhand",
-    "Karnataka",
-    "Kerala",
-    "Madhya Pradesh",
-    "Maharashtra",
-    "Manipur",
-    "Meghalaya",
-    "Mizoram",
-    "NCT of Delhi",
-    "Nagaland",
-    "Odisha",
-    "Puducherry",
-    "Punjab",
-    "Rajasthan",
-    "Sikkim",
-    "Tamil Nadu",
-    "Telangana",
-    "Tripura",
-    "Uttar Pradesh",
-    "Uttarakhand",
-    "West Bengal",
-]
+# Target states to fetch data for (comma-separated via env var, defaults to Maharashtra)
+# Set MANDI_TARGET_STATES env var to override, e.g. "Maharashtra,Karnataka"
+_target_states_env = os.getenv("MANDI_TARGET_STATES", "Maharashtra")
+TARGET_STATES = [s.strip() for s in _target_states_env.split(",") if s.strip()]
 
 # ============================================================================
 # Logging Setup
@@ -435,8 +402,8 @@ def sync_mandi_prices(db: firestore.Client, session: requests.Session) -> Dict[s
 
     logger.info("Starting mandi price sync (fetching by state to bypass 10k limit)...")
     
-    # Fetch records for each state
-    for state in INDIAN_STATES:
+    # Fetch records for each target state
+    for state in TARGET_STATES:
         # First check if state has any data
         data = fetch_mandi_data(session, limit=1, offset=0, state=state)
         if data is None:
@@ -457,7 +424,8 @@ def sync_mandi_prices(db: firestore.Client, session: requests.Session) -> Dict[s
             logger.info(f"  → Got {len(state_records)} records for {state}")
         
         # Delay between states to avoid rate limiting (30 seconds)
-        time.sleep(30)
+        if len(TARGET_STATES) > 1:
+            time.sleep(30)
 
     if not all_records:
         return {
@@ -502,6 +470,7 @@ def run_service():
     logger.info(f"Sync interval: {SYNC_INTERVAL_SECONDS} seconds ({SYNC_INTERVAL_SECONDS / 3600:.1f} hours)")
     logger.info(f"API URL: {API_URL}")
     logger.info(f"Firestore collection: {COLLECTION_NAME}")
+    logger.info(f"Target states: {TARGET_STATES}")
     logger.info("=" * 60)
 
     # Initialize Firebase
