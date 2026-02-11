@@ -21,3 +21,11 @@ google-services.json
 .idea/
 .next/
 .env
+
+# Python sync service
+scripts/venv/
+scripts/serviceAccountKey.json
+scripts/*.log
+__pycache__/
+*.pyc
+mandi_sync.log

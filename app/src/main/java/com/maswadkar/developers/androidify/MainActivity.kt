@@ -62,6 +62,9 @@ class MainActivity : ComponentActivity() {
         // Request notification permission for Android 13+
         requestNotificationPermission()
 
+        // Subscribe to FCM topics for broadcast notifications
+        MyFirebaseMessagingService.subscribeToDefaultTopics()
+
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
         authViewModel.initRepository(authRepository)
