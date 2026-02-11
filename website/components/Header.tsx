@@ -7,10 +7,12 @@ import { Container } from './Container';
 
 const navigation = [
   { name: 'Home', href: '/' },
+  { name: 'Plant Diagnosis', href: '/#plant-diagnosis' },
+  { name: 'AI Chat', href: '/#ai-chat' },
   { name: 'Services', href: '/services' },
+  { name: 'Supplier', href: '/supplier' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
-  { name: 'Supplier', href: '/supplier' },
 ];
 
 export function Header() {

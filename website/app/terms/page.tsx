@@ -43,11 +43,11 @@ export default function TermsPage() {
                   Krishi AI is an AI-powered agricultural assistant application that provides:
                 </p>
                 <ul className="list-disc pl-6 text-gray-600 space-y-2 mt-2">
-                  <li>AI-based farming advice and information</li>
-                  <li>Crop disease identification through image analysis</li>
-                  <li>Live agricultural commodity prices (Mandi prices)</li>
-                  <li>Voice-based conversational assistance</li>
+                  <li>Plant diagnosis (crop disease & pest insights) through image analysis</li>
+                  <li>AI-based farming advice and information (chat)</li>
                   <li>Multilingual support for Indian languages</li>
+                  <li>Live agricultural commodity prices (Mandi prices)</li>
+                  <li>Voice-based conversational assistance (optional)</li>
                 </ul>
               </div>
 

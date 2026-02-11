@@ -1,45 +1,19 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
-import { Bot, Mic, Camera, TrendingUp, History, Globe, Smartphone, MessageSquare } from 'lucide-react';
-import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button } from '@/components';
+import { Bot, Mic, Camera, TrendingUp, History, Globe, Smartphone } from 'lucide-react';
+import { Container, Button } from '@/components';
 
 export const metadata: Metadata = {
   title: 'Services - Krishi AI',
-  description: 'Explore Krishi AI\'s powerful features: AI Chat Assistant, Voice Conversations, Crop Disease Diagnosis, Live Mandi Prices, and more.',
+  description: 'Explore Krishi AI\'s powerful features: Plant Diagnosis (crop disease & pest insights), AI Chat in your local language, Live Mandi Prices, and more.',
 };
 
 const services = [
   {
-    icon: Bot,
-    title: 'AI Chat Assistant',
-    description: 'Get instant, accurate answers to all your farming questions. Our AI assistant is trained on comprehensive agricultural knowledge and understands the specific needs of Indian farmers.',
-    screenshot: '/screenshots/hero-screenshot.png',
-    features: [
-      'Expert advice on crop cultivation',
-      'Soil health and fertilizer recommendations',
-      'Pest and disease management',
-      'Weather-based farming tips',
-      'Organic farming guidance',
-    ],
-  },
-  {
-    icon: Mic,
-    title: 'Voice Conversations',
-    description: 'Speak naturally to Krishi AI in your preferred language. No need to type — just talk and get spoken responses. Perfect for hands-free use while working in the fields.',
-    screenshot: '/screenshots/voice-assistant.png',
-    features: [
-      'Real-time voice recognition',
-      'Natural language understanding',
-      'Spoken responses in your language',
-      'Works in Hindi, Marathi, English & more',
-      'Hands-free operation',
-    ],
-  },
-  {
     icon: Camera,
-    title: 'Crop Disease Diagnosis',
-    description: 'Take a photo of your affected crop and get instant disease identification. Our AI analyzes the image and provides detailed information about the disease and recommended treatments.',
-    screenshot: '/screenshots/crop-scan.png',
+    title: 'Plant Diagnosis',
+    description: 'Take a photo of your crop and get instant disease and pest insights. Krishi AI analyzes the image and suggests clear next steps and treatment guidance.',
+    screenshot: '/screenshots/krishiai_003_plant_image_diagnosis.png',
     features: [
       'Instant disease identification',
       'Detailed disease information',
@@ -49,10 +23,23 @@ const services = [
     ],
   },
   {
+    icon: Bot,
+    title: 'AI Chat Assistant (Local Language)',
+    description: 'Ask questions in your local language and get instant, practical farming guidance—crop care, fertilizers, pests, irrigation, and more.',
+    screenshot: '/screenshots/krishiai_002_chat_ai.png',
+    features: [
+      'Expert advice on crop cultivation',
+      'Soil health and fertilizer recommendations',
+      'Pest and disease management guidance',
+      'Weather-based farming tips',
+      'Organic and sustainable farming guidance',
+    ],
+  },
+  {
     icon: TrendingUp,
     title: 'Live Mandi Prices',
     description: 'Access real-time agricultural commodity prices from mandis across Maharashtra. Make informed decisions about when and where to sell your produce for the best returns.',
-    screenshot: '/screenshots/market-prices.png',
+    screenshot: '/screenshots/krishiai_005_live_mandi_prices.png',
     features: [
       'Real-time price updates',
       'Multiple commodities tracked',
@@ -63,22 +50,22 @@ const services = [
   },
   {
     icon: History,
-    title: 'Chat History',
-    description: 'All your conversations with Krishi AI are saved securely. Revisit previous advice, recommendations, and information whenever you need it.',
-    screenshot: '/screenshots/history.png',
+    title: 'Knowledge Repository',
+    description: 'Access verified, approved documents from agriculture universities—best practices, SOPs, and expert guidance for every crop stage.',
+    screenshot: '/screenshots/krishiai_004_knowledge_repository.png',
     features: [
-      'Automatic conversation saving',
-      'Easy search and retrieval',
-      'Cloud sync across devices',
-      'Secure and private',
-      'Export conversations',
+      'University-approved best practices',
+      'Crop-wise SOPs and guidelines',
+      'Searchable documents by topic',
+      'Localized and easy to follow',
+      'Always available for reference',
     ],
   },
   {
     icon: Globe,
     title: 'Multilingual Support',
     description: 'Krishi AI speaks your language. Get farming advice in Hindi, Marathi, Telugu, Tamil, Kannada, or English — making agricultural knowledge accessible to all.',
-    screenshot: '/screenshots/voice-assistant.png',
+    screenshot: '/screenshots/krishiai_007_offers.png',
     features: [
       'Hindi (हिंदी)',
       'Marathi (मराठी)',
@@ -86,6 +73,19 @@ const services = [
       'Tamil (தமிழ்)',
       'Kannada (ಕನ್ನಡ)',
       'English',
+    ],
+  },
+  {
+    icon: Mic,
+    title: 'Carbon Credit Support',
+    description: 'Understand carbon credit opportunities with clear guidance, eligibility details, and trusted contact lists to help you get started.',
+    screenshot: '/screenshots/krishiai_006_carbon_credit.png',
+    features: [
+      'Carbon credit basics, simplified',
+      'Eligibility and process overview',
+      'Verified contacts and program links',
+      'Updates on available schemes',
+      'Guidance tailored for farmers',
     ],
   },
 ];

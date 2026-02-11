@@ -28,7 +28,7 @@ const contactMethods = [
 const faqs = [
   {
     question: 'Is Krishi AI free to use?',
-    answer: 'Yes, Krishi AI is completely free to download and use. All features including AI chat, voice conversations, and Mandi prices are available at no cost.',
+    answer: 'Yes, Krishi AI is completely free to download and use. All core features including Plant Diagnosis, AI chat, and Mandi prices are available at no cost.',
   },
   {
     question: 'Which languages does Krishi AI support?',

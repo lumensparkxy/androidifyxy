@@ -2,26 +2,35 @@ import Image from 'next/image';
 import { Bot, Mic, Camera, TrendingUp, Smartphone, Globe, Shield, Zap } from 'lucide-react';
 import { Container, SectionHeading, Card, CardIcon, CardTitle, CardDescription, Button, PlayStoreBadge } from '@/components';
 
-const features = [
+type HomeFeature = {
+  id?: string;
+  icon: typeof Bot;
+  title: string;
+  description: string;
+};
+
+const features: HomeFeature[] = [
   {
-    icon: Bot,
-    title: 'AI Chat Assistant',
-    description: 'Get instant answers to all your farming questions powered by advanced AI technology.',
-  },
-  {
-    icon: Mic,
-    title: 'Voice Conversations',
-    description: 'Speak naturally in Hindi, Marathi, or English and get voice responses.',
-  },
-  {
+    id: 'plant-diagnosis',
     icon: Camera,
-    title: 'Crop Disease Diagnosis',
-    description: 'Take a photo of your crop and get instant disease identification and treatment advice.',
+    title: 'Plant Diagnosis',
+    description: 'Take a photo of your crop and get instant disease and pest insights with treatment guidance.',
+  },
+  {
+    id: 'ai-chat',
+    icon: Bot,
+    title: 'AI Chat (Local Language)',
+    description: 'Ask farming questions in your language and get clear, actionable answers instantly.',
   },
   {
     icon: TrendingUp,
     title: 'Live Mandi Prices',
     description: 'Check real-time market prices for agricultural commodities across Maharashtra.',
+  },
+  {
+    icon: Mic,
+    title: 'Voice Conversations (Optional)',
+    description: 'Prefer speaking? Talk naturally and get voice responses when you need hands-free help.',
   },
 ];
 
@@ -58,7 +67,7 @@ export default function HomePage() {
             <div className="text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                AI-Powered Farming Assistant
+                Plant Diagnosis + AI Chat
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Your Smart
@@ -66,8 +75,8 @@ export default function HomePage() {
                 <br />Companion
               </h1>
               <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
-                Krishi AI (कृषि AI) helps Indian farmers with AI-powered advice, 
-                live market prices, crop disease diagnosis, and more — all in your language.
+                Krishi AI (कृषि AI) helps Indian farmers with <strong className="text-gray-900">plant diagnosis</strong> and
+                <strong className="text-gray-900"> AI chat</strong>, plus live market prices — all in your local language.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button href="/services" size="lg">
@@ -85,7 +94,7 @@ export default function HomePage() {
                 {/* Phone Screenshot */}
                 <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
                   <Image
-                    src="/screenshots/hero-screenshot.png"
+                    src="/screenshots/krishiai_001_landing_page.png"
                     alt="Krishi AI App Screenshot"
                     width={320}
                     height={680}
@@ -107,17 +116,23 @@ export default function HomePage() {
         <Container>
           <SectionHeading
             title="Powerful Features"
-            subtitle="Everything you need to make informed farming decisions, right at your fingertips."
+            subtitle="Start with Plant Diagnosis and AI Chat — then explore everything else that makes farming easier."
           />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature) => (
-              <Card key={feature.title}>
-                <CardIcon>
-                  <feature.icon className="w-7 h-7" />
-                </CardIcon>
-                <CardTitle>{feature.title}</CardTitle>
-                <CardDescription>{feature.description}</CardDescription>
-              </Card>
+              <div
+                key={feature.title}
+                id={feature.id}
+                className={feature.id ? 'scroll-mt-24 md:scroll-mt-28' : undefined}
+              >
+                <Card>
+                  <CardIcon>
+                    <feature.icon className="w-7 h-7" />
+                  </CardIcon>
+                  <CardTitle>{feature.title}</CardTitle>
+                  <CardDescription>{feature.description}</CardDescription>
+                </Card>
+              </div>
             ))}
           </div>
         </Container>

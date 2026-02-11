@@ -46,7 +46,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc pl-6 text-gray-600 space-y-2">
                   <li>Google account information (name, email) when you sign in</li>
                   <li>Chat conversations and queries you make to the AI assistant</li>
-                  <li>Images you upload for crop disease diagnosis</li>
+                  <li>Images you upload for plant diagnosis</li>
                   <li>Your Mandi location preferences</li>
                 </ul>
 
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
                 <p className="text-gray-600 mb-4">We use the collected information to:</p>
                 <ul className="list-disc pl-6 text-gray-600 space-y-2">
                   <li>Provide AI-powered farming assistance and advice</li>
-                  <li>Process and analyze crop images for disease diagnosis</li>
+                  <li>Process and analyze crop images for plant diagnosis</li>
                   <li>Save your chat history for future reference</li>
                   <li>Display relevant Mandi prices based on your preferences</li>
                   <li>Improve our services and user experience</li>

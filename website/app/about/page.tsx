@@ -60,19 +60,17 @@ export default function AboutPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Our Mission</h2>
               </div>
               <p className="text-gray-600 text-lg mb-6">
-                Krishi AI was born from a simple observation: Indian farmers, the backbone of our nation, 
-                often lack access to timely, accurate agricultural information in their own language.
+                Krishi AI began with a simple truth: Indian farmers need reliable, local-language guidance
+                at the exact moment decisions are made.
               </p>
               <p className="text-gray-600 mb-6">
-                Our mission is to bridge this gap by putting the power of AI in every farmer&apos;s pocket. 
-                Whether it&apos;s advice on crop diseases, understanding market prices, or learning modern 
-                farming techniques — Krishi AI is always there to help, in Hindi, Marathi, or any 
-                language the farmer speaks.
+                Our mission is to deliver that guidance through plant diagnosis, AI chat, live mandi prices,
+                and a knowledge repository of university-approved SOPs — so every farmer gets clear,
+                practical next steps in Hindi, Marathi, and other local languages.
               </p>
               <p className="text-gray-600">
-                We believe that technology should be accessible to everyone, regardless of their education 
-                level or technical expertise. That&apos;s why Krishi AI is designed to be as simple as 
-                having a conversation with a knowledgeable friend.
+                We believe technology should be accessible to everyone. That&apos;s why Krishi AI is built for
+                simplicity and trust — fast answers, verified sources, and a conversation-first experience.
               </p>
             </div>
             
@@ -80,7 +78,7 @@ export default function AboutPage() {
             <div className="relative mx-auto max-w-xs">
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border-4 border-gray-900 bg-gray-900">
                 <Image
-                  src="/screenshots/hero-screenshot.png"
+                  src="/screenshots/krishiai_003_plant_image_diagnosis.png"
                   alt="Krishi AI App"
                   width={280}
                   height={600}
@@ -121,9 +119,8 @@ export default function AboutPage() {
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Our Vision</h2>
               </div>
               <p className="text-gray-600 text-lg mb-6">
-                We envision a future where every Indian farmer has access to expert agricultural 
-                knowledge at their fingertips, enabling them to make data-driven decisions and 
-                improve their livelihoods.
+                We envision an India where every farmer can make confident, profitable, and sustainable
+                decisions with trusted knowledge at their fingertips.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -132,7 +129,8 @@ export default function AboutPage() {
                   </div>
                   <p className="text-gray-600">
                     <strong className="text-gray-900">Democratize agricultural knowledge</strong> — 
-                    Make expert farming advice accessible to all, not just those who can afford consultants.
+                    Deliver verified best practices and SOPs in every local language, not just to those
+                    who can afford consultants.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
@@ -141,7 +139,7 @@ export default function AboutPage() {
                   </div>
                   <p className="text-gray-600">
                     <strong className="text-gray-900">Increase farmer income</strong> — 
-                    Help farmers get better prices by providing real-time market information.
+                    Help farmers get better prices by combining live mandi insights with actionable guidance.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
@@ -150,7 +148,8 @@ export default function AboutPage() {
                   </div>
                   <p className="text-gray-600">
                     <strong className="text-gray-900">Promote sustainable farming</strong> — 
-                    Educate farmers on organic and sustainable practices for long-term benefits.
+                    Enable climate-smart practices with clear recommendations, verified sources, and
+                    pathways like carbon credit programs and trusted contacts.
                   </p>
                 </div>
               </div>

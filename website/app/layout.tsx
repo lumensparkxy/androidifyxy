@@ -4,12 +4,12 @@ import { Header, Footer, WhatsAppFloatingButton } from '@/components';
 
 export const metadata: Metadata = {
   title: 'Krishi AI - AI Farming Assistant for Indian Farmers',
-  description: 'Krishi AI (कृषि AI) is your AI-powered farming companion. Get expert agricultural advice, live Mandi prices, crop disease diagnosis, and more in Hindi, Marathi, and English.',
-  keywords: ['Krishi AI', 'farming app', 'agriculture', 'AI farming assistant', 'Mandi prices', 'crop disease', 'Indian farmers', 'कृषि AI'],
+  description: 'Krishi AI (कृषि AI) is your AI-powered farming companion. Get plant diagnosis (crop disease & pest insights), AI chat in your local language, live Mandi prices, and more.',
+  keywords: ['Krishi AI', 'farming app', 'agriculture', 'AI farming assistant', 'plant diagnosis', 'crop disease', 'pest identification', 'Mandi prices', 'Indian farmers', 'कृषि AI'],
   authors: [{ name: 'Maswadkar Developers' }],
   openGraph: {
     title: 'Krishi AI - AI Farming Assistant',
-    description: 'Your AI-powered farming companion for Indian farmers',
+    description: 'Plant diagnosis + AI chat for Indian farmers (in your local language)',
     type: 'website',
     locale: 'en_IN',
   },
