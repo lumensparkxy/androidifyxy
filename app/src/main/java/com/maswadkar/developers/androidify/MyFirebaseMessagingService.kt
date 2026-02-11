@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -15,6 +16,7 @@ import com.google.firebase.messaging.RemoteMessage
  * Firebase Cloud Messaging service to handle:
  * - FCM token refresh
  * - Foreground notification display
+ * - Topic subscription for broadcast notifications
  */
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -22,13 +24,45 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         private const val TAG = "FCMService"
         private const val CHANNEL_ID = "krishi_notifications"
         private const val CHANNEL_NAME = "Krishi AI Notifications"
+
+        // Topic for all users - use this in Firebase Console to send to all users
+        const val TOPIC_ALL = "all"
+        const val TOPIC_PROMOTIONS = "promotions"
+        const val TOPIC_UPDATES = "updates"
+
+        /**
+         * Subscribe to default topics. Call this from MainActivity or Application class.
+         */
+        fun subscribeToDefaultTopics() {
+            val messaging = FirebaseMessaging.getInstance()
+
+            // Subscribe to "all" topic for broadcast notifications
+            messaging.subscribeToTopic(TOPIC_ALL)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d(TAG, "Subscribed to topic: $TOPIC_ALL")
+                    } else {
+                        Log.e(TAG, "Failed to subscribe to topic: $TOPIC_ALL", task.exception)
+                    }
+                }
+
+            // Subscribe to updates topic for app updates
+            messaging.subscribeToTopic(TOPIC_UPDATES)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d(TAG, "Subscribed to topic: $TOPIC_UPDATES")
+                    } else {
+                        Log.e(TAG, "Failed to subscribe to topic: $TOPIC_UPDATES", task.exception)
+                    }
+                }
+        }
     }
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "FCM Token refreshed: $token")
-        // If you need to send the token to your server, do it here
-        // For Firebase Console messaging, this is handled automatically
+        // Re-subscribe to topics when token is refreshed
+        subscribeToDefaultTopics()
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
