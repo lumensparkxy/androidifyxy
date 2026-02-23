@@ -33,12 +33,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,8 +69,6 @@ fun HistoryScreen(
     // Track optimistically deleted conversation IDs for immediate UI removal
     val deletedIds = remember { mutableStateListOf<String>() }
 
-    // Keep callback reference updated
-    val currentOnDeleteConversation by rememberUpdatedState(onDeleteConversation)
 
     // Filter out optimistically deleted items
     val visibleConversations = remember(conversations, deletedIds.toList()) {
@@ -134,19 +132,17 @@ fun HistoryScreen(
                     items = visibleConversations,
                     key = { it.id }
                 ) { conversation ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { dismissValue ->
-                            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                                // Add to deleted IDs for optimistic UI removal
-                                deletedIds.add(conversation.id)
-                                // Trigger actual delete in background
-                                currentOnDeleteConversation(conversation)
-                                true // Allow the dismiss to complete
-                            } else {
-                                false
-                            }
+                    val dismissState = rememberSwipeToDismissBoxState()
+
+                    // Observe dismiss state changes and handle deletion when swiped
+                    LaunchedEffect(dismissState.currentValue) {
+                        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                            // Add to deleted IDs for optimistic UI removal
+                            deletedIds.add(conversation.id)
+                            // Trigger actual delete in background
+                            onDeleteConversation(conversation)
                         }
-                    )
+                    }
 
                     SwipeToDismissBox(
                         state = dismissState,

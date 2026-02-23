@@ -32,7 +32,7 @@ import com.maswadkar.developers.androidify.ui.screens.HomeScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
-import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
+import com.maswadkar.developers.androidify.ui.screens.FarmerProfileScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
 import com.maswadkar.developers.androidify.ui.screens.PlantDiagnosisScreen
@@ -111,7 +111,7 @@ fun AppNavigation(
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
-                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
                 onSignOut = { authViewModel.signOut() }
             )
         }
@@ -140,7 +140,7 @@ fun AppNavigation(
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
-                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
                 onSignOut = { authViewModel.signOut() },
                 onExportConversation = {
                     val conversation = chatViewModel.getCurrentConversationForExport()
@@ -235,8 +235,8 @@ fun AppNavigation(
             )
         }
 
-        composable(Screen.MandiSettings.route) {
-            MandiPreferencesScreen(
+        composable(Screen.FarmerProfile.route) {
+            FarmerProfileScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

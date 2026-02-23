@@ -81,10 +81,32 @@
     <string name="change_location">बदला</string>
     <string name="change_location_title">स्थान बदला</string>
     <string name="cancel">रद्द करा</string>
-    <string name="menu_mandi_settings">मंडी प्राधान्ये</string>
+    <string name="menu_mandi_settings">शेतकरी प्रोफाइल</string>
     <string name="preferences_description">प्रत्येक वेळी राज्य आणि जिल्हा न निवडता जलद मंडी भाव पाहण्यासाठी आपले डीफॉल्ट स्थान सेट करा.</string>
     <string name="current_location">सध्याचे स्थान</string>
     <string name="save_preferences">प्राधान्ये जतन करा</string>
+
+    <!-- Farmer Profile Screen -->
+    <string name="farmer_profile_title">शेतकरी प्रोफाइल</string>
+    <string name="profile_section_location">स्थान</string>
+    <string name="profile_section_farm">शेत तपशील</string>
+    <string name="profile_section_contact">संपर्क माहिती</string>
+    <string name="profile_section_crops">मुख्य पिके</string>
+    <string name="profile_farm_acres">एकूण शेत आकार (एकर)</string>
+    <string name="profile_farm_acres_hint">उदा., 5.5</string>
+    <string name="profile_irrigation">सिंचन उपलब्ध</string>
+    <string name="profile_irrigation_hint">तुमच्याकडे सिंचन सुविधा आहे का?</string>
+    <string name="profile_mobile">मोबाइल नंबर</string>
+    <string name="profile_mobile_hint">10-अंकी नंबर</string>
+    <string name="profile_email">ईमेल आयडी</string>
+    <string name="profile_email_hint">your@email.com</string>
+    <string name="profile_crops_hint">तुम्ही प्रामुख्याने घेत असलेली पिके निवडा</string>
+    <string name="profile_completion">प्रोफाइल पूर्णता</string>
+    <string name="profile_completion_hint">वैयक्तिक शिफारसींसाठी तुमची प्रोफाइल पूर्ण करा</string>
+    <string name="save_profile">प्रोफाइल जतन करा</string>
+    <string name="profile_saved_success">प्रोफाइल यशस्वीरित्या जतन केली!</string>
+    <string name="yes">होय</string>
+    <string name="no">नाही</string>
 
     <!-- Live Conversation Screen -->
     <string name="live_conversation">व्हॉइस चॅट</string>

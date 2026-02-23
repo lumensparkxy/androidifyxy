@@ -11,7 +11,7 @@ sealed class Screen(val route: String) {
     data object PlantDiagnosis : Screen("plant_diagnosis")
     data object History : Screen("history")
     data object MandiPrices : Screen("mandi_prices")
-    data object MandiSettings : Screen("mandi_settings")
+    data object FarmerProfile : Screen("farmer_profile")
     data object Offers : Screen("offers")
     data object CarbonCredits : Screen("carbon_credits")
     data object KnowledgeBase : Screen("knowledge_base")

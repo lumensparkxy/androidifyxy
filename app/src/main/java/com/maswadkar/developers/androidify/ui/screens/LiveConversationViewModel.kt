@@ -47,7 +47,7 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
     companion object {
         private const val TAG = "LiveConversationVM"
         // Use the native audio model for better audio conversation support
-        private const val LIVE_MODEL_NAME = "gemini-live-2.5-flash-native-audio"
+        private const val LIVE_MODEL_NAME = "gemini-2.5-flash-native-audio"
     }
 
     private val _sessionState = MutableStateFlow<LiveSessionState>(LiveSessionState.Idle)
@@ -99,7 +99,7 @@ class LiveConversationViewModel(application: Application) : AndroidViewModel(app
 
     // Configure the Live Model with audio input/output
     private val liveModel by lazy {
-        Firebase.ai(backend = GenerativeBackend.vertexAI("global"))
+        Firebase.ai(backend = GenerativeBackend.googleAI())
             .liveModel(
                 modelName = LIVE_MODEL_NAME,
                 generationConfig = liveGenerationConfig {

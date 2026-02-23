@@ -81,10 +81,32 @@
     <string name="change_location">बदलें</string>
     <string name="change_location_title">स्थान बदलें</string>
     <string name="cancel">रद्द करें</string>
-    <string name="menu_mandi_settings">मंडी प्राथमिकताएं</string>
+    <string name="menu_mandi_settings">किसान प्रोफ़ाइल</string>
     <string name="preferences_description">हर बार राज्य और जिला चुने बिना जल्दी से मंडी भाव देखने के लिए अपना डिफ़ॉल्ट स्थान सेट करें।</string>
     <string name="current_location">वर्तमान स्थान</string>
     <string name="save_preferences">प्राथमिकताएं सहेजें</string>
+
+    <!-- Farmer Profile Screen -->
+    <string name="farmer_profile_title">किसान प्रोफ़ाइल</string>
+    <string name="profile_section_location">स्थान</string>
+    <string name="profile_section_farm">खेत विवरण</string>
+    <string name="profile_section_contact">संपर्क जानकारी</string>
+    <string name="profile_section_crops">मुख्य फसलें</string>
+    <string name="profile_farm_acres">कुल खेत का आकार (एकड़)</string>
+    <string name="profile_farm_acres_hint">जैसे, 5.5</string>
+    <string name="profile_irrigation">सिंचाई उपलब्ध</string>
+    <string name="profile_irrigation_hint">क्या आपके पास सिंचाई सुविधा है?</string>
+    <string name="profile_mobile">मोबाइल नंबर</string>
+    <string name="profile_mobile_hint">10-अंकों का नंबर</string>
+    <string name="profile_email">ईमेल आईडी</string>
+    <string name="profile_email_hint">your@email.com</string>
+    <string name="profile_crops_hint">वे फसलें चुनें जो आप मुख्य रूप से उगाते हैं</string>
+    <string name="profile_completion">प्रोफ़ाइल पूर्णता</string>
+    <string name="profile_completion_hint">व्यक्तिगत सिफारिशों के लिए अपनी प्रोफ़ाइल पूरी करें</string>
+    <string name="save_profile">प्रोफ़ाइल सहेजें</string>
+    <string name="profile_saved_success">प्रोफ़ाइल सफलतापूर्वक सहेजी गई!</string>
+    <string name="yes">हां</string>
+    <string name="no">नहीं</string>
 
     <!-- Live Conversation Screen -->
     <string name="live_conversation">वॉइस चैट</string>

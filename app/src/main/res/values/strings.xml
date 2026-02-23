@@ -91,10 +91,34 @@
     <string name="change_location">Change</string>
     <string name="change_location_title">Change Location</string>
     <string name="cancel">Cancel</string>
-    <string name="menu_mandi_settings">Mandi Preferences</string>
+    <string name="menu_mandi_settings">Farmer Profile</string>
     <string name="preferences_description">Set your default location to quickly view mandi prices without selecting state and district each time.</string>
     <string name="current_location">Current Location</string>
     <string name="save_preferences">Save Preferences</string>
+
+    <!-- Farmer Profile Screen -->
+    <string name="farmer_profile_title">Farmer Profile</string>
+    <string name="profile_section_location">Location</string>
+    <string name="profile_section_farm">Farm Details</string>
+    <string name="profile_section_contact">Contact Information</string>
+    <string name="profile_section_crops">Major Crops</string>
+    <string name="profile_farm_acres">Total Farm Size (Acres)</string>
+    <string name="profile_farm_acres_hint">e.g., 5.5</string>
+    <string name="profile_irrigation">Irrigation Available</string>
+    <string name="profile_irrigation_hint">Do you have irrigation facility?</string>
+    <string name="profile_mobile">Mobile Number</string>
+    <string name="profile_mobile_hint">10-digit number</string>
+    <string name="profile_email">Email ID</string>
+    <string name="profile_email_hint">your@email.com</string>
+    <string name="profile_crops_hint">Select the crops you primarily grow</string>
+    <string name="profile_completion">Profile Completion</string>
+    <string name="profile_completion_hint">Complete your profile for personalized recommendations</string>
+    <string name="profile_gps_location">GPS Location</string>
+    <string name="profile_gps_hint">Auto-detected from Weather. Visit Weather to update.</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="profile_saved_success">Profile saved successfully!</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- Live Conversation Screen -->
     <string name="live_conversation">Voice Chat</string>

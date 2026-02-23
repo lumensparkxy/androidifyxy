@@ -78,7 +78,7 @@ fun ChatScreen(
     onOffersClick: () -> Unit,
     onCarbonCreditsClick: () -> Unit,
     onKnowledgeBaseClick: () -> Unit,
-    onMandiSettingsClick: () -> Unit,
+    onFarmerProfileClick: () -> Unit,
     onSignOut: () -> Unit,
     onExportConversation: () -> Unit,
     modifier: Modifier = Modifier
@@ -227,7 +227,7 @@ fun ChatScreen(
                         DrawerItem.Offers -> onOffersClick()
                         DrawerItem.CarbonCredits -> onCarbonCreditsClick()
                         DrawerItem.KnowledgeBase -> onKnowledgeBaseClick()
-                        DrawerItem.MandiSettings -> onMandiSettingsClick()
+                        DrawerItem.FarmerProfile -> onFarmerProfileClick()
                         DrawerItem.SignOut -> onSignOut()
                     }
                 }
