@@ -66,7 +66,7 @@ fun HomeScreen(
     onOffersClick: () -> Unit,
     onCarbonCreditsClick: () -> Unit,
     onKnowledgeBaseClick: () -> Unit,
-    onMandiSettingsClick: () -> Unit,
+    onFarmerProfileClick: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -152,7 +152,7 @@ fun HomeScreen(
                         DrawerItem.Offers -> onOffersClick()
                         DrawerItem.CarbonCredits -> onCarbonCreditsClick()
                         DrawerItem.KnowledgeBase -> onKnowledgeBaseClick()
-                        DrawerItem.MandiSettings -> onMandiSettingsClick()
+                        DrawerItem.FarmerProfile -> onFarmerProfileClick()
                         DrawerItem.SignOut -> onSignOut()
                     }
                 }

@@ -81,10 +81,32 @@
     <string name="change_location">மாற்று</string>
     <string name="change_location_title">இடத்தை மாற்றவும்</string>
     <string name="cancel">ரத்து செய்</string>
-    <string name="menu_mandi_settings">மண்டி விருப்பத்தேர்வுகள்</string>
+    <string name="menu_mandi_settings">விவசாயி சுயவிவரம்</string>
     <string name="preferences_description">ஒவ்வொரு முறையும் மாநிலம் மற்றும் மாவட்டத்தைத் தேர்ந்தெடுக்காமல் மண்டி விலைகளை விரைவாகப் பார்க்க உங்கள் இயல்புநிலை இடத்தை அமைக்கவும்.</string>
     <string name="current_location">தற்போதைய இடம்</string>
     <string name="save_preferences">விருப்பத்தேர்வுகளை சேமி</string>
+
+    <!-- Farmer Profile Screen -->
+    <string name="farmer_profile_title">விவசாயி சுயவிவரம்</string>
+    <string name="profile_section_location">இடம்</string>
+    <string name="profile_section_farm">பண்ணை விவரங்கள்</string>
+    <string name="profile_section_contact">தொடர்பு தகவல்</string>
+    <string name="profile_section_crops">முக்கிய பயிர்கள்</string>
+    <string name="profile_farm_acres">மொத்த பண்ணை அளவு (ஏக்கர்)</string>
+    <string name="profile_farm_acres_hint">எ.கா., 5.5</string>
+    <string name="profile_irrigation">நீர்ப்பாசனம் உள்ளது</string>
+    <string name="profile_irrigation_hint">உங்களிடம் நீர்ப்பாசன வசதி உள்ளதா?</string>
+    <string name="profile_mobile">மொபைல் எண்</string>
+    <string name="profile_mobile_hint">10-இலக்க எண்</string>
+    <string name="profile_email">மின்னஞ்சல் ஐடி</string>
+    <string name="profile_email_hint">your@email.com</string>
+    <string name="profile_crops_hint">நீங்கள் முக்கியமாக வளர்க்கும் பயிர்களைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="profile_completion">சுயவிவர நிறைவு</string>
+    <string name="profile_completion_hint">தனிப்பயனாக்கப்பட்ட பரிந்துரைகளுக்கு உங்கள் சுயவிவரத்தை நிறைவு செய்யுங்கள்</string>
+    <string name="save_profile">சுயவிவரத்தைச் சேமி</string>
+    <string name="profile_saved_success">சுயவிவரம் வெற்றிகரமாக சேமிக்கப்பட்டது!</string>
+    <string name="yes">ஆம்</string>
+    <string name="no">இல்லை</string>
 
     <!-- Live Conversation Screen -->
     <string name="live_conversation">குரல் அரட்டை</string>

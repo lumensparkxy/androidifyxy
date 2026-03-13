@@ -856,3 +856,119 @@ exports.deleteAllKnowledgeDocuments = functions
       });
     }
   });
+
+const {
+  SALES_PIPELINE_COLLECTION,
+  SALES_PIPELINE_STATUS_INITIATED,
+  buildSalesPipelineDocId,
+  generateRequestNumber,
+  normalizeProductName,
+} = require("./salesPipeline");
+
+const USERS_COLLECTION = "users";
+const SETTINGS_COLLECTION = "settings";
+const FARMER_PROFILE_DOC = "farmer_profile";
+
+function trimString(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getLeadProfileValidationError(profile = {}) {
+  if (!trimString(profile.name)) return "name is required";
+  if (!trimString(profile.village)) return "village is required";
+  if (!trimString(profile.tehsil)) return "tehsil is required";
+  if (!trimString(profile.district)) return "district is required";
+  const totalFarmAcres = Number(profile.totalFarmAcres);
+  if (!Number.isFinite(totalFarmAcres) || totalFarmAcres <= 0) return "totalFarmAcres is required";
+  return null;
+}
+
+exports.createSalesPipelineLead = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 30,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    const userId = context.auth?.uid;
+    if (!userId) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    const conversationId = trimString(data?.conversationId);
+    const productName = trimString(data?.productName);
+    const chatMessageText = trimString(data?.chatMessageText);
+    const quantity = trimString(data?.quantity);
+    const unit = trimString(data?.unit);
+    const source = trimString(data?.source) || "chat_recommendation";
+
+    if (!conversationId) {
+      throw new functions.https.HttpsError("invalid-argument", "conversationId is required");
+    }
+    if (!productName) {
+      throw new functions.https.HttpsError("invalid-argument", "productName is required");
+    }
+    if (!chatMessageText) {
+      throw new functions.https.HttpsError("invalid-argument", "chatMessageText is required");
+    }
+
+    const farmerProfileRef = db
+      .collection(USERS_COLLECTION)
+      .doc(userId)
+      .collection(SETTINGS_COLLECTION)
+      .doc(FARMER_PROFILE_DOC);
+
+    const farmerProfileSnap = await farmerProfileRef.get();
+    const farmerProfile = farmerProfileSnap.exists ? farmerProfileSnap.data() : null;
+    const profileValidationError = getLeadProfileValidationError(farmerProfile);
+    if (!farmerProfile || profileValidationError) {
+      throw new functions.https.HttpsError("failed-precondition", profileValidationError || "farmer profile is required");
+    }
+
+    const docId = buildSalesPipelineDocId({
+      userId,
+      conversationId,
+      productName,
+    });
+    const leadRef = db.collection(SALES_PIPELINE_COLLECTION).doc(docId);
+
+    const result = await db.runTransaction(async (transaction) => {
+      const existingSnap = await transaction.get(leadRef);
+      if (existingSnap.exists) {
+        const existingData = existingSnap.data() || {};
+        return {
+          requestNumber: existingData.requestNumber,
+          status: existingData.status || SALES_PIPELINE_STATUS_INITIATED,
+        };
+      }
+
+      const requestNumber = generateRequestNumber();
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      const normalizedProductName = normalizeProductName(productName);
+
+      transaction.set(leadRef, {
+        userId,
+        conversationId,
+        requestNumber,
+        status: SALES_PIPELINE_STATUS_INITIATED,
+        source,
+        dedupeKey: docId,
+        productName,
+        normalizedProductName,
+        quantity: quantity || null,
+        unit: unit || null,
+        chatMessageText,
+        farmerProfileSnapshot: farmerProfile,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      return {
+        requestNumber,
+        status: SALES_PIPELINE_STATUS_INITIATED,
+      };
+    });
+
+    return result;
+  });
+

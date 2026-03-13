@@ -40,8 +40,8 @@ android {
         minSdk = 29
 
         targetSdk = 36
-        versionCode = 113
-        versionName = "0.1.13"
+        versionCode = 114
+        versionName = "0.1.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -103,6 +103,7 @@ dependencies {
     implementation(libs.firebase.ai)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-functions")
     implementation(libs.firebase.storage)
     implementation(libs.firebase.config)
     implementation(libs.firebase.messaging)

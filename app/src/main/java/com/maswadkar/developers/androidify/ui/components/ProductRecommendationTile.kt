@@ -1,6 +1,5 @@
 package com.maswadkar.developers.androidify.ui.components
 
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Grass
@@ -31,64 +31,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.data.ProductType
-import com.maswadkar.developers.androidify.util.AppConfigManager
 
 /**
  * A clickable tile displaying a product recommendation from the AI.
- * When clicked, opens WhatsApp with a pre-composed inquiry message.
+ * When clicked, it triggers the in-app best-offer request flow.
  */
 @Composable
 fun ProductRecommendationTile(
     recommendation: ProductRecommendation,
+    onClick: (ProductRecommendation) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val productType = recommendation.getProductTypeEnum()
 
-    // Build quantity string if available
-    val quantityString = if (!recommendation.quantity.isNullOrBlank()) {
-        val unit = recommendation.unit ?: ""
-        " (${recommendation.quantity} $unit)".trim()
-    } else {
-        ""
-    }
-
-    // Get localized WhatsApp message
-    val whatsappMessage = stringResource(
-        R.string.product_recommendation_whatsapp_message,
-        recommendation.productName,
-        quantityString
-    )
-
     val shape = RoundedCornerShape(14.dp)
-    val borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
 
     // Slightly more premium background than flat tertiaryContainer
     val containerStart = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
     val containerEnd = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f)
 
     Card(
-        onClick = {
-            // Open WhatsApp with pre-composed message
-            val phoneNumber = AppConfigManager.getSupplierWhatsAppNumber()
-            val encodedMessage = java.net.URLEncoder.encode(whatsappMessage, "UTF-8")
-            val whatsappUri = "https://wa.me/$phoneNumber?text=$encodedMessage".toUri()
-
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = whatsappUri
-            }
-            context.startActivity(intent)
-        },
+        onClick = { onClick(recommendation) },
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
@@ -184,7 +154,7 @@ fun ProductRecommendationTile(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_whatsapp),
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.tertiary
@@ -215,6 +185,7 @@ fun ProductRecommendationTile(
 @Composable
 fun ProductRecommendationList(
     recommendations: List<ProductRecommendation>,
+    onRecommendationClick: (ProductRecommendation) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (recommendations.isEmpty()) return
@@ -224,7 +195,10 @@ fun ProductRecommendationList(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         recommendations.forEach { recommendation ->
-            ProductRecommendationTile(recommendation = recommendation)
+            ProductRecommendationTile(
+                recommendation = recommendation,
+                onClick = onRecommendationClick
+            )
         }
     }
 }

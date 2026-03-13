@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -22,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.maswadkar.developers.androidify.ChatViewModel
+import com.maswadkar.developers.androidify.LeadRequestViewModel
 import com.maswadkar.developers.androidify.R
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
@@ -32,7 +34,7 @@ import com.maswadkar.developers.androidify.ui.screens.HomeScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
-import com.maswadkar.developers.androidify.ui.screens.MandiPreferencesScreen
+import com.maswadkar.developers.androidify.ui.screens.FarmerProfileScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
 import com.maswadkar.developers.androidify.ui.screens.PlantDiagnosisScreen
@@ -111,7 +113,7 @@ fun AppNavigation(
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
-                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
                 onSignOut = { authViewModel.signOut() }
             )
         }
@@ -119,6 +121,8 @@ fun AppNavigation(
         composable(Screen.Chat.route) {
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
+            val leadRequestViewModel: LeadRequestViewModel = viewModel()
+            val leadUiState by leadRequestViewModel.uiState.collectAsState()
 
             // Cache string resources using stringResource composable
             val exportInProgressText = stringResource(R.string.export_in_progress)
@@ -126,7 +130,25 @@ fun AppNavigation(
 
             ChatScreen(
                 messages = messages,
+                leadUiState = leadUiState,
                 onSendMessage = { message, imageUri -> chatViewModel.sendMessage(message, imageUri) },
+                onRecommendationClick = { recommendation, chatMessageText ->
+                    val conversationId = chatViewModel.getCurrentConversationForExport()?.id.orEmpty()
+                    leadRequestViewModel.onRecommendationLeadClick(
+                        recommendation = recommendation,
+                        chatMessageText = chatMessageText,
+                        conversationId = conversationId
+                    )
+                },
+                onLeadNameChanged = leadRequestViewModel::onLeadNameChanged,
+                onLeadVillageChanged = leadRequestViewModel::onLeadVillageChanged,
+                onLeadTehsilChanged = leadRequestViewModel::onLeadTehsilChanged,
+                onLeadDistrictChanged = leadRequestViewModel::onLeadDistrictChanged,
+                onLeadTotalFarmAcresChanged = leadRequestViewModel::onLeadTotalFarmAcresChanged,
+                onSubmitLeadProfile = leadRequestViewModel::submitLeadAfterProfileUpdate,
+                onDismissLeadProfileDialog = leadRequestViewModel::dismissLeadProfileDialog,
+                onDismissLeadConfirmation = leadRequestViewModel::dismissLeadConfirmation,
+                onDismissLeadError = leadRequestViewModel::clearLeadError,
                 onHomeClick = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
@@ -140,7 +162,7 @@ fun AppNavigation(
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
-                onMandiSettingsClick = { navController.navigate(Screen.MandiSettings.route) },
+                onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
                 onSignOut = { authViewModel.signOut() },
                 onExportConversation = {
                     val conversation = chatViewModel.getCurrentConversationForExport()
@@ -235,8 +257,8 @@ fun AppNavigation(
             )
         }
 
-        composable(Screen.MandiSettings.route) {
-            MandiPreferencesScreen(
+        composable(Screen.FarmerProfile.route) {
+            FarmerProfileScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

@@ -81,10 +81,32 @@
     <string name="change_location">మార్చండి</string>
     <string name="change_location_title">స్థానం మార్చండి</string>
     <string name="cancel">రద్దు చేయండి</string>
-    <string name="menu_mandi_settings">మండి ప్రాధాన్యతలు</string>
+    <string name="menu_mandi_settings">రైతు ప్రొఫైల్</string>
     <string name="preferences_description">ప్రతిసారి రాష్ట్రం మరియు జిల్లా ఎంచుకోకుండా త్వరగా మండి ధరలు చూడటానికి మీ డిఫాల్ట్ స్థానం సెట్ చేయండి.</string>
     <string name="current_location">ప్రస్తుత స్థానం</string>
     <string name="save_preferences">ప్రాధాన్యతలు సేవ్ చేయండి</string>
+
+    <!-- Farmer Profile Screen -->
+    <string name="farmer_profile_title">రైతు ప్రొఫైల్</string>
+    <string name="profile_section_location">స్థానం</string>
+    <string name="profile_section_farm">వ్యవసాయ వివరాలు</string>
+    <string name="profile_section_contact">సంప్రదింపు సమాచారం</string>
+    <string name="profile_section_crops">ప్రధాన పంటలు</string>
+    <string name="profile_farm_acres">మొత్తం వ్యవసాయ పరిమాణం (ఎకరాలు)</string>
+    <string name="profile_farm_acres_hint">ఉదా., 5.5</string>
+    <string name="profile_irrigation">నీటిపారుదల అందుబాటులో ఉంది</string>
+    <string name="profile_irrigation_hint">మీకు నీటిపారుదల సౌకర్యం ఉందా?</string>
+    <string name="profile_mobile">మొబైల్ నంబర్</string>
+    <string name="profile_mobile_hint">10-అంకెల నంబర్</string>
+    <string name="profile_email">ఇమెయిల్ ఐడి</string>
+    <string name="profile_email_hint">your@email.com</string>
+    <string name="profile_crops_hint">మీరు ప్రధానంగా పండించే పంటలను ఎంచుకోండి</string>
+    <string name="profile_completion">ప్రొఫైల్ పూర్తి</string>
+    <string name="profile_completion_hint">వ్యక్తిగతీకరించిన సిఫార్సుల కోసం మీ ప్రొఫైల్‌ను పూర్తి చేయండి</string>
+    <string name="save_profile">ప్రొఫైల్ సేవ్ చేయండి</string>
+    <string name="profile_saved_success">ప్రొఫైల్ విజయవంతంగా సేవ్ చేయబడింది!</string>
+    <string name="yes">అవును</string>
+    <string name="no">కాదు</string>
 
     <!-- Live Conversation Screen -->
     <string name="live_conversation">వాయిస్ చాట్</string>
