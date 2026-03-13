@@ -77,6 +77,43 @@ fun FarmerProfileScreen(
                     completionPercent = uiState.profileCompletionPercent
                 )
 
+                // Identity Section
+                SectionCard(
+                    title = stringResource(R.string.profile_section_identity),
+                    icon = Icons.Default.Person
+                ) {
+                    OutlinedTextField(
+                        value = uiState.name,
+                        onValueChange = viewModel::onNameChanged,
+                        label = { Text(stringResource(R.string.profile_name)) },
+                        placeholder = { Text(stringResource(R.string.profile_name_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = uiState.village,
+                        onValueChange = viewModel::onVillageChanged,
+                        label = { Text(stringResource(R.string.profile_village)) },
+                        placeholder = { Text(stringResource(R.string.profile_village_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = uiState.tehsil,
+                        onValueChange = viewModel::onTehsilChanged,
+                        label = { Text(stringResource(R.string.profile_tehsil)) },
+                        placeholder = { Text(stringResource(R.string.profile_tehsil_hint)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
                 // Location Section
                 SectionCard(
                     title = stringResource(R.string.profile_section_location),
@@ -534,4 +571,3 @@ private fun ProfileDropdown(
         }
     }
 }
-

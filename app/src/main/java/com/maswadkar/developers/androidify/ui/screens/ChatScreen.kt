@@ -9,26 +9,36 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
@@ -44,15 +54,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.ChatMessage
+import com.maswadkar.developers.androidify.LeadRequestUiState
 import com.maswadkar.developers.androidify.R
+import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.ui.components.AppDrawerContent
 import com.maswadkar.developers.androidify.ui.components.ChatBubble
 import com.maswadkar.developers.androidify.ui.components.ChatInput
@@ -68,7 +82,18 @@ import java.io.File
 @Composable
 fun ChatScreen(
     messages: List<ChatMessage>,
+    leadUiState: LeadRequestUiState,
     onSendMessage: (String, Uri?) -> Unit,
+    onRecommendationClick: (ProductRecommendation, String) -> Unit,
+    onLeadNameChanged: (String) -> Unit,
+    onLeadVillageChanged: (String) -> Unit,
+    onLeadTehsilChanged: (String) -> Unit,
+    onLeadDistrictChanged: (String) -> Unit,
+    onLeadTotalFarmAcresChanged: (String) -> Unit,
+    onSubmitLeadProfile: () -> Unit,
+    onDismissLeadProfileDialog: () -> Unit,
+    onDismissLeadConfirmation: () -> Unit,
+    onDismissLeadError: () -> Unit,
     onHomeClick: () -> Unit,
     onNewChat: () -> Unit,
     onPlantDiagnosisClick: () -> Unit,
@@ -99,13 +124,15 @@ fun ChatScreen(
     var tempCameraUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // Audio permission launcher for voice conversation
+    val micPermissionRequiredText = stringResource(R.string.mic_permission_required)
+
     val audioPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
             showLiveConversation = true
         } else {
-            Toast.makeText(context, context.getString(R.string.mic_permission_required), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, micPermissionRequiredText, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -204,6 +231,117 @@ fun ChatScreen(
                     } else {
                         permissionLauncher.launch(Manifest.permission.CAMERA)
                     }
+                }
+            }
+        )
+    }
+
+    // Lead profile dialog
+    if (leadUiState.showProfileDialog) {
+        AlertDialog(
+            onDismissRequest = onDismissLeadProfileDialog,
+            title = { Text(stringResource(R.string.lead_profile_dialog_title)) },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(stringResource(R.string.lead_profile_dialog_message))
+                    OutlinedTextField(
+                        value = leadUiState.profileDraft.name,
+                        onValueChange = onLeadNameChanged,
+                        label = { Text(stringResource(R.string.profile_name)) },
+                        isError = leadUiState.nameError != null,
+                        supportingText = leadUiState.nameError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = leadUiState.profileDraft.village,
+                        onValueChange = onLeadVillageChanged,
+                        label = { Text(stringResource(R.string.profile_village)) },
+                        isError = leadUiState.villageError != null,
+                        supportingText = leadUiState.villageError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = leadUiState.profileDraft.tehsil,
+                        onValueChange = onLeadTehsilChanged,
+                        label = { Text(stringResource(R.string.profile_tehsil)) },
+                        isError = leadUiState.tehsilError != null,
+                        supportingText = leadUiState.tehsilError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = leadUiState.profileDraft.district,
+                        onValueChange = onLeadDistrictChanged,
+                        label = { Text(stringResource(R.string.filter_district)) },
+                        isError = leadUiState.districtError != null,
+                        supportingText = leadUiState.districtError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = leadUiState.profileDraft.totalFarmAcres,
+                        onValueChange = onLeadTotalFarmAcresChanged,
+                        label = { Text(stringResource(R.string.profile_farm_acres)) },
+                        isError = leadUiState.totalFarmAcresError != null,
+                        supportingText = leadUiState.totalFarmAcresError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = onSubmitLeadProfile,
+                    enabled = !leadUiState.isSubmitting
+                ) {
+                    if (leadUiState.isSubmitting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(stringResource(R.string.submit))
+                    }
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = onDismissLeadProfileDialog,
+                    enabled = !leadUiState.isSubmitting
+                ) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    leadUiState.confirmationRequestNumber?.let { requestNumber ->
+        AlertDialog(
+            onDismissRequest = onDismissLeadConfirmation,
+            title = { Text(stringResource(R.string.lead_confirmation_title)) },
+            text = { Text(stringResource(R.string.lead_confirmation_message, requestNumber)) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = onDismissLeadConfirmation) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
+    }
+
+    leadUiState.errorMessage?.let { errorMessage ->
+        AlertDialog(
+            onDismissRequest = onDismissLeadError,
+            title = { Text(stringResource(R.string.lead_error_title)) },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = onDismissLeadError) {
+                    Text(stringResource(R.string.dismiss))
                 }
             }
         )
@@ -325,7 +463,10 @@ fun ChatScreen(
                             items = messages,
                             key = { "${it.isUser}-${it.text.hashCode()}-${messages.indexOf(it)}" }
                         ) { message ->
-                            ChatBubble(message = message)
+                            ChatBubble(
+                                message = message,
+                                onRecommendationClick = onRecommendationClick
+                            )
                         }
                     }
                 }

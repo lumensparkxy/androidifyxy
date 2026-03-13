@@ -36,6 +36,7 @@ import com.mikepenz.markdown.m3.markdownTypography
 @Composable
 fun ChatBubble(
     message: ChatMessage,
+    onRecommendationClick: (com.maswadkar.developers.androidify.data.ProductRecommendation, String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val chatColors = KrishiMitraTheme.chatColors
@@ -155,6 +156,9 @@ fun ChatBubble(
             Spacer(modifier = Modifier.height(8.dp))
             ProductRecommendationList(
                 recommendations = recommendations,
+                onRecommendationClick = { recommendation ->
+                    onRecommendationClick(recommendation, message.text)
+                },
                 modifier = Modifier.padding(start = 4.dp, end = 48.dp) // Align with model bubble
             )
         }

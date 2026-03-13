@@ -14,10 +14,17 @@ import com.google.firebase.ai.type.Content
 import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.functions.FirebaseFunctionsException
 import com.maswadkar.developers.androidify.data.ChatRepository
 import com.maswadkar.developers.androidify.data.Conversation
+import com.maswadkar.developers.androidify.data.FarmerProfile
+import com.maswadkar.developers.androidify.data.FarmerProfileRepository
 import com.maswadkar.developers.androidify.data.ImageStorageRepository
+import com.maswadkar.developers.androidify.data.LeadProfileDraft
 import com.maswadkar.developers.androidify.data.Message
+import com.maswadkar.developers.androidify.data.ProductRecommendation
+import com.maswadkar.developers.androidify.data.SalesLeadRepository
+import com.maswadkar.developers.androidify.data.SalesLeadRequest
 import com.maswadkar.developers.androidify.util.ImageUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -29,6 +36,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -46,67 +54,68 @@ class ChatViewModel(
         private const val MESSAGES_KEY = "chat_messages"
         private const val CONVERSATION_ID_KEY = "conversation_id"
         private const val CONVERSATION_SAVED_KEY = "conversation_saved"
+        private const val LEAD_REQUEST_SOURCE = "chat_recommendation"
     }
 
     private val chatRepository = ChatRepository.getInstance()
     private val imageStorageRepository = ImageStorageRepository.getInstance()
+    private val farmerProfileRepository = FarmerProfileRepository.getInstance()
+    private val salesLeadRepository = SalesLeadRepository.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val currentUserId: String?
-        get() = FirebaseAuth.getInstance().currentUser?.uid
+        get() = auth.currentUser?.uid
 
-    private val _messages = MutableStateFlow<List<ChatMessage>>(
-        savedStateHandle.get<ArrayList<ChatMessage>>(MESSAGES_KEY) ?: emptyList()
+    private val _messages = MutableStateFlow(
+        savedStateHandle.get<ArrayList<ChatMessage>>(MESSAGES_KEY)?.toList() ?: emptyList()
     )
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
-    // Current conversation ID (pre-generated UUID for new conversations)
     private var currentConversationId: String? = savedStateHandle.get<String>(CONVERSATION_ID_KEY)
-
-    // Track whether the current conversation has been saved to Firestore yet
     private var isConversationSaved: Boolean = savedStateHandle.get<Boolean>(CONVERSATION_SAVED_KEY) ?: false
 
-    // Reactive user ID flow for auth state changes
     private val _userIdFlow = MutableStateFlow(currentUserId)
 
-    // Flow of user's conversation history - reactive to auth state
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val conversationsFlow: StateFlow<List<Conversation>> = _userIdFlow
         .flatMapLatest { userId ->
-            if (userId != null) {
-                chatRepository.getConversationsFlow(userId)
-            } else {
-                flowOf(emptyList())
-            }
+            if (userId != null) chatRepository.getConversationsFlow(userId) else flowOf(emptyList())
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Get device locale for language fallback hint
-    private val deviceLocale: String = Locale.getDefault().toLanguageTag()
+    private val _leadUiState = MutableStateFlow(LeadRequestUiState())
+    val leadUiState: StateFlow<LeadRequestUiState> = _leadUiState.asStateFlow()
 
+    private val deviceLocale: String = Locale.getDefault().toLanguageTag()
     private val model = Firebase.ai(backend = GenerativeBackend.vertexAI("global"))
         .generativeModel(
             modelName = AppConstants.AI_MODEL_NAME,
             systemInstruction = content { text(AppConstants.getSystemInstruction(deviceLocale)) }
         )
 
-    // Chat instance for multi-turn conversations with context
     private var chat: Chat? = null
-
     private var currentRequestJob: Job? = null
-
-    // Mutex to prevent concurrent save operations creating duplicate records
     private val saveMutex = Mutex()
 
-    /**
-     * Build chat history from current messages for initializing Chat with context.
-     * Images are represented as text-only (image data is not persisted in history).
-     */
+    init {
+        auth.addAuthStateListener { firebaseAuth ->
+            _userIdFlow.value = firebaseAuth.currentUser?.uid
+            Log.d(TAG, "Auth state changed, userId: ${firebaseAuth.currentUser?.uid}")
+        }
+
+        val cleanedMessages = _messages.value.map { msg ->
+            if (msg.isLoading) msg.copy(text = AppConstants.REQUEST_INTERRUPTED_MESSAGE, isLoading = false)
+            else msg
+        }
+        if (cleanedMessages != _messages.value) {
+            updateMessages(cleanedMessages)
+        }
+    }
+
     private fun buildChatHistory(): List<Content> {
         return _messages.value
             .filter { !it.isLoading }
             .map { msg ->
                 content(role = if (msg.isUser) "user" else "model") {
-                    // For messages that had images, use the text portion only
-                    // (or a placeholder if the original text was blank)
                     val messageText = if (msg.imageUri != null && msg.text == "[Image attached]") {
                         "[User shared an image]"
                     } else {
@@ -117,41 +126,17 @@ class ChatViewModel(
             }
     }
 
-    /**
-     * Initialize or reinitialize the chat with current message history
-     */
     private fun initializeChatWithHistory() {
         val history = buildChatHistory()
         chat = model.startChat(history = history)
         Log.d(TAG, "Initialized chat with ${history.size} history entries")
     }
 
-    init {
-        // Set up auth state listener to update userId flow
-        FirebaseAuth.getInstance().addAuthStateListener { auth ->
-            _userIdFlow.value = auth.currentUser?.uid
-            Log.d(TAG, "Auth state changed, userId: ${auth.currentUser?.uid}")
-        }
-
-        // Clean up any loading messages from previous session (process death scenario)
-        val cleanedMessages = _messages.value.map { msg ->
-            if (msg.isLoading) msg.copy(text = AppConstants.REQUEST_INTERRUPTED_MESSAGE, isLoading = false)
-            else msg
-        }
-        if (cleanedMessages != _messages.value) {
-            updateMessages(cleanedMessages)
-        }
-    }
-
-    /**
-     * Refresh the user ID flow - call this when auth state may have changed
-     */
     fun refreshUserState() {
         _userIdFlow.value = currentUserId
     }
 
     private fun updateMessages(newMessages: List<ChatMessage>) {
-        // Limit messages to prevent memory issues
         val limitedMessages = if (newMessages.size > AppConstants.MAX_MESSAGES) {
             newMessages.takeLast(AppConstants.MAX_MESSAGES)
         } else {
@@ -161,44 +146,28 @@ class ChatViewModel(
         savedStateHandle[MESSAGES_KEY] = ArrayList(limitedMessages)
     }
 
-    /**
-     * Start a new conversation (saves current and clears messages)
-     * Generates a UUID upfront to allow immediate image uploads to consistent storage path.
-     */
     fun startNewConversation() {
         saveCurrentConversation()
-        // Generate UUID upfront for immediate image uploads
         currentConversationId = imageStorageRepository.generateConversationId()
         savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
         isConversationSaved = false
         savedStateHandle[CONVERSATION_SAVED_KEY] = false
         updateMessages(emptyList())
-        // Reset chat for fresh context
         chat = model.startChat()
         Log.d(TAG, "Started new conversation with pre-generated ID: $currentConversationId")
     }
 
-    /**
-     * Clear current conversation and start fresh (used after deleting current conversation)
-     * Generates a UUID upfront to allow immediate image uploads.
-     */
     private fun clearCurrentConversation() {
-        // Generate UUID upfront for immediate image uploads
         currentConversationId = imageStorageRepository.generateConversationId()
         savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
         isConversationSaved = false
         savedStateHandle[CONVERSATION_SAVED_KEY] = false
         updateMessages(emptyList())
-        // Reset chat for fresh context
         chat = model.startChat()
         Log.d(TAG, "Cleared current conversation, new pre-generated ID: $currentConversationId")
     }
 
-    /**
-     * Load an existing conversation
-     */
     fun loadConversation(conversationId: String) {
-        // Save current conversation before loading another
         saveCurrentConversation()
 
         viewModelScope.launch {
@@ -207,25 +176,20 @@ class ChatViewModel(
                 if (conversation != null) {
                     currentConversationId = conversationId
                     savedStateHandle[CONVERSATION_ID_KEY] = conversationId
-                    // Mark as saved since it's loaded from Firestore
                     isConversationSaved = true
                     savedStateHandle[CONVERSATION_SAVED_KEY] = true
 
-                    // Convert Firestore messages to ChatMessage (include imageUrl for history display)
                     val chatMessages = conversation.messages.map { msg ->
                         ChatMessage(
                             text = msg.text,
                             isUser = msg.isUser,
                             isLoading = false,
-                            imageUri = null,  // Local URI not available when loading from Firestore
-                            imageUrl = msg.imageUrl  // Remote URL for display
+                            imageUri = null,
+                            imageUrl = msg.imageUrl
                         )
                     }
                     updateMessages(chatMessages)
-
-                    // Initialize chat with loaded history for context
                     initializeChatWithHistory()
-
                     Log.d(TAG, "Loaded conversation: $conversationId with ${chatMessages.size} messages")
                 }
             } catch (e: Exception) {
@@ -234,14 +198,10 @@ class ChatViewModel(
         }
     }
 
-    /**
-     * Delete a conversation
-     */
     fun deleteConversation(conversationId: String) {
         viewModelScope.launch {
             try {
                 chatRepository.deleteConversation(conversationId)
-                // If we deleted the current conversation, clear it
                 if (conversationId == currentConversationId) {
                     clearCurrentConversation()
                 }
@@ -252,35 +212,26 @@ class ChatViewModel(
         }
     }
 
-    /**
-     * Force refresh conversations by re-emitting the user ID to trigger Flow refresh
-     */
     fun refreshConversations() {
-        // Re-emit the current user ID to trigger the flatMapLatest in conversationsFlow
-        // This forces Firestore to re-fetch the data
         val userId = currentUserId
         _userIdFlow.value = null
         _userIdFlow.value = userId
     }
 
-    /**
-     * Get the current conversation for export purposes
-     * Returns a Conversation object built from current messages, or null if no messages
-     */
     fun getCurrentConversationForExport(): Conversation? {
-        val messages = _messages.value
-        if (messages.isEmpty() || messages.all { it.isLoading }) return null
+        val currentMessages = _messages.value
+        if (currentMessages.isEmpty() || currentMessages.all { it.isLoading }) return null
 
         val userId = currentUserId ?: return null
         val title = Conversation.generateTitle(
-            messages.firstOrNull { it.isUser && !it.isLoading }?.text ?: "Conversation"
+            currentMessages.firstOrNull { it.isUser && !it.isLoading }?.text ?: "Conversation"
         )
 
         return Conversation(
             id = currentConversationId ?: "",
             userId = userId,
             title = title,
-            messages = messages
+            messages = currentMessages
                 .filter { !it.isLoading }
                 .map { msg ->
                     Message(
@@ -291,17 +242,12 @@ class ChatViewModel(
         )
     }
 
-    /**
-     * Save current conversation to Firestore (async version for regular use)
-     */
     fun saveCurrentConversation() {
         val userId = currentUserId ?: return
-        // Capture values NOW to prevent race conditions with startNewConversation()
         val conversationIdToSave = currentConversationId
         val messagesToSave = _messages.value.toList()
         val wasAlreadySaved = isConversationSaved
 
-        // Don't save empty conversations or conversations with only loading messages
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         viewModelScope.launch {
@@ -309,32 +255,17 @@ class ChatViewModel(
         }
     }
 
-    /**
-     * Save current conversation to Firestore synchronously (for app exit scenarios)
-     * Call this from a coroutine scope that won't be cancelled on activity destruction
-     */
     suspend fun saveCurrentConversationSync() {
         val userId = currentUserId ?: return
-        // Capture values NOW to prevent race conditions
         val conversationIdToSave = currentConversationId
         val messagesToSave = _messages.value.toList()
         val wasAlreadySaved = isConversationSaved
 
-        // Don't save empty conversations or conversations with only loading messages
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         saveConversationInternal(userId, conversationIdToSave, messagesToSave, wasAlreadySaved)
     }
 
-    /**
-     * Internal save logic shared by async and sync versions.
-     * Uses NonCancellable to ensure save completes even when coroutine is cancelled.
-     *
-     * @param userId The user ID to save under
-     * @param conversationIdToSave The conversation ID captured at save request time (pre-generated UUID)
-     * @param messagesToSave The messages captured at save request time
-     * @param wasAlreadySaved Whether this conversation was already saved to Firestore
-     */
     private suspend fun saveConversationInternal(
         userId: String,
         conversationIdToSave: String?,
@@ -343,11 +274,9 @@ class ChatViewModel(
     ) {
         withContext(NonCancellable) {
             saveMutex.withLock {
-                // Check if messages are valid
                 if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return@withLock
 
                 try {
-                    // Convert ChatMessages to Firestore Messages (include imageUrl for persistence)
                     val firestoreMessages = messagesToSave.filter { !it.isLoading }.map { msg ->
                         Message(
                             text = msg.text,
@@ -357,23 +286,20 @@ class ChatViewModel(
                         )
                     }
 
-                    // Generate title from first user message
                     val title = messagesToSave.firstOrNull { it.isUser }?.let {
                         Conversation.generateTitle(it.text)
                     } ?: "New Conversation"
 
                     val conversation = Conversation(
-                        id = conversationIdToSave ?: "",  // Use pre-generated UUID
+                        id = conversationIdToSave ?: "",
                         userId = userId,
                         title = title,
                         messages = firestoreMessages
                     )
 
-                    // Pass isNew flag to handle pre-generated UUID correctly
                     val isNew = !wasAlreadySaved && conversationIdToSave != null
                     chatRepository.saveConversation(conversation, isNew = isNew)
 
-                    // Mark as saved after successful save
                     if (!wasAlreadySaved) {
                         isConversationSaved = true
                         savedStateHandle[CONVERSATION_SAVED_KEY] = true
@@ -387,19 +313,254 @@ class ChatViewModel(
         }
     }
 
+    private fun ensureCurrentConversationId(): String {
+        if (currentConversationId == null) {
+            currentConversationId = imageStorageRepository.generateConversationId()
+            savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
+            Log.d(TAG, "Generated conversation ID on demand: $currentConversationId")
+        }
+        return currentConversationId!!
+    }
+
+    fun onRecommendationLeadClick(recommendation: ProductRecommendation, chatMessageText: String) {
+        val uid = currentUserId ?: run {
+            _leadUiState.update { it.copy(errorMessage = "Please sign in to continue") }
+            return
+        }
+
+        val pendingRequest = PendingLeadRequest(
+            recommendation = recommendation,
+            chatMessageText = chatMessageText,
+            conversationId = ensureCurrentConversationId()
+        )
+
+        viewModelScope.launch {
+            _leadUiState.update {
+                it.copy(
+                    isSubmitting = true,
+                    errorMessage = null,
+                    confirmationRequestNumber = null,
+                    pendingRequest = pendingRequest
+                )
+            }
+
+            try {
+                val existingProfile = farmerProfileRepository.getUserProfile(uid)
+                val profile = (existingProfile ?: FarmerProfile()).copy(
+                    name = existingProfile?.name ?: auth.currentUser?.displayName
+                ).normalized()
+
+                if (!profile.hasLeadRequiredFields()) {
+                    _leadUiState.update {
+                        it.copy(
+                            isSubmitting = false,
+                            showProfileDialog = true,
+                            profileDraft = LeadProfileDraft(
+                                name = profile.name.orEmpty(),
+                                village = profile.village.orEmpty(),
+                                tehsil = profile.tehsil.orEmpty(),
+                                district = profile.district,
+                                totalFarmAcres = profile.totalFarmAcres?.let { acres ->
+                                    if (acres % 1.0 == 0.0) acres.toInt().toString() else acres.toString()
+                                }.orEmpty()
+                            )
+                        )
+                    }
+                    return@launch
+                }
+
+                submitLeadInternal(pendingRequest)
+            } catch (e: Exception) {
+                _leadUiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = e.message ?: "Unable to load your profile right now"
+                    )
+                }
+            }
+        }
+    }
+
+    fun onLeadNameChanged(value: String) {
+        _leadUiState.update { it.copy(profileDraft = it.profileDraft.copy(name = value), nameError = null) }
+    }
+
+    fun onLeadVillageChanged(value: String) {
+        _leadUiState.update { it.copy(profileDraft = it.profileDraft.copy(village = value), villageError = null) }
+    }
+
+    fun onLeadTehsilChanged(value: String) {
+        _leadUiState.update { it.copy(profileDraft = it.profileDraft.copy(tehsil = value), tehsilError = null) }
+    }
+
+    fun onLeadDistrictChanged(value: String) {
+        _leadUiState.update { it.copy(profileDraft = it.profileDraft.copy(district = value), districtError = null) }
+    }
+
+    fun onLeadTotalFarmAcresChanged(value: String) {
+        val filtered = value.filter { it.isDigit() || it == '.' }
+        _leadUiState.update {
+            it.copy(
+                profileDraft = it.profileDraft.copy(totalFarmAcres = filtered),
+                totalFarmAcresError = null
+            )
+        }
+    }
+
+    fun dismissLeadProfileDialog() {
+        _leadUiState.update {
+            it.copy(
+                isSubmitting = false,
+                showProfileDialog = false,
+                pendingRequest = null,
+                nameError = null,
+                villageError = null,
+                tehsilError = null,
+                districtError = null,
+                totalFarmAcresError = null
+            )
+        }
+    }
+
+    fun dismissLeadConfirmation() {
+        _leadUiState.update { it.copy(confirmationRequestNumber = null) }
+    }
+
+    fun clearLeadError() {
+        _leadUiState.update { it.copy(errorMessage = null, isSubmitting = false) }
+    }
+
+    fun submitLeadAfterProfileUpdate() {
+        val uid = currentUserId ?: run {
+            _leadUiState.update { it.copy(errorMessage = "Please sign in to continue") }
+            return
+        }
+        val pendingRequest = _leadUiState.value.pendingRequest ?: run {
+            _leadUiState.update { it.copy(errorMessage = "No active request found") }
+            return
+        }
+
+        val draft = _leadUiState.value.profileDraft.normalized()
+        val nameError = if (draft.name.isBlank()) "Name is required" else null
+        val villageError = if (draft.village.isBlank()) "Village is required" else null
+        val tehsilError = if (draft.tehsil.isBlank()) "Tehsil is required" else null
+        val districtError = if (draft.district.isBlank()) "District is required" else null
+        val totalFarmAcresError = when {
+            draft.totalFarmAcres.isBlank() -> "Land size is required"
+            draft.totalFarmAcres.toDoubleOrNull()?.let { it > 0 } != true -> "Enter a valid land size"
+            else -> null
+        }
+
+        if (listOf(nameError, villageError, tehsilError, districtError, totalFarmAcresError).any { it != null }) {
+            _leadUiState.update {
+                it.copy(
+                    nameError = nameError,
+                    villageError = villageError,
+                    tehsilError = tehsilError,
+                    districtError = districtError,
+                    totalFarmAcresError = totalFarmAcresError
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _leadUiState.update { it.copy(isSubmitting = true, errorMessage = null) }
+            try {
+                val existingProfile = farmerProfileRepository.getUserProfile(uid) ?: FarmerProfile()
+                val mergedProfile = existingProfile.copy(
+                    name = draft.name,
+                    village = draft.village,
+                    tehsil = draft.tehsil,
+                    district = draft.district,
+                    totalFarmAcres = draft.totalFarmAcres.toDoubleOrNull()
+                )
+
+                val saveSuccess = farmerProfileRepository.saveUserProfile(uid, mergedProfile)
+                if (!saveSuccess) {
+                    _leadUiState.update {
+                        it.copy(isSubmitting = false, errorMessage = "Failed to save your details")
+                    }
+                    return@launch
+                }
+
+                submitLeadInternal(pendingRequest)
+            } catch (e: Exception) {
+                _leadUiState.update {
+                    it.copy(isSubmitting = false, errorMessage = e.message ?: "Failed to save your details")
+                }
+            }
+        }
+    }
+
+
+    private fun mapLeadSubmissionError(e: FirebaseFunctionsException): String = when (e.code) {
+        FirebaseFunctionsException.Code.FAILED_PRECONDITION -> "Please complete your profile to continue"
+        FirebaseFunctionsException.Code.INVALID_ARGUMENT -> "We could not register this request. Please try again."
+        FirebaseFunctionsException.Code.NOT_FOUND,
+        FirebaseFunctionsException.Code.UNAVAILABLE,
+        FirebaseFunctionsException.Code.DEADLINE_EXCEEDED,
+        FirebaseFunctionsException.Code.PERMISSION_DENIED -> "We could not register your request right now. Please try again in a moment."
+        else -> "Unable to register your request right now"
+    }
+
+    private fun mapLeadSubmissionErrorMessage(message: String?): String {
+        val normalized = message?.trim().orEmpty()
+        return when {
+            normalized.contains("NOT_FOUND", ignoreCase = true) -> "We could not register your request right now. Please try again in a moment."
+            normalized.contains("PERMISSION_DENIED", ignoreCase = true) -> "We could not register your request right now. Please try again in a moment."
+            normalized.equals("Please complete your profile to continue", ignoreCase = true) -> "Please complete your profile to continue"
+            normalized.isBlank() -> "Unable to register your request right now"
+            else -> normalized
+        }
+    }
+
+    private suspend fun submitLeadInternal(pendingRequest: PendingLeadRequest) {
+        try {
+            val result = salesLeadRepository.submitLead(
+                SalesLeadRequest(
+                    conversationId = pendingRequest.conversationId,
+                    productName = pendingRequest.recommendation.productName,
+                    quantity = pendingRequest.recommendation.quantity,
+                    unit = pendingRequest.recommendation.unit,
+                    chatMessageText = pendingRequest.chatMessageText,
+                    source = LEAD_REQUEST_SOURCE
+                )
+            )
+
+            _leadUiState.update {
+                it.copy(
+                    isSubmitting = false,
+                    showProfileDialog = false,
+                    pendingRequest = null,
+                    confirmationRequestNumber = result.requestNumber,
+                    errorMessage = null,
+                    nameError = null,
+                    villageError = null,
+                    tehsilError = null,
+                    districtError = null,
+                    totalFarmAcresError = null
+                )
+            }
+        } catch (e: FirebaseFunctionsException) {
+            val message = mapLeadSubmissionError(e)
+            _leadUiState.update { it.copy(isSubmitting = false, errorMessage = message) }
+        } catch (e: Exception) {
+            _leadUiState.update {
+                it.copy(
+                    isSubmitting = false,
+                    errorMessage = mapLeadSubmissionErrorMessage(e.message)
+                )
+            }
+        }
+    }
+
     fun sendMessage(userText: String, imageUri: Uri? = null) {
         if (userText.isBlank() && imageUri == null) return
 
         val userId = currentUserId
-        // Ensure we have a conversation ID for image uploads
-        if (currentConversationId == null) {
-            currentConversationId = imageStorageRepository.generateConversationId()
-            savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
-            Log.d(TAG, "Generated conversation ID on first message: $currentConversationId")
-        }
-        val conversationId = currentConversationId!!
+        val conversationId = ensureCurrentConversationId()
 
-        // Add user message (with image URI if present, imageUrl will be set after upload)
         val userMessage = ChatMessage(
             text = userText.ifBlank { "[Image attached]" },
             isUser = true,
@@ -409,31 +570,24 @@ class ChatViewModel(
         val userMessageIndex = currentMessages.size
         currentMessages.add(userMessage)
 
-        // Add loading message
         val loadingMessage = ChatMessage(AppConstants.LOADING_MESSAGES.first(), isUser = false, isLoading = true)
         currentMessages.add(loadingMessage)
         updateMessages(currentMessages)
 
         val loadingIndex = _messages.value.size - 1
-
-        // Cancel any existing request
         currentRequestJob?.cancel()
 
         currentRequestJob = viewModelScope.launch {
-            // Upload image immediately if present (parallel with AI call preparation)
             var uploadedImageUrl: String? = null
             if (imageUri != null && userId != null) {
                 try {
-                    Log.d(TAG, "Uploading image to Firebase Storage...")
                     uploadedImageUrl = imageStorageRepository.uploadImage(
                         getApplication<Application>().applicationContext,
                         userId,
                         conversationId,
                         imageUri
                     )
-                    Log.d(TAG, "Image uploaded successfully: $uploadedImageUrl")
 
-                    // Update the user message with the uploaded URL
                     val updatedMessages = _messages.value.toMutableList()
                     if (userMessageIndex < updatedMessages.size) {
                         updatedMessages[userMessageIndex] = updatedMessages[userMessageIndex].copy(
@@ -443,7 +597,6 @@ class ChatViewModel(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to upload image: ${e.message}", e)
-                    // Continue with AI call even if upload fails - image is still available locally
                 }
             }
 
@@ -461,10 +614,8 @@ class ChatViewModel(
             }
 
             try {
-                // Initialize chat if null (e.g., after process death or first message)
                 if (chat == null) {
-                    // Build history from messages before the current user message
-                    val historyMessages = _messages.value.dropLast(2) // Exclude current user msg and loading msg
+                    val historyMessages = _messages.value.dropLast(2)
                     val history = historyMessages
                         .filter { !it.isLoading }
                         .map { msg ->
@@ -478,19 +629,15 @@ class ChatViewModel(
                             }
                         }
                     chat = model.startChat(history = history)
-                    Log.d(TAG, "Initialized chat with ${history.size} history entries (lazy init)")
                 }
 
-                // Build content with image if present
                 val response = if (imageUri != null) {
-                    // Load and compress the image
                     val bitmap = ImageUtils.loadAndCompressBitmap(
                         getApplication<Application>().applicationContext,
                         imageUri
                     )
 
                     if (bitmap != null) {
-                        // Send message with image and text using chat
                         chat!!.sendMessage(
                             content {
                                 image(bitmap)
@@ -500,19 +647,15 @@ class ChatViewModel(
                             }
                         )
                     } else {
-                        // Fallback to text-only if image loading fails
                         chat!!.sendMessage(userText.ifBlank { "Please describe what you see." })
                     }
                 } else {
-                    // Text-only message using chat
                     chat!!.sendMessage(userText)
                 }
 
                 val modelText = response.text ?: AppConstants.NO_RESPONSE_MESSAGE
-
                 animationJob.cancel()
 
-                // Update loading message with real response
                 val updatedMessages = _messages.value.toMutableList()
                 if (loadingIndex < updatedMessages.size) {
                     updatedMessages[loadingIndex] = updatedMessages[loadingIndex].copy(
@@ -520,8 +663,6 @@ class ChatViewModel(
                         isLoading = false
                     )
                     updateMessages(updatedMessages)
-
-                    // Save to Firestore after successful response
                     saveCurrentConversation()
                 }
             } catch (e: Exception) {

@@ -7,9 +7,14 @@ import com.google.firebase.Timestamp
  * Extends the previous MandiPreferences with additional fields for personalization.
  */
 data class FarmerProfile(
+    // Identity
+    val name: String? = null,
+
     // Location fields (migrated from MandiPreferences)
     val state: String = "",
     val district: String = "",
+    val village: String? = null,
+    val tehsil: String? = null,
     val market: String? = null,
     val lastCommodity: String? = null,
 
@@ -33,12 +38,48 @@ data class FarmerProfile(
     val updatedAt: Timestamp? = null
 ) {
     // No-arg constructor for Firestore
-    constructor() : this("", "", null, null, null, null, null, null, null, null, null, emptyList(), null)
+    constructor() : this(null, "", "", null, null, null, null, null, null, null, null, null, null, null, emptyList(), null)
 
     /**
      * Check if the profile has valid location data (minimum requirement)
      */
     fun hasValidLocation(): Boolean = state.isNotBlank() && district.isNotBlank()
+
+    /**
+     * Check if the profile has the minimum required fields for creating a sales lead.
+     */
+    fun hasLeadRequiredFields(): Boolean =
+        !name.isNullOrBlank() &&
+            !village.isNullOrBlank() &&
+            !tehsil.isNullOrBlank() &&
+            district.isNotBlank() &&
+            totalFarmAcres != null && totalFarmAcres > 0
+
+    /**
+     * Return the missing lead-required fields for UI prompts.
+     */
+    fun getMissingLeadFields(): List<String> = buildList {
+        if (name.isNullOrBlank()) add("name")
+        if (village.isNullOrBlank()) add("village")
+        if (tehsil.isNullOrBlank()) add("tehsil")
+        if (district.isBlank()) add("district")
+        if (totalFarmAcres == null || totalFarmAcres <= 0) add("totalFarmAcres")
+    }
+
+    /**
+     * Create a normalized copy suitable for snapshots and validation.
+     */
+    fun normalized(): FarmerProfile = copy(
+        name = name?.trim()?.takeIf { it.isNotBlank() },
+        state = state.trim(),
+        district = district.trim(),
+        village = village?.trim()?.takeIf { it.isNotBlank() },
+        tehsil = tehsil?.trim()?.takeIf { it.isNotBlank() },
+        market = market?.trim()?.takeIf { it.isNotBlank() },
+        lastCommodity = lastCommodity?.trim()?.takeIf { it.isNotBlank() },
+        mobileNumber = mobileNumber?.trim()?.takeIf { it.isNotBlank() },
+        emailId = emailId?.trim()?.takeIf { it.isNotBlank() }
+    )
 
     /**
      * Convert to MandiPreferences for backward compatibility
@@ -56,10 +97,13 @@ data class FarmerProfile(
      */
     fun getCompletionPercentage(): Int {
         var filledFields = 0
-        val totalFields = 7 // state, district, totalFarmAcres, irrigationAvailable, mobileNumber, emailId, majorCrops
+        val totalFields = 10 // name, state, district, village, tehsil, totalFarmAcres, irrigationAvailable, mobileNumber, emailId, majorCrops
 
+        if (!name.isNullOrBlank()) filledFields++
         if (state.isNotBlank()) filledFields++
         if (district.isNotBlank()) filledFields++
+        if (!village.isNullOrBlank()) filledFields++
+        if (!tehsil.isNullOrBlank()) filledFields++
         if (totalFarmAcres != null && totalFarmAcres > 0) filledFields++
         if (irrigationAvailable != null) filledFields++
         if (!mobileNumber.isNullOrBlank()) filledFields++
@@ -81,4 +125,3 @@ data class FarmerProfile(
         )
     }
 }
-

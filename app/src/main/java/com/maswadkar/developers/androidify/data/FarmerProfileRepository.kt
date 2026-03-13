@@ -91,7 +91,7 @@ class FarmerProfileRepository {
      */
     suspend fun saveUserProfile(userId: String, profile: FarmerProfile): Boolean {
         return try {
-            val profileWithTimestamp = profile.copy(updatedAt = Timestamp.now())
+            val profileWithTimestamp = profile.normalized().copy(updatedAt = Timestamp.now())
             firestore.collection(USERS_COLLECTION)
                 .document(userId)
                 .collection(SETTINGS_COLLECTION)
@@ -147,4 +147,3 @@ class FarmerProfileRepository {
         }
     }
 }
-

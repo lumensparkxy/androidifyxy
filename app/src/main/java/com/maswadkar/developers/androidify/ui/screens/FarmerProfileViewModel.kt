@@ -30,7 +30,10 @@ data class FarmerProfileUiState(
     val hasProfile: Boolean = false,
     val profileCompletionPercent: Int = 0,
 
-    // Location fields
+    // Identity + location fields
+    val name: String = "",
+    val village: String = "",
+    val tehsil: String = "",
     val states: List<String> = emptyList(),
     val districts: List<String> = emptyList(),
     val selectedState: String? = null,
@@ -120,6 +123,9 @@ class FarmerProfileViewModel(
                             isLoading = false,
                             hasProfile = profile.hasValidLocation(),
                             profileCompletionPercent = profile.getCompletionPercentage(),
+                            name = profile.name ?: "",
+                            village = profile.village ?: "",
+                            tehsil = profile.tehsil ?: "",
                             selectedState = profile.state.takeIf { it.isNotBlank() },
                             selectedDistrict = profile.district.takeIf { it.isNotBlank() },
                             totalFarmAcres = profile.totalFarmAcres?.toString() ?: "",
@@ -221,13 +227,32 @@ class FarmerProfileViewModel(
         updateCompletionPercent()
     }
 
+    // Identity handlers
+    fun onNameChanged(value: String) {
+        _uiState.update { it.copy(name = value) }
+        updateCompletionPercent()
+    }
+
+    fun onVillageChanged(value: String) {
+        _uiState.update { it.copy(village = value) }
+        updateCompletionPercent()
+    }
+
+    fun onTehsilChanged(value: String) {
+        _uiState.update { it.copy(tehsil = value) }
+        updateCompletionPercent()
+    }
+
     private fun updateCompletionPercent() {
         val state = _uiState.value
         var filledFields = 0
-        val totalFields = 7
+        val totalFields = 10
 
+        if (state.name.isNotBlank()) filledFields++
         if (!state.selectedState.isNullOrBlank()) filledFields++
         if (!state.selectedDistrict.isNullOrBlank()) filledFields++
+        if (state.village.isNotBlank()) filledFields++
+        if (state.tehsil.isNotBlank()) filledFields++
         if (state.totalFarmAcres.isNotBlank() && state.totalFarmAcres.toDoubleOrNull()?.let { it > 0 } == true) filledFields++
         if (state.irrigationAvailable != null) filledFields++
         if (state.mobileNumber.isNotBlank()) filledFields++
@@ -290,8 +315,11 @@ class FarmerProfileViewModel(
             _uiState.update { it.copy(isSaving = true, error = null) }
             try {
                 val profile = FarmerProfile(
+                    name = state.name.takeIf { it.isNotBlank() },
                     state = state.selectedState,
                     district = state.selectedDistrict,
+                    village = state.village.takeIf { it.isNotBlank() },
+                    tehsil = state.tehsil.takeIf { it.isNotBlank() },
                     lastLatitude = state.lastLatitude,
                     lastLongitude = state.lastLongitude,
                     lastLocationLabel = state.lastLocationLabel,
