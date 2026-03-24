@@ -23,6 +23,7 @@ constraintlayout = "2.2.1"
 multiplatformMarkdownRendererM3 = "0.39.2"
 navigationCompose = "2.9.7"
 playServicesAds = "25.0.0"
+installReferrer = "2.2"
 retrofit = "3.0.0"
 okhttp = "5.3.2"
 gson = "2.13.2"
@@ -69,6 +70,7 @@ androidx-activity = { group = "androidx.activity", name = "activity-ktx", versio
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 multiplatform-markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "multiplatformMarkdownRendererM3" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+google-play-install-referrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installReferrer" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }

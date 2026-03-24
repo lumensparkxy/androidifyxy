@@ -1,6 +1,7 @@
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 const fetch = require("node-fetch");
+const { GoogleAuth } = require("google-auth-library");
 const https = require("https");
 const dns = require("dns");
 const fs = require("fs/promises");
@@ -37,6 +38,11 @@ const API_HTTPS_AGENT = new https.Agent({
 const API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070";
 const API_KEY = process.env.DATA_GOV_API_KEY || "579b464db66ec23bdd0000015d0d42cb9328410e6bd0a1af77fa3f53";
 const BATCH_SIZE = 500; // Firestore batch write limit
+const AGENT_SERVICE_URL = (process.env.AGENT_SERVICE_URL || "").replace(/\/+$/, "");
+const AGENT_SERVICE_SHARED_SECRET = process.env.AGENT_SERVICE_SHARED_SECRET || "";
+const AGENT_PROXY_TIMEOUT_MS = 60000;
+const googleAuth = new GoogleAuth();
+let agentServiceIdTokenClientPromise = null;
 
 /**
  * Scheduled function to sync Mandi prices hourly between 1 PM and 8 PM IST
@@ -868,9 +874,75 @@ const {
 const USERS_COLLECTION = "users";
 const SETTINGS_COLLECTION = "settings";
 const FARMER_PROFILE_DOC = "farmer_profile";
+const INSTALL_ATTRIBUTIONS_COLLECTION = "install_attributions";
+const ATTRIBUTION_STATUS_PROMOTER_ATTRIBUTED = "promoter_attributed";
+const ATTRIBUTION_STATUS_ORGANIC_OR_UNKNOWN = "organic_or_unknown";
 
 function trimString(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function optionalString(value) {
+  const trimmed = trimString(value);
+  return trimmed || null;
+}
+
+function coerceEpochMillis(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) {
+    return null;
+  }
+
+  return Math.floor(numericValue);
+}
+
+function normalizeInstallAttributionStatus(value, promoterId) {
+  if (promoterId) {
+    return ATTRIBUTION_STATUS_PROMOTER_ATTRIBUTED;
+  }
+
+  return value === ATTRIBUTION_STATUS_PROMOTER_ATTRIBUTED ?
+    ATTRIBUTION_STATUS_ORGANIC_OR_UNKNOWN :
+    ATTRIBUTION_STATUS_ORGANIC_OR_UNKNOWN;
+}
+
+function normalizeRecentMessages(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => ({
+      role: trimString(item?.role) || "user",
+      text: trimString(item?.text),
+      imageUrl: trimString(item?.imageUrl) || null,
+    }))
+    .filter((item) => item.text || item.imageUrl);
+}
+
+async function readAgentServiceError(response) {
+  try {
+    const json = await response.json();
+    return trimString(json?.detail) || trimString(json?.error) || trimString(json?.message);
+  } catch (error) {
+    const text = await response.text().catch(() => "");
+    return trimString(text) || response.statusText || "Agent service request failed";
+  }
+}
+
+async function getAgentServiceAuthHeaders(targetUrl) {
+  if (!AGENT_SERVICE_URL) {
+    return {};
+  }
+
+  if (!agentServiceIdTokenClientPromise) {
+    agentServiceIdTokenClientPromise = googleAuth.getIdTokenClient(AGENT_SERVICE_URL);
+  }
+
+  const client = await agentServiceIdTokenClientPromise;
+  const headers = await client.getRequestHeaders(targetUrl);
+  if (headers && typeof headers.entries === "function") {
+    return Object.fromEntries(headers.entries());
+  }
+  return headers || {};
 }
 
 function getLeadProfileValidationError(profile = {}) {
@@ -970,5 +1042,202 @@ exports.createSalesPipelineLead = functions
     });
 
     return result;
+  });
+
+exports.upsertInstallAttribution = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 30,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    const installId = trimString(data?.installId);
+    if (!installId) {
+      throw new functions.https.HttpsError("invalid-argument", "installId is required");
+    }
+
+    const promoterId = optionalString(data?.promoterId);
+    const rawReferrer = optionalString(data?.rawReferrer);
+    const firstOpenAtEpochMillis = coerceEpochMillis(data?.firstOpenAtEpochMillis);
+    const requestedStatus = trimString(data?.attributionStatus);
+    const userId = context.auth?.uid || null;
+    const installRef = db.collection(INSTALL_ATTRIBUTIONS_COLLECTION).doc(installId);
+
+    await db.runTransaction(async (transaction) => {
+      const existingSnap = await transaction.get(installRef);
+      const existingData = existingSnap.exists ? existingSnap.data() || {} : {};
+
+      const finalPromoterId = existingData.promoterId || promoterId || null;
+      const finalRawReferrer = existingData.rawReferrer || rawReferrer || null;
+      const finalUserId = existingData.userId || userId || null;
+      const finalStatus = finalPromoterId ?
+        ATTRIBUTION_STATUS_PROMOTER_ATTRIBUTED :
+        normalizeInstallAttributionStatus(existingData.attributionStatus || requestedStatus, null);
+      const firstOpenAt = existingData.firstOpenAt ||
+        (firstOpenAtEpochMillis ? admin.firestore.Timestamp.fromMillis(firstOpenAtEpochMillis) : admin.firestore.Timestamp.now());
+      const createdAt = existingData.createdAt || admin.firestore.FieldValue.serverTimestamp();
+
+      transaction.set(installRef, {
+        installId,
+        userId: finalUserId,
+        promoterId: finalPromoterId,
+        rawReferrer: finalRawReferrer,
+        attributionStatus: finalStatus,
+        firstOpenAt,
+        createdAt,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+
+    return {
+      ok: true,
+      installId,
+    };
+  });
+
+exports.getInstallAttributionReport = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onRequest(async (req, res) => {
+    if (req.method !== "GET") {
+      res.status(405).json({ error: "Method not allowed" });
+      return;
+    }
+
+    try {
+      const snapshot = await db.collection(INSTALL_ATTRIBUTIONS_COLLECTION).get();
+      const groupedResults = new Map();
+
+      snapshot.forEach((doc) => {
+        const data = doc.data() || {};
+        const promoterId = optionalString(data.promoterId);
+        const groupKey = promoterId || "__organic__";
+        const current = groupedResults.get(groupKey) || {
+          promoterId,
+          installsCount: 0,
+          signupsCount: 0,
+        };
+
+        current.installsCount += 1;
+        if (optionalString(data.userId)) {
+          current.signupsCount += 1;
+        }
+
+        groupedResults.set(groupKey, current);
+      });
+
+      const rows = Array.from(groupedResults.values())
+        .sort((left, right) => {
+          if (left.promoterId === null) return 1;
+          if (right.promoterId === null) return -1;
+          return left.promoterId.localeCompare(right.promoterId);
+        });
+
+      res.json({
+        rows,
+        totalInstallations: snapshot.size,
+      });
+    } catch (error) {
+      console.error("Error generating install attribution report:", error);
+      res.status(500).json({
+        error: error.message || "Unable to generate install attribution report",
+      });
+    }
+  });
+
+exports.agentChatProxy = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    const userId = context.auth?.uid;
+    if (!userId) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    const conversationId = trimString(data?.conversationId);
+    const message = trimString(data?.message);
+    const locale = trimString(data?.locale) || "en";
+    const imageUrl = trimString(data?.imageUrl) || null;
+    const recentMessages = normalizeRecentMessages(data?.recentMessages);
+
+    if (!conversationId) {
+      throw new functions.https.HttpsError("invalid-argument", "conversationId is required");
+    }
+
+    if (!message && !imageUrl) {
+      throw new functions.https.HttpsError("invalid-argument", "message or imageUrl is required");
+    }
+
+    if (!AGENT_SERVICE_URL) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "AGENT_SERVICE_URL is not configured"
+      );
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AGENT_PROXY_TIMEOUT_MS);
+
+    try {
+      const targetUrl = `${AGENT_SERVICE_URL}/chat`;
+      const authHeaders = await getAgentServiceAuthHeaders(targetUrl);
+      const response = await fetch(targetUrl, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+          ...(AGENT_SERVICE_SHARED_SECRET
+            ? { "X-Agent-Service-Token": AGENT_SERVICE_SHARED_SECRET }
+            : {}),
+        },
+        body: JSON.stringify({
+          userId,
+          conversationId,
+          message,
+          locale,
+          imageUrl,
+          recentMessages,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorMessage = await readAgentServiceError(response);
+        if (response.status === 400) {
+          throw new functions.https.HttpsError("invalid-argument", errorMessage);
+        }
+        if (response.status === 401 || response.status === 403) {
+          throw new functions.https.HttpsError("permission-denied", errorMessage);
+        }
+        throw new functions.https.HttpsError("unavailable", errorMessage);
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof functions.https.HttpsError) {
+        throw error;
+      }
+
+      if (error.name === "AbortError") {
+        throw new functions.https.HttpsError(
+          "deadline-exceeded",
+          "Timed out while waiting for the agent service"
+        );
+      }
+
+      console.error("Agent chat proxy failed:", error);
+      throw new functions.https.HttpsError(
+        "unavailable",
+        trimString(error?.message) || "Unable to contact the agent service"
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
   });
 

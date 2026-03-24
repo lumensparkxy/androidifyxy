@@ -16,6 +16,7 @@ This directory contains Firebase Cloud Functions for the Androidify app.
 | `aggregateSupplierClicksManual` | HTTP | Manual trigger for supplier click aggregation |
 | `cleanupOldClicks` | Scheduled | Cleanup old supplier click records |
 | `publishOffer` | Callable | Offer activation (placeholder) |
+| `agentChatProxy` | Callable | Authenticated proxy to the Cloud Run Python ADK agent service |
 
 ## Setup
 
@@ -51,6 +52,15 @@ Deploy the Cloud Functions:
 ```bash
 firebase deploy --only functions
 ```
+
+### Environment variables for the agent proxy
+
+If you enable the new agentic chat path, configure these runtime values for functions:
+
+- `AGENT_SERVICE_URL` — Cloud Run base URL for the Python ADK service
+- `AGENT_SERVICE_SHARED_SECRET` — shared secret sent as `X-Agent-Service-Token`
+
+The proxy expects the Cloud Run service to expose `POST /chat` and `GET /health`.
 
 ## Functions
 

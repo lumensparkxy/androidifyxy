@@ -15,6 +15,9 @@ import com.google.firebase.ai.type.GenerativeBackend
 import com.google.firebase.ai.type.content
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.functions.FirebaseFunctionsException
+import com.maswadkar.developers.androidify.data.AgenticChatHistoryMessage
+import com.maswadkar.developers.androidify.data.AgenticChatRepository
+import com.maswadkar.developers.androidify.data.AgenticChatRequest
 import com.maswadkar.developers.androidify.data.ChatRepository
 import com.maswadkar.developers.androidify.data.Conversation
 import com.maswadkar.developers.androidify.data.FarmerProfile
@@ -26,6 +29,7 @@ import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.data.SalesLeadRepository
 import com.maswadkar.developers.androidify.data.SalesLeadRequest
 import com.maswadkar.developers.androidify.util.ImageUtils
+import com.maswadkar.developers.androidify.util.AppConfigManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
@@ -59,6 +63,7 @@ class ChatViewModel(
 
     private val chatRepository = ChatRepository.getInstance()
     private val imageStorageRepository = ImageStorageRepository.getInstance()
+    private val agenticChatRepository = AgenticChatRepository.getInstance()
     private val farmerProfileRepository = FarmerProfileRepository.getInstance()
     private val salesLeadRepository = SalesLeadRepository.getInstance()
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -125,6 +130,25 @@ class ChatViewModel(
                 }
             }
     }
+
+    private fun buildAgenticRecentMessages(): List<AgenticChatHistoryMessage> {
+        return _messages.value
+            .dropLast(2)
+            .filter { !it.isLoading }
+            .map { msg ->
+                AgenticChatHistoryMessage(
+                    role = if (msg.isUser) "user" else "model",
+                    text = if (msg.imageUri != null && msg.text == "[Image attached]") {
+                        "[User shared an image]"
+                    } else {
+                        msg.text
+                    },
+                    imageUrl = msg.imageUrl
+                )
+            }
+    }
+
+    private fun shouldUseAgenticChat(): Boolean = AppConfigManager.shouldUseAgenticChat(currentUserId)
 
     private fun initializeChatWithHistory() {
         val history = buildChatHistory()
@@ -555,6 +579,49 @@ class ChatViewModel(
         }
     }
 
+    private suspend fun sendLegacyMessage(userText: String, imageUri: Uri?): String {
+        if (chat == null) {
+            val historyMessages = _messages.value.dropLast(2)
+            val history = historyMessages
+                .filter { !it.isLoading }
+                .map { msg ->
+                    content(role = if (msg.isUser) "user" else "model") {
+                        val messageText = if (msg.imageUri != null && msg.text == "[Image attached]") {
+                            "[User shared an image]"
+                        } else {
+                            msg.text
+                        }
+                        text(messageText)
+                    }
+                }
+            chat = model.startChat(history = history)
+        }
+
+        val response = if (imageUri != null) {
+            val bitmap = ImageUtils.loadAndCompressBitmap(
+                getApplication<Application>().applicationContext,
+                imageUri
+            )
+
+            if (bitmap != null) {
+                chat!!.sendMessage(
+                    content {
+                        image(bitmap)
+                        if (userText.isNotBlank()) {
+                            text(userText)
+                        }
+                    }
+                )
+            } else {
+                chat!!.sendMessage(userText.ifBlank { "Please describe what you see." })
+            }
+        } else {
+            chat!!.sendMessage(userText)
+        }
+
+        return response.text ?: AppConstants.NO_RESPONSE_MESSAGE
+    }
+
     fun sendMessage(userText: String, imageUri: Uri? = null) {
         if (userText.isBlank() && imageUri == null) return
 
@@ -614,46 +681,36 @@ class ChatViewModel(
             }
 
             try {
-                if (chat == null) {
-                    val historyMessages = _messages.value.dropLast(2)
-                    val history = historyMessages
-                        .filter { !it.isLoading }
-                        .map { msg ->
-                            content(role = if (msg.isUser) "user" else "model") {
-                                val messageText = if (msg.imageUri != null && msg.text == "[Image attached]") {
-                                    "[User shared an image]"
-                                } else {
-                                    msg.text
-                                }
-                                text(messageText)
+                val modelText = if (shouldUseAgenticChat()) {
+                    try {
+                        val agenticResponse = agenticChatRepository.sendMessage(
+                            AgenticChatRequest(
+                                conversationId = conversationId,
+                                message = userText,
+                                locale = deviceLocale,
+                                imageUrl = uploadedImageUrl,
+                                recentMessages = buildAgenticRecentMessages()
+                            )
+                        )
+
+                        if (!agenticResponse.metadata.requestNumber.isNullOrBlank()) {
+                            _leadUiState.update {
+                                it.copy(
+                                    confirmationRequestNumber = agenticResponse.metadata.requestNumber,
+                                    errorMessage = null
+                                )
                             }
                         }
-                    chat = model.startChat(history = history)
-                }
 
-                val response = if (imageUri != null) {
-                    val bitmap = ImageUtils.loadAndCompressBitmap(
-                        getApplication<Application>().applicationContext,
-                        imageUri
-                    )
-
-                    if (bitmap != null) {
-                        chat!!.sendMessage(
-                            content {
-                                image(bitmap)
-                                if (userText.isNotBlank()) {
-                                    text(userText)
-                                }
-                            }
-                        )
-                    } else {
-                        chat!!.sendMessage(userText.ifBlank { "Please describe what you see." })
+                        agenticResponse.text.ifBlank { AppConstants.NO_RESPONSE_MESSAGE }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Agentic chat path failed, falling back to legacy model: ${e.message}", e)
+                        sendLegacyMessage(userText = userText, imageUri = imageUri)
                     }
                 } else {
-                    chat!!.sendMessage(userText)
+                    sendLegacyMessage(userText = userText, imageUri = imageUri)
                 }
 
-                val modelText = response.text ?: AppConstants.NO_RESPONSE_MESSAGE
                 animationJob.cancel()
 
                 val updatedMessages = _messages.value.toMutableList()
