@@ -34,6 +34,12 @@ private fun inferLeadCategory(productName: String, chatMessageText: String = "")
     }
 }
 
+private fun toPositiveDoubleOrNull(value: Any?): Double? = when (value) {
+    is Number -> value.toDouble().takeIf { it > 0 }
+    is String -> value.toDoubleOrNull()?.takeIf { it > 0 }
+    else -> null
+}
+
 private fun buildInitialRoutingFields(
     farmerProfileData: Map<String, Any?>,
     productName: String,
@@ -55,11 +61,8 @@ private fun buildInitialRoutingFields(
             "villageKey" to normalizeLeadLocationPart(village),
         ),
         "routingStatus" to "initiated",
-        "reviewStatus" to "pending_recommendation",
         "recommendationStatus" to "pending",
-        "supplierVisibility" to "hidden",
         "suggestedSupplier" to null,
-        "selectedSupplier" to null,
         "assignedSupplier" to null,
         "commissionPreview" to mapOf(
             "category" to leadCategory,
@@ -93,12 +96,24 @@ private fun buildLeadFarmerProfileSnapshot(
             ?: authEmail
     )
 
-    return farmerProfileData.toMutableMap().apply {
-        this["mobileNumber"] = mobileNumber
-        this["phoneNumber"] = mobileNumber
-        this["emailId"] = emailId
-        this["email"] = emailId
+    val snapshot = linkedMapOf<String, Any?>()
+
+    fun putIfNotBlank(key: String, value: Any?) {
+        value?.toString()?.trim()?.takeIf { it.isNotEmpty() }?.let { snapshot[key] = it }
     }
+
+    putIfNotBlank("name", farmerProfileData["name"])
+    putIfNotBlank("village", farmerProfileData["village"])
+    putIfNotBlank("tehsil", farmerProfileData["tehsil"])
+    putIfNotBlank("district", farmerProfileData["district"])
+    toPositiveDoubleOrNull(farmerProfileData["totalFarmAcres"])?.let { snapshot["totalFarmAcres"] = it }
+
+    snapshot["mobileNumber"] = mobileNumber
+    snapshot["phoneNumber"] = mobileNumber
+    snapshot["emailId"] = emailId
+    snapshot["email"] = emailId
+
+    return snapshot
 }
 
 internal fun normalizeSalesLeadProductName(productName: String): String = productName

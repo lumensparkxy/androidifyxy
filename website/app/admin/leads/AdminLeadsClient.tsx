@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import {
@@ -135,6 +135,75 @@ function toFarmerProfileSnapshot(value: unknown): SalesPipelineLead['farmerProfi
   };
 }
 
+function deriveLeadReviewStatus(
+  routingStatus?: SalesLeadRoutingStatus,
+  recommendationStatus?: SalesLeadRecommendationStatus,
+): SalesLeadReviewStatus | undefined {
+  if (routingStatus === 'supplier_pending' || routingStatus === 'supplier_accepted') {
+    return 'assigned_to_supplier';
+  }
+
+  if (routingStatus === 'admin_claimed' || routingStatus === 'admin_closed') {
+    return 'reviewed';
+  }
+
+  if (
+    routingStatus === 'suggested_for_supplier'
+    || routingStatus === 'admin_queue'
+    || routingStatus === 'supplier_rejected'
+    || routingStatus === 'supplier_timeout'
+  ) {
+    return 'pending_admin_review';
+  }
+
+  if (
+    recommendationStatus === 'ready'
+    || recommendationStatus === 'needs_admin_review'
+    || recommendationStatus === 'no_match'
+  ) {
+    return 'pending_admin_review';
+  }
+
+  if (recommendationStatus === 'pending' || routingStatus === 'initiated') {
+    return 'pending_recommendation';
+  }
+
+  return undefined;
+}
+
+function deriveLeadSupplierVisibility(
+  routingStatus?: SalesLeadRoutingStatus,
+  supplierVisibility?: SalesLeadSupplierVisibility,
+): SalesLeadSupplierVisibility | undefined {
+  if (supplierVisibility) {
+    return supplierVisibility;
+  }
+
+  if (routingStatus === 'supplier_accepted' || routingStatus === 'admin_claimed' || routingStatus === 'admin_closed') {
+    return 'unlocked';
+  }
+
+  if (routingStatus === 'supplier_pending' || routingStatus === 'supplier_rejected' || routingStatus === 'supplier_timeout') {
+    return 'masked';
+  }
+
+  return 'hidden';
+}
+
+function toPreferredSupplierSnapshot(primaryValue: unknown, fallbackValue: unknown): LeadSupplierSnapshot | null | undefined {
+  const primarySnapshot = toSupplierSnapshot(primaryValue);
+  if (primarySnapshot && typeof primarySnapshot === 'object') {
+    return primarySnapshot;
+  }
+
+  const fallbackSnapshot = toSupplierSnapshot(fallbackValue);
+  if (fallbackSnapshot && typeof fallbackSnapshot === 'object') {
+    return fallbackSnapshot;
+  }
+
+  return primarySnapshot === null || fallbackSnapshot === null ? null : undefined;
+}
+
 function toCommissionMonthSummary(id: string, data: Record<string, unknown>): CommissionMonthSummary {
   return {
     monthKey: typeof data.monthKey === 'string' ? data.monthKey : id,
@@ -265,6 +334,24 @@ function getSupplierAssignmentHint(lead: SalesPipelineLead, supplier: AdminSuppl
 }
 
 function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
+  const routingStatus = typeof data.routingStatus === 'string' ? data.routingStatus as SalesLeadRoutingStatus : undefined;
+  const recommendationStatus =
+    typeof data.recommendationStatus === 'string'
+      ? data.recommendationStatus as SalesLeadRecommendationStatus
+      : undefined;
+  const reviewStatus =
+    typeof data.reviewStatus === 'string'
+      ? data.reviewStatus as SalesLeadReviewStatus
+      : deriveLeadReviewStatus(routingStatus, recommendationStatus);
+  const supplierVisibility = deriveLeadSupplierVisibility(
+    routingStatus,
+    typeof data.supplierVisibility === 'string'
+      ? data.supplierVisibility as SalesLeadSupplierVisibility
+      : undefined,
+  );
+  const selectedSupplier = toPreferredSupplierSnapshot(data.selectedSupplier, data.assignedSupplier);
+  const assignedSupplier = toPreferredSupplierSnapshot(data.assignedSupplier, data.selectedSupplier);
+
   return {
     id,
     userId: String(data.userId || ''),
@@ -281,19 +368,13 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
     farmerProfileSnapshot: toFarmerProfileSnapshot(data.farmerProfileSnapshot),
     leadCategory: typeof data.leadCategory === 'string' ? data.leadCategory : undefined,
     leadLocation: toLocationSnapshot(data.leadLocation),
-    routingStatus: typeof data.routingStatus === 'string' ? data.routingStatus as SalesLeadRoutingStatus : undefined,
-    reviewStatus: typeof data.reviewStatus === 'string' ? data.reviewStatus as SalesLeadReviewStatus : undefined,
-    recommendationStatus:
-      typeof data.recommendationStatus === 'string'
-        ? data.recommendationStatus as SalesLeadRecommendationStatus
-        : undefined,
-    supplierVisibility:
-      typeof data.supplierVisibility === 'string'
-        ? data.supplierVisibility as SalesLeadSupplierVisibility
-        : undefined,
+    routingStatus,
+    reviewStatus,
+    recommendationStatus,
+    supplierVisibility,
     suggestedSupplier: toSupplierSnapshot(data.suggestedSupplier),
-    selectedSupplier: toSupplierSnapshot(data.selectedSupplier),
-    assignedSupplier: toSupplierSnapshot(data.assignedSupplier),
+    selectedSupplier,
+    assignedSupplier,
     commissionPreview: toCommissionPreview(data.commissionPreview),
     commissionStatus: typeof data.commissionStatus === 'string' ? data.commissionStatus as SalesLeadCommissionStatus : 'preview',
     commissionLedgerEntryId: typeof data.commissionLedgerEntryId === 'string' ? data.commissionLedgerEntryId : null,
@@ -331,6 +412,27 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
   };
+}
+
+function isLikelyCallableEndpointFetchFailure(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes('failed to fetch')
+    || message.includes('load failed')
+    || message.includes('networkerror')
+    || message.includes('cors');
+}
+
+function isLocalDevelopmentHost(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const hostname = window.location.hostname.toLowerCase();
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
 }
 
 const OPS_STATUS_LABELS: Record<SalesLeadOpsStatus, string> = {
@@ -536,7 +638,10 @@ export default function AdminLeadsClient() {
   const [gateState, setGateState] = useState<AdminGateState>('checking');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [leadLoadNotice, setLeadLoadNotice] = useState<string | null>(null);
+  const [preferAdminLeadCallable, setPreferAdminLeadCallable] = useState(() => !isLocalDevelopmentHost());
   const [leads, setLeads] = useState<SalesPipelineLead[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
   const [commissionSummaries, setCommissionSummaries] = useState<CommissionMonthSummary[]>([]);
   const [approvedSuppliers, setApprovedSuppliers] = useState<AdminSupplierOption[]>([]);
   const [suppliersLoading, setSuppliersLoading] = useState(false);
@@ -592,32 +697,108 @@ export default function AdminLeadsClient() {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    if (!db || gateState !== 'allowed') {
-      if (gateState !== 'allowed') {
-        setLeads([]);
-      }
+  const loadAdminLeadsFromFirestore = useCallback(async (): Promise<SalesPipelineLead[]> => {
+    if (!db) {
+      throw new Error('Firestore is not configured in the website client');
+    }
+
+    const snapshot = await getDocs(
+      query(
+        collection(db, 'sales_pipeline'),
+        orderBy('createdAt', 'desc'),
+        limit(50),
+      ),
+    );
+
+    return snapshot.docs.map((leadDoc) => toLead(leadDoc.id, leadDoc.data() as Record<string, unknown>));
+  }, []);
+
+  const refreshAdminLeads = useCallback(async () => {
+    if (gateState !== 'allowed') {
+      setLeads([]);
+      setLeadLoadNotice(null);
       return;
     }
 
-    const leadsQuery = query(
-      collection(db, 'sales_pipeline'),
-      orderBy('createdAt', 'desc'),
-      limit(50),
-    );
+    setLeadsLoading(true);
+    try {
+      let nextLeads: SalesPipelineLead[];
+      const usingLocalhostFallback = !functions || !preferAdminLeadCallable;
 
-    const unsubscribe = onSnapshot(
-      leadsQuery,
-      (snapshot) => {
-        setLeads(snapshot.docs.map((leadDoc) => toLead(leadDoc.id, leadDoc.data() as Record<string, unknown>)));
-      },
-      (snapshotError) => {
-        setError(snapshotError.message || 'Failed to load leads');
-      },
-    );
+      if (usingLocalhostFallback) {
+        nextLeads = await loadAdminLeadsFromFirestore();
+        if (!functions) {
+          setLeadLoadNotice('Using direct Firestore lead snapshots because Firebase Functions is not configured in this website session. Callable-only live farmer profile enrichment is unavailable until Functions is configured.');
+        } else if (isLocalDevelopmentHost()) {
+          setLeadLoadNotice('Using direct Firestore lead snapshots on localhost so the admin page does not keep calling an undeployed `listAdminSalesLeads` endpoint and triggering a misleading browser CORS error. Deploy Functions when you want the live server-enriched admin feed.');
+        } else {
+          setLeadLoadNotice('Using direct Firestore lead snapshots because the `listAdminSalesLeads` Cloud Function was unreachable earlier in this browser session. Reload after deploying Functions if you want to retry the server-enriched admin feed.');
+        }
+      } else {
+        try {
+          const functionsInstance = functions;
+          if (!functionsInstance) {
+            throw new Error('Firebase Functions is not configured in the website client');
+          }
+          const listLeadsCallable = httpsCallable<{ limit?: number }, { ok: boolean; leads: Record<string, unknown>[] }>(
+            functionsInstance,
+            'listAdminSalesLeads',
+          );
+          const response = await listLeadsCallable({ limit: 50 });
+          nextLeads = Array.isArray(response.data?.leads)
+            ? response.data.leads
+              .map((leadRecord) => {
+                if (!leadRecord || typeof leadRecord !== 'object') {
+                  return null;
+                }
 
-    return unsubscribe;
-  }, [gateState]);
+                const data = leadRecord as Record<string, unknown>;
+                const id = typeof data.id === 'string' ? data.id : '';
+                if (!id) {
+                  return null;
+                }
+
+                return toLead(id, data);
+              })
+              .filter((lead): lead is SalesPipelineLead => Boolean(lead))
+            : [];
+          setLeadLoadNotice(null);
+        } catch (leadError) {
+          if (!db || !isLikelyCallableEndpointFetchFailure(leadError)) {
+            throw leadError;
+          }
+
+          setPreferAdminLeadCallable(false);
+          nextLeads = await loadAdminLeadsFromFirestore();
+          setLeadLoadNotice('Using direct Firestore lead snapshots because the `listAdminSalesLeads` Cloud Function is not reachable from this browser. In practice this usually means the new function has not been deployed yet, even though the browser reports it as a CORS failure. Deploy Functions to restore live farmer profile enrichment.');
+        }
+      }
+
+      setLeads(nextLeads);
+      setError(null);
+    } catch (leadError) {
+      setLeadLoadNotice(null);
+      setError(leadError instanceof Error ? leadError.message : 'Failed to load leads');
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, [gateState, loadAdminLeadsFromFirestore, preferAdminLeadCallable]);
+
+  useEffect(() => {
+    if (gateState !== 'allowed') {
+      setLeads([]);
+      return;
+    }
+
+    void refreshAdminLeads();
+    const intervalId = window.setInterval(() => {
+      void refreshAdminLeads();
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [gateState, refreshAdminLeads]);
 
   useEffect(() => {
     if (!db || gateState !== 'allowed') {
@@ -849,6 +1030,7 @@ export default function AdminLeadsClient() {
         updatedAt: serverTimestamp(),
         lastOpsActionAt: serverTimestamp(),
       });
+      await refreshAdminLeads();
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to update lead');
     } finally {
@@ -867,6 +1049,7 @@ export default function AdminLeadsClient() {
     try {
       const retryCallable = httpsCallable<{ leadId: string }, unknown>(functions, 'retryLeadRecommendation');
       await retryCallable({ leadId });
+      await refreshAdminLeads();
     } catch (retryError) {
       setError(retryError instanceof Error ? retryError.message : 'Failed to retry recommendation');
     } finally {
@@ -900,6 +1083,7 @@ export default function AdminLeadsClient() {
           ? { leadIds: pendingSelectedLeadIds }
           : { limit: targetCount }
       );
+      await refreshAdminLeads();
     } catch (backfillError) {
       setError(backfillError instanceof Error ? backfillError.message : 'Failed to backfill pending recommendations');
     } finally {
@@ -917,6 +1101,7 @@ export default function AdminLeadsClient() {
       'adminAssignLeadsToSupplier',
     );
     await assignCallable({ leadIds, supplierId });
+    await refreshAdminLeads();
   };
 
   const handleBulkAssignSelected = async () => {
@@ -1026,6 +1211,7 @@ export default function AdminLeadsClient() {
         action: workflowAction,
         closedReason: workflowAction === 'close_lead' ? 'processing_completed' : undefined,
       });
+      await refreshAdminLeads();
     } catch (workflowError) {
       setError(workflowError instanceof Error ? workflowError.message : 'Failed to advance lead workflow');
     } finally {
@@ -1069,6 +1255,12 @@ export default function AdminLeadsClient() {
       {error && (
         <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-3 text-sm">
           {error}
+        </div>
+      )}
+
+      {leadLoadNotice && (
+        <div className="bg-amber-50 text-amber-800 border border-amber-200 rounded-lg px-4 py-3 text-sm">
+          {leadLoadNotice}
         </div>
       )}
 
@@ -1134,7 +1326,10 @@ export default function AdminLeadsClient() {
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
               <Card className="p-5 border-l-4 border-l-primary" hover={false}>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Visible leads</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{leads.length}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <p className="text-3xl font-bold text-gray-900">{leads.length}</p>
+                  {leadsLoading && <Loader2 className="h-5 w-5 animate-spin text-primary" />}
+                </div>
               </Card>
               <Card className="p-5 border-l-4 border-l-blue-400" hover={false}>
                 <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Initiated</p>
@@ -1709,7 +1904,7 @@ export default function AdminLeadsClient() {
                         <dt className="text-gray-500">Phone</dt>
                         <dd className="font-medium text-gray-900 flex items-center gap-2">
                           <Phone className="w-4 h-4 text-gray-400" />
-                          {getLeadPhone(editingLead) || 'Phone not captured in snapshot'}
+                          {getLeadPhone(editingLead) || 'Phone not available in live profile'}
                         </dd>
                       </div>
                     </dl>
@@ -1751,7 +1946,7 @@ export default function AdminLeadsClient() {
                 {!getLeadPhone(editingLead) && (
                   <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <span>This dashboard only shows what the current lead snapshot contains.</span>
+                    <span>No phone number was found in the current farmer profile or the stored lead fallback.</span>
                   </div>
                 )}
               </div>

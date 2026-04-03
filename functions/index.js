@@ -872,8 +872,12 @@ const {
 } = require("./salesPipeline");
 const {
   buildLeadFarmerProfileSnapshot,
+  deriveLeadReviewStatus,
+  deriveLeadSupplierVisibility,
   getLeadProfileValidationError,
+  mergeLeadFarmerProfileSnapshots,
 } = require("./leadProfile");
+const { buildAdminLeadView } = require("./adminLeadView");
 const { buildLeadRecommendation } = require("./leadRecommendation");
 const {
   buildCommissionLifecycleDefaults,
@@ -1006,11 +1010,8 @@ function buildInitialLeadRoutingFields({ farmerProfile = {}, productName, chatMe
       villageKey: normalizeLeadLocationPart(village),
     },
     routingStatus: "initiated",
-    reviewStatus: "pending_recommendation",
     recommendationStatus: "pending",
-    supplierVisibility: "hidden",
     suggestedSupplier: null,
-    selectedSupplier: null,
     assignedSupplier: null,
     commissionPreview: {
       category: leadCategory,
@@ -1568,15 +1569,12 @@ function buildAdminLeadAssignmentUpdate({ supplierId, supplierData, actor, selec
   const selectedSupplier = buildAdminAssignedSupplierSnapshot(supplierId, supplierData, actor, selectedAt);
 
   return {
-    selectedSupplier,
     assignedSupplier: {
       ...selectedSupplier,
       assignedAt: selectedAt,
     },
     routingStatus: "supplier_pending",
-    reviewStatus: "assigned_to_supplier",
     recommendationStatus: "ready",
-    supplierVisibility: "masked",
     ...buildCommissionLifecycleDefaults(),
     assignmentPublishedAt: admin.firestore.FieldValue.serverTimestamp(),
     supplierResponseDeadlineAt: buildSupplierResponseDeadlineTimestamp(selectedAt),
@@ -1667,11 +1665,42 @@ function maskPhoneNumber(value) {
   return `••••••${last4}`;
 }
 
-function buildSupplierLeadView(leadId, leadData = {}) {
+async function loadLeadFarmerProfiles(leadRows = []) {
+  const userIds = [...new Set(
+    leadRows
+      .map(({ data }) => trimString(data?.userId))
+      .filter(Boolean)
+  )];
+
+  if (userIds.length === 0) {
+    return new Map();
+  }
+
+  const profileEntries = await Promise.all(userIds.map(async (userId) => {
+    try {
+      const snapshot = await db.collection(USERS_COLLECTION)
+        .doc(userId)
+        .collection(SETTINGS_COLLECTION)
+        .doc(FARMER_PROFILE_DOC)
+        .get();
+      return [userId, snapshot.exists ? (snapshot.data() || {}) : null];
+    } catch (error) {
+      console.warn(`Unable to load live farmer profile for lead user ${userId}:`, error);
+      return [userId, null];
+    }
+  }));
+
+  return new Map(profileEntries);
+}
+
+function buildSupplierLeadView(leadId, leadData = {}, liveFarmerProfile = null) {
   const routingStatus = trimString(leadData.routingStatus);
-  const supplierVisibility = trimString(leadData.supplierVisibility) || "masked";
-  const isUnlocked = supplierVisibility === "unlocked" || routingStatus === "supplier_accepted";
-  const farmerProfile = buildLeadFarmerProfileSnapshot(leadData.farmerProfileSnapshot || {});
+  const supplierVisibility = deriveLeadSupplierVisibility(leadData);
+  const isUnlocked = supplierVisibility === "unlocked";
+  const farmerProfile = mergeLeadFarmerProfileSnapshots(
+    liveFarmerProfile || {},
+    leadData.farmerProfileSnapshot || {},
+  );
   const farmerPhone = trimString(farmerProfile.phoneNumber || farmerProfile.mobileNumber);
   const farmerEmail = trimString(farmerProfile.email || farmerProfile.emailId);
 
@@ -1684,9 +1713,9 @@ function buildSupplierLeadView(leadId, leadData = {}) {
     chatMessageText: trimString(leadData.chatMessageText),
     leadCategory: trimString(leadData.leadCategory) || null,
     routingStatus: routingStatus || null,
-    reviewStatus: trimString(leadData.reviewStatus) || null,
+    reviewStatus: deriveLeadReviewStatus(leadData),
     recommendationStatus: trimString(leadData.recommendationStatus) || null,
-    supplierVisibility: isUnlocked ? "unlocked" : supplierVisibility,
+    supplierVisibility,
     contactUnlocked: isUnlocked,
     farmerProfileSnapshot: {
       name: trimString(farmerProfile.name) || null,
@@ -1701,7 +1730,7 @@ function buildSupplierLeadView(leadId, leadData = {}) {
     leadLocation: leadData.leadLocation || null,
     commissionPreview: leadData.commissionPreview || null,
     suggestedSupplier: leadData.suggestedSupplier || null,
-    selectedSupplier: leadData.selectedSupplier || null,
+    selectedSupplier: leadData.selectedSupplier || leadData.assignedSupplier || null,
     assignedSupplier: leadData.assignedSupplier || null,
     suggestionGeneratedAt: timestampToIsoString(leadData.suggestionGeneratedAt),
     assignmentPublishedAt: timestampToIsoString(leadData.assignmentPublishedAt),
@@ -1718,9 +1747,7 @@ function buildSupplierLeadView(leadId, leadData = {}) {
 function buildSupplierTimeoutUpdate() {
   return {
     routingStatus: "supplier_timeout",
-    reviewStatus: "pending_admin_review",
     recommendationStatus: "needs_admin_review",
-    supplierVisibility: "masked",
     supplierResponseDeadlineAt: null,
     adminFallbackReason: SUPPLIER_RESPONSE_TIMEOUT_REASON,
     lastRoutingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -1819,15 +1846,55 @@ exports.listSupplierAssignedLeads = functions
       .limit(limitCount)
       .get();
 
-    const leads = snapshot.docs
+    const leadRows = snapshot.docs
       .map((doc) => ({ id: doc.id, data: doc.data() || {} }))
-      .filter(({ data: leadData }) => visibleStatuses.has(trimString(leadData.routingStatus)))
+      .filter(({ data: leadData }) => visibleStatuses.has(trimString(leadData.routingStatus)));
+    const liveFarmerProfiles = await loadLeadFarmerProfiles(leadRows);
+
+    const leads = leadRows
       .sort((left, right) => {
         const rightTime = timestampToMillis(right.data.updatedAt || right.data.assignmentPublishedAt || right.data.createdAt);
         const leftTime = timestampToMillis(left.data.updatedAt || left.data.assignmentPublishedAt || left.data.createdAt);
         return rightTime - leftTime;
       })
-      .map(({ id, data: leadData }) => buildSupplierLeadView(id, leadData));
+      .map(({ id, data: leadData }) => buildSupplierLeadView(
+        id,
+        leadData,
+        liveFarmerProfiles.get(trimString(leadData.userId)) || null,
+      ));
+
+    return {
+      ok: true,
+      leads,
+    };
+  });
+
+exports.listAdminSalesLeads = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const limitCount = Math.min(Math.max(Math.floor(Number(data?.limit) || 50), 1), 100);
+    const snapshot = await db.collection(SALES_PIPELINE_COLLECTION)
+      .orderBy("createdAt", "desc")
+      .limit(limitCount)
+      .get();
+
+    const leadRows = snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() || {} }));
+    const liveFarmerProfiles = await loadLeadFarmerProfiles(leadRows);
+    const leads = leadRows.map(({ id, data: leadData }) => buildAdminLeadView(
+      id,
+      leadData,
+      liveFarmerProfiles.get(trimString(leadData.userId)) || null,
+    ));
 
     return {
       ok: true,
@@ -1883,9 +1950,7 @@ exports.respondToSupplierLead = functions
     const updatePayload = action === "accept"
       ? {
         routingStatus: "supplier_accepted",
-        reviewStatus: "assigned_to_supplier",
         recommendationStatus: trimString(leadData.recommendationStatus) || "ready",
-        supplierVisibility: "unlocked",
         supplierResponseDeadlineAt: null,
         supplierRespondedAt: admin.firestore.FieldValue.serverTimestamp(),
         supplierRejectedReason: null,
@@ -1895,9 +1960,7 @@ exports.respondToSupplierLead = functions
       }
       : {
         routingStatus: "supplier_rejected",
-        reviewStatus: "pending_admin_review",
         recommendationStatus: "needs_admin_review",
-        supplierVisibility: "masked",
         supplierResponseDeadlineAt: null,
         supplierRespondedAt: admin.firestore.FieldValue.serverTimestamp(),
         supplierRejectedReason: rejectionReason,
@@ -1999,7 +2062,6 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
     await leadRef.set({
       leadCategory: recommendationContext.lead.leadCategory,
       routingStatus: recommendation.routingStatus,
-      reviewStatus: recommendation.reviewStatus,
       recommendationStatus: recommendation.recommendationStatus,
       suggestedSupplier: recommendation.suggestedSupplier,
       commissionPreview: recommendation.commissionPreview,
@@ -2020,7 +2082,6 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
     console.error(`Failed to recommend supplier for lead ${leadId}:`, error);
     await leadRef.set({
       routingStatus: "admin_queue",
-      reviewStatus: "pending_admin_review",
       recommendationStatus: "no_match",
       adminFallbackReason: fallbackReason,
       suggestionGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -2314,7 +2375,6 @@ exports.adminAdvanceLeadWorkflow = functions
       const batch = db.batch();
       batch.set(leadRef, {
         routingStatus: "admin_claimed",
-        reviewStatus: "reviewed",
         commissionStatus: "approved",
         commissionLedgerEntryId: leadId,
         commissionMonthKey: affectedMonthKey,
@@ -2404,7 +2464,6 @@ exports.adminAdvanceLeadWorkflow = functions
 
       await leadRef.set({
         routingStatus: "admin_claimed",
-        reviewStatus: "reviewed",
         backendProcessingStatus: "completed",
         backendProcessedAt: admin.firestore.FieldValue.serverTimestamp(),
         backendProcessedByUid: actor.uid,
@@ -2437,7 +2496,6 @@ exports.adminAdvanceLeadWorkflow = functions
     const batch = db.batch();
     batch.set(leadRef, {
       routingStatus: "admin_closed",
-      reviewStatus: "reviewed",
       closedAt: admin.firestore.FieldValue.serverTimestamp(),
       closedByUid: actor.uid,
       closedByEmail: actor.email,

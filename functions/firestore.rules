@@ -175,9 +175,7 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == 'initiated'
         && request.resource.data.routingStatus == 'initiated'
-        && request.resource.data.reviewStatus == 'pending_recommendation'
         && request.resource.data.recommendationStatus == 'pending'
-        && request.resource.data.supplierVisibility == 'hidden'
         && request.resource.data.dedupeKey == leadId
         && request.resource.data.requestNumber is string
         && request.resource.data.conversationId is string
