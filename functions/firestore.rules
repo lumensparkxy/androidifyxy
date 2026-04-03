@@ -1,6 +1,36 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isPrivilegedAdminEmail() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && (request.auth.token.email == 'maswadkar@gmail.com'
+          || request.auth.token.email == 'neophilex@gmail.com');
+    }
+
+    function isPrivilegedSupplierPhone() {
+      return isSignedIn()
+        && request.auth.token.phone_number is string
+        && request.auth.token.phone_number == '+919493513382';
+    }
+
+    function isAdminUser() {
+      return isPrivilegedAdminEmail()
+        || (isSignedIn()
+          && exists(/databases/$(database)/documents/admin_users/$(request.auth.uid)));
+    }
+
+    function isSupplierOwner(supplierId) {
+      return isSignedIn()
+        && supplierId is string
+        && exists(/databases/$(database)/documents/suppliers/$(supplierId))
+        && get(/databases/$(database)/documents/suppliers/$(supplierId)).data.ownerUid == request.auth.uid;
+    }
+
     // Public reads for mandi prices (existing feature)
     match /mandi_prices/{docId} {
       allow read: if true;
@@ -17,40 +47,64 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // Admin users — seeded manually via Firebase Console for website admin access.
+    match /admin_users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
     // Supplier profile — only the owner can manage their document.
     // Public can read approved suppliers for offer contact info.
     match /suppliers/{supplierId} {
       allow read: if resource.data.verificationStatus == 'APPROVED'
-        || (request.auth != null && request.auth.uid == supplierId);
+        || (isSignedIn()
+          && (request.auth.uid == supplierId || resource.data.ownerUid == request.auth.uid));
 
-      allow create: if request.auth != null
-        && request.auth.uid == supplierId
+      allow create: if isSignedIn()
         && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.verificationStatus == 'PENDING';
+        && (request.resource.data.verificationStatus == 'PENDING'
+          || (isPrivilegedSupplierPhone()
+            && request.resource.data.verificationStatus == 'APPROVED'));
 
       // Owners can update their profile but cannot approve themselves.
-      allow update: if request.auth != null
-        && request.auth.uid == supplierId
+      allow update: if isSignedIn()
+        && resource.data.ownerUid == request.auth.uid
         && request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.verificationStatus == resource.data.verificationStatus;
+        && (
+          request.resource.data.verificationStatus == resource.data.verificationStatus
+          || (isPrivilegedSupplierPhone()
+            && request.resource.data.verificationStatus == 'APPROVED')
+        );
     }
 
     // Offers — public reads only for approved offers from approved suppliers. Owners can manage their own offers.
     match /offers/{offerId} {
       allow read: if (resource.data.status == 'APPROVED' && resource.data.supplierApproved == true)
-        || (request.auth != null && resource.data.supplierId == request.auth.uid);
+        || isSupplierOwner(resource.data.supplierId);
 
       // Suppliers create drafts only.
-      allow create: if request.auth != null
-        && request.resource.data.supplierId == request.auth.uid
-        && request.resource.data.status == 'DRAFT'
-        && request.resource.data.supplierApproved == false;
+      allow create: if isSupplierOwner(request.resource.data.supplierId)
+        && (
+          (request.resource.data.status == 'DRAFT' && request.resource.data.supplierApproved == false)
+          || (isPrivilegedSupplierPhone()
+            && request.resource.data.status == 'ACTIVE'
+            && request.resource.data.supplierApproved == true)
+        );
 
       // Suppliers may edit their own non-active offers but cannot self-activate or mark approved.
-      allow update: if request.auth != null
-        && resource.data.supplierId == request.auth.uid
-        && !(resource.data.status != 'ACTIVE' && request.resource.data.status == 'ACTIVE')
-        && request.resource.data.supplierApproved == resource.data.supplierApproved;
+      allow update: if isSupplierOwner(resource.data.supplierId)
+        && request.resource.data.supplierId == resource.data.supplierId
+        && (
+          (
+            !(resource.data.status != 'ACTIVE' && request.resource.data.status == 'ACTIVE')
+            && request.resource.data.supplierApproved == resource.data.supplierApproved
+          )
+          || (
+            isPrivilegedSupplierPhone()
+            && request.resource.data.status == 'ACTIVE'
+            && request.resource.data.supplierApproved == true
+          )
+        );
     }
 
     // Carbon Credits submissions — authenticated users can create their own submissions
@@ -114,20 +168,33 @@ service cloud.firestore {
 
     // Sales pipeline — server-owned lead records with a constrained client create fallback.
     match /sales_pipeline/{leadId} {
-      allow get: if request.auth != null
-        && (resource == null || resource.data.userId == request.auth.uid);
-      allow list: if false;
-      allow create: if request.auth != null
+      allow get: if isSignedIn()
+        && (isAdminUser() || resource == null || resource.data.userId == request.auth.uid);
+      allow list: if isAdminUser();
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == 'initiated'
+        && request.resource.data.routingStatus == 'initiated'
+        && request.resource.data.reviewStatus == 'pending_recommendation'
+        && request.resource.data.recommendationStatus == 'pending'
+        && request.resource.data.supplierVisibility == 'hidden'
         && request.resource.data.dedupeKey == leadId
         && request.resource.data.requestNumber is string
         && request.resource.data.conversationId is string
         && request.resource.data.productName is string
         && request.resource.data.normalizedProductName is string
         && request.resource.data.chatMessageText is string
-        && request.resource.data.farmerProfileSnapshot is map;
-      allow update, delete: if false;
+        && request.resource.data.farmerProfileSnapshot is map
+        && request.resource.data.leadLocation is map
+        && request.resource.data.commissionPreview is map;
+      allow update: if isAdminUser()
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.conversationId == resource.data.conversationId
+        && request.resource.data.requestNumber == resource.data.requestNumber
+        && request.resource.data.dedupeKey == resource.data.dedupeKey
+        && request.resource.data.productName == resource.data.productName
+        && request.resource.data.normalizedProductName == resource.data.normalizedProductName;
+      allow delete: if false;
     }
 
     // Supplier click tracking — for monetization (pay-per-lead)
@@ -142,6 +209,18 @@ service cloud.firestore {
     // Suppliers can read their own stats; writes only via Cloud Functions (admin SDK)
     match /supplier_stats/{supplierId} {
       allow read: if request.auth != null && request.auth.uid == supplierId;
+      allow write: if false;
+    }
+
+    // Commission ledger is server-owned. Admins can read for audit and reporting.
+    match /commission_ledger/{entryId} {
+      allow read: if isAdminUser();
+      allow write: if false;
+    }
+
+    // Monthly commission rollups are derived from the ledger and exposed to admins.
+    match /commission_monthly/{monthKey} {
+      allow read: if isAdminUser();
       allow write: if false;
     }
 

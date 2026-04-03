@@ -92,9 +92,6 @@
     <string name="change_location_title">Change Location</string>
     <string name="cancel">Cancel</string>
     <string name="menu_mandi_settings">Farmer Profile</string>
-    <string name="preferences_description">Set your default location to quickly view mandi prices without selecting state and district each time.</string>
-    <string name="current_location">Current Location</string>
-    <string name="save_preferences">Save Preferences</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">Farmer Profile</string>

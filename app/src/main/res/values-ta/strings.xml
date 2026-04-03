@@ -82,9 +82,6 @@
     <string name="change_location_title">இடத்தை மாற்றவும்</string>
     <string name="cancel">ரத்து செய்</string>
     <string name="menu_mandi_settings">விவசாயி சுயவிவரம்</string>
-    <string name="preferences_description">ஒவ்வொரு முறையும் மாநிலம் மற்றும் மாவட்டத்தைத் தேர்ந்தெடுக்காமல் மண்டி விலைகளை விரைவாகப் பார்க்க உங்கள் இயல்புநிலை இடத்தை அமைக்கவும்.</string>
-    <string name="current_location">தற்போதைய இடம்</string>
-    <string name="save_preferences">விருப்பத்தேர்வுகளை சேமி</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">விவசாயி சுயவிவரம்</string>

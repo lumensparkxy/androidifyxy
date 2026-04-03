@@ -38,8 +38,11 @@ If you want to customize settings:
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/serviceAccountKey.json"
+export FIREBASE_APPLICATION_CREDENTIALS="/path/to/serviceAccountKey.json"
 export DATA_GOV_API_KEY="your_api_key_if_different"
 ```
+
+Both credential environment variables are supported; you only need to set one of them.
 
 ## Usage
 
@@ -63,6 +66,37 @@ Press `Ctrl+C` to stop gracefully.
 ```bash
 python mandi_sync_service.py --once
 ```
+
+### Backfill legacy farmer profiles
+
+If you want to safely retire the legacy `users/{uid}/settings/mandi_preferences` fallback,
+use the one-off backfill utility first. It scans users and merges any missing location / commodity
+fields into `users/{uid}/settings/farmer_profile`.
+
+Dry-run first:
+
+```bash
+python backfill_farmer_profile_from_legacy.py
+```
+
+Apply the backfill after reviewing the output:
+
+```bash
+python backfill_farmer_profile_from_legacy.py --apply
+```
+
+Useful options:
+
+```bash
+# Inspect a single user
+python backfill_farmer_profile_from_legacy.py --user-id <uid>
+
+# Limit the scan size
+python backfill_farmer_profile_from_legacy.py --limit 100
+```
+
+The script only fills missing profile fields from the legacy document; it does not overwrite existing
+`farmer_profile` values.
 
 ### Run as Background Service (macOS)
 
@@ -118,7 +152,7 @@ Edit `mandi_sync_service.py` to change:
 ### "serviceAccountKey.json not found"
 - Download the service account key from Firebase Console
 - Place it in the `scripts/` directory
-- Or set `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+- Or set `GOOGLE_APPLICATION_CREDENTIALS` / `FIREBASE_APPLICATION_CREDENTIALS`
 
 ### Connection errors
 - Check your internet connection
@@ -132,6 +166,7 @@ Edit `mandi_sync_service.py` to change:
 ## Files
 
 - `mandi_sync_service.py` - Main service script
+- `backfill_farmer_profile_from_legacy.py` - One-off migration helper for legacy farmer profile data
 - `requirements.txt` - Python dependencies
 - `serviceAccountKey.json` - Firebase credentials (you create this)
 - `com.androidifyxy.mandisync.plist` - macOS launchd config

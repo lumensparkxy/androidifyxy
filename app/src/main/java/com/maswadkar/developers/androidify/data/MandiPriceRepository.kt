@@ -1,8 +1,10 @@
 package com.maswadkar.developers.androidify.data
 
 import android.util.Log
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -13,9 +15,6 @@ class MandiPriceRepository {
     companion object {
         private const val TAG = "MandiPriceRepository"
         private const val COLLECTION_NAME = "mandi_prices"
-        private const val USERS_COLLECTION = "users"
-        private const val SETTINGS_COLLECTION = "settings"
-        private const val MANDI_PREFERENCES_DOC = "mandi_preferences"
 
         @Volatile
         private var instance: MandiPriceRepository? = null
@@ -29,6 +28,24 @@ class MandiPriceRepository {
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val districtsCache = mutableMapOf<String, List<String>>()
+
+    private fun normalizePreferences(preferences: MandiPreferences): MandiPreferences = MandiPreferences(
+        state = preferences.state.trim(),
+        district = preferences.district.trim(),
+        market = preferences.market?.trim()?.takeIf { it.isNotBlank() },
+        lastCommodity = preferences.lastCommodity?.trim()?.takeIf { it.isNotBlank() }
+    )
+
+    private fun buildFarmerProfilePreferencePatch(preferences: MandiPreferences): Map<String, Any?> {
+        val normalizedPreferences = normalizePreferences(preferences)
+        return mapOf(
+            "state" to normalizedPreferences.state,
+            "district" to normalizedPreferences.district,
+            "market" to normalizedPreferences.market,
+            "lastCommodity" to normalizedPreferences.lastCommodity,
+            "updatedAt" to Timestamp.now()
+        )
+    }
 
     /**
      * Get all distinct states
@@ -187,15 +204,14 @@ class MandiPriceRepository {
      */
     suspend fun getUserPreferences(userId: String): MandiPreferences? {
         return try {
-            val doc = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
+            val profileDoc = firestore.farmerProfileDocument(userId)
                 .get()
                 .await()
 
-            if (doc.exists()) {
-                doc.toObject(MandiPreferences::class.java)
+            if (profileDoc.exists()) {
+                profileDoc.toObject(FarmerProfile::class.java)
+                    ?.normalized()
+                    ?.toMandiPreferences()
             } else {
                 null
             }
@@ -210,13 +226,11 @@ class MandiPriceRepository {
      */
     suspend fun saveUserPreferences(userId: String, preferences: MandiPreferences): Boolean {
         return try {
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
-                .set(preferences)
+            val normalizedPreferences = normalizePreferences(preferences)
+            firestore.farmerProfileDocument(userId)
+                .set(buildFarmerProfilePreferencePatch(normalizedPreferences), SetOptions.merge())
                 .await()
-            Log.d(TAG, "Saved user preferences: $preferences")
+            Log.d(TAG, "Saved user preferences to farmer_profile: $normalizedPreferences")
             true
         } catch (e: Exception) {
             Log.e(TAG, "Error saving user preferences: ${e.message}")
@@ -229,11 +243,14 @@ class MandiPriceRepository {
      */
     suspend fun updateLastCommodity(userId: String, commodity: String): Boolean {
         return try {
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
-                .update("lastCommodity", commodity)
+            firestore.farmerProfileDocument(userId)
+                .set(
+                    mapOf(
+                        "lastCommodity" to commodity.trim(),
+                        "updatedAt" to Timestamp.now()
+                    ),
+                    SetOptions.merge()
+                )
                 .await()
             true
         } catch (e: Exception) {

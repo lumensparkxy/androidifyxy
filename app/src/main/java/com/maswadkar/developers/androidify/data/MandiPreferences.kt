@@ -1,7 +1,10 @@
 package com.maswadkar.developers.androidify.data
 
 /**
- * User's saved Mandi location preferences
+ * Compact mandi/location preference projection.
+ *
+ * This is not the primary persisted user profile document; `farmer_profile`
+ * is the canonical source of truth and this shape is retained for compact mandi UI state.
  */
 data class MandiPreferences(
     val state: String = "",

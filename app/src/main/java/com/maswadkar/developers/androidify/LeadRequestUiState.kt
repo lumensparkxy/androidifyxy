@@ -15,6 +15,7 @@ data class LeadRequestUiState(
     val pendingRequest: PendingLeadRequest? = null,
     val profileDraft: LeadProfileDraft = LeadProfileDraft(),
     val nameError: String? = null,
+    val mobileNumberError: String? = null,
     val villageError: String? = null,
     val tehsilError: String? = null,
     val districtError: String? = null,

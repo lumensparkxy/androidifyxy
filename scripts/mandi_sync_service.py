@@ -10,6 +10,7 @@ Usage:
 
 Environment Variables:
     FIREBASE_APPLICATION_CREDENTIALS: Path to Firebase service account JSON
+    GOOGLE_APPLICATION_CREDENTIALS: Alternate path to Firebase service account JSON
     DATA_GOV_API_KEY: API key for data.gov.in (optional, has default)
 """
 
@@ -123,7 +124,7 @@ def create_session() -> requests.Session:
 
 def initialize_firebase() -> firestore.Client:
     """Initialize Firebase Admin SDK and return Firestore client."""
-    cred_path = os.getenv("FIREBASE_APPLICATION_CREDENTIALS")
+    cred_path = os.getenv("FIREBASE_APPLICATION_CREDENTIALS") or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 
     if not cred_path:
         # Try default location in scripts directory
@@ -133,9 +134,9 @@ def initialize_firebase() -> firestore.Client:
             logger.info(f"Using service account key from: {default_path}")
         else:
             raise ValueError(
-                "FIREBASE_APPLICATION_CREDENTIALS not set and serviceAccountKey.json not found.\n"
+                "FIREBASE_APPLICATION_CREDENTIALS / GOOGLE_APPLICATION_CREDENTIALS not set and serviceAccountKey.json not found.\n"
                 "Please either:\n"
-                "  1. Set FIREBASE_APPLICATION_CREDENTIALS environment variable, or\n"
+                "  1. Set FIREBASE_APPLICATION_CREDENTIALS or GOOGLE_APPLICATION_CREDENTIALS, or\n"
                 "  2. Place serviceAccountKey.json in the scripts/ directory"
             )
 

@@ -82,9 +82,6 @@
     <string name="change_location_title">स्थान बदला</string>
     <string name="cancel">रद्द करा</string>
     <string name="menu_mandi_settings">शेतकरी प्रोफाइल</string>
-    <string name="preferences_description">प्रत्येक वेळी राज्य आणि जिल्हा न निवडता जलद मंडी भाव पाहण्यासाठी आपले डीफॉल्ट स्थान सेट करा.</string>
-    <string name="current_location">सध्याचे स्थान</string>
-    <string name="save_preferences">प्राधान्ये जतन करा</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">शेतकरी प्रोफाइल</string>

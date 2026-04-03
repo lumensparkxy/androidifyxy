@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, PhoneAuthProvider, RecaptchaVerifier, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFunctions, Functions } from 'firebase/functions';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
+let functions: Functions | undefined;
 let storage: FirebaseStorage | undefined;
 let googleProvider: GoogleAuthProvider | undefined;
 let phoneProvider: PhoneAuthProvider | undefined;
@@ -31,7 +33,8 @@ if (typeof window !== 'undefined') {
   googleProvider = new GoogleAuthProvider();
   phoneProvider = new PhoneAuthProvider(auth);
   db = getFirestore(app);
+  functions = getFunctions(app, 'asia-south1');
   storage = getStorage(app);
 }
 
-export { app, auth, db, storage, googleProvider, phoneProvider, RecaptchaVerifier };
+export { app, auth, db, functions, storage, googleProvider, phoneProvider, RecaptchaVerifier };

@@ -14,12 +14,92 @@ import java.time.ZoneOffset
 
 private const val TAG = "SalesLeadRepository"
 private const val CREATE_SALES_PIPELINE_LEAD_FUNCTION = "createSalesPipelineLead"
-private const val USERS_COLLECTION = "users"
-private const val SETTINGS_COLLECTION = "settings"
-private const val FARMER_PROFILE_DOC = "farmer_profile"
 private const val SALES_PIPELINE_COLLECTION = "sales_pipeline"
 private const val SALES_PIPELINE_STATUS_INITIATED = "initiated"
 private val REQUEST_NUMBER_RANDOM = SecureRandom()
+
+private fun normalizeLeadLocationPart(value: String?): String = value
+    .orEmpty()
+    .trim()
+    .lowercase()
+    .replace(Regex("\\s+"), " ")
+
+private fun inferLeadCategory(productName: String, chatMessageText: String = ""): String {
+    val haystack = "$productName $chatMessageText".trim().lowercase()
+    return when {
+        listOf("fertili", "urea", "dap", "npk", "potash", "micronutrient", "manure").any { haystack.contains(it) } -> "fertilizer"
+        listOf("pesticide", "fungicide", "herbicide", "insecticide", "spray", "weedicide").any { haystack.contains(it) } -> "pesticide"
+        listOf("seed", "seeds", "hybrid", "variety", "nursery", "sapling").any { haystack.contains(it) } -> "seed"
+        else -> "other"
+    }
+}
+
+private fun buildInitialRoutingFields(
+    farmerProfileData: Map<String, Any?>,
+    productName: String,
+    chatMessageText: String,
+): Map<String, Any?> {
+    val district = farmerProfileData["district"]?.toString()?.trim().orEmpty()
+    val tehsil = farmerProfileData["tehsil"]?.toString()?.trim().orEmpty()
+    val village = farmerProfileData["village"]?.toString()?.trim().orEmpty()
+    val leadCategory = inferLeadCategory(productName, chatMessageText)
+
+    return mapOf(
+        "leadCategory" to leadCategory,
+        "leadLocation" to mapOf(
+            "district" to district,
+            "districtKey" to normalizeLeadLocationPart(district),
+            "tehsil" to tehsil,
+            "tehsilKey" to normalizeLeadLocationPart(tehsil),
+            "village" to village,
+            "villageKey" to normalizeLeadLocationPart(village),
+        ),
+        "routingStatus" to "initiated",
+        "reviewStatus" to "pending_recommendation",
+        "recommendationStatus" to "pending",
+        "supplierVisibility" to "hidden",
+        "suggestedSupplier" to null,
+        "selectedSupplier" to null,
+        "assignedSupplier" to null,
+        "commissionPreview" to mapOf(
+            "category" to leadCategory,
+            "amount" to null,
+            "currency" to "INR",
+            "ruleId" to null,
+        ),
+        "suggestionGeneratedAt" to null,
+        "assignmentPublishedAt" to null,
+        "supplierResponseDeadlineAt" to null,
+        "supplierRespondedAt" to null,
+        "supplierRejectedReason" to null,
+        "adminFallbackReason" to null,
+        "lastRoutingUpdatedAt" to null,
+    )
+}
+
+private fun buildLeadFarmerProfileSnapshot(
+    farmerProfileData: Map<String, Any?>,
+    authPhoneNumber: String?,
+    authEmail: String?,
+): Map<String, Any?> {
+    val mobileNumber = normalizeLeadMobileNumber(
+        farmerProfileData["mobileNumber"]?.toString()
+            ?: farmerProfileData["phoneNumber"]?.toString()
+            ?: authPhoneNumber
+    )
+    val emailId = normalizeLeadEmail(
+        farmerProfileData["emailId"]?.toString()
+            ?: farmerProfileData["email"]?.toString()
+            ?: authEmail
+    )
+
+    return farmerProfileData.toMutableMap().apply {
+        this["mobileNumber"] = mobileNumber
+        this["phoneNumber"] = mobileNumber
+        this["emailId"] = emailId
+        this["email"] = emailId
+    }
+}
 
 internal fun normalizeSalesLeadProductName(productName: String): String = productName
     .trim()
@@ -130,20 +210,28 @@ class SalesLeadRepository {
         val source = request.source.trim().ifBlank { "chat_recommendation" }
         val normalizedProductName = normalizeSalesLeadProductName(productName)
         val docId = buildSalesLeadDocId(userId, conversationId, productName)
+        val authPhoneNumber = auth.currentUser?.phoneNumber
+        val authEmail = auth.currentUser?.email
 
-        val farmerProfileRef = firestore.collection(USERS_COLLECTION)
-            .document(userId)
-            .collection(SETTINGS_COLLECTION)
-            .document(FARMER_PROFILE_DOC)
+        val farmerProfileRef = firestore.farmerProfileDocument(userId)
         val leadRef = firestore.collection(SALES_PIPELINE_COLLECTION).document(docId)
 
         return try {
             firestore.runTransaction { transaction ->
                 val farmerProfileSnap = transaction.get(farmerProfileRef)
-                val farmerProfile = farmerProfileSnap.toObject(FarmerProfile::class.java)?.normalized()
-                if (farmerProfile == null || !farmerProfile.hasLeadRequiredFields()) {
+                val farmerProfile = farmerProfileSnap
+                    .toObject(FarmerProfile::class.java)
+                    ?.withLeadContactFallbacks(authPhoneNumber, authEmail)
+                    ?: FarmerProfile().withLeadContactFallbacks(authPhoneNumber, authEmail)
+                if (!farmerProfile.hasLeadRequiredFields()) {
                     throw IllegalStateException("Please complete your profile to continue")
                 }
+
+                val farmerProfileSnapshot = buildLeadFarmerProfileSnapshot(
+                    farmerProfileSnap.data.orEmpty(),
+                    authPhoneNumber,
+                    authEmail,
+                )
 
                 val existingSnap = transaction.get(leadRef)
                 if (existingSnap.exists()) {
@@ -172,7 +260,12 @@ class SalesLeadRepository {
                         "quantity" to quantity,
                         "unit" to unit,
                         "chatMessageText" to chatMessageText,
-                        "farmerProfileSnapshot" to farmerProfileSnap.data.orEmpty(),
+                        "farmerProfileSnapshot" to farmerProfileSnapshot,
+                        *buildInitialRoutingFields(
+                            farmerProfileSnapshot,
+                            productName,
+                            chatMessageText,
+                        ).toList().map { it.first to it.second }.toTypedArray(),
                         "createdAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp()
                     )
@@ -210,6 +303,7 @@ data class SalesLeadSubmissionResult(
 
 data class LeadProfileDraft(
     val name: String = "",
+    val mobileNumber: String = "",
     val village: String = "",
     val tehsil: String = "",
     val district: String = "",
@@ -217,6 +311,7 @@ data class LeadProfileDraft(
 ) {
     fun normalized(): LeadProfileDraft = copy(
         name = name.trim(),
+        mobileNumber = sanitizeLeadMobileInput(mobileNumber),
         village = village.trim(),
         tehsil = tehsil.trim(),
         district = district.trim(),

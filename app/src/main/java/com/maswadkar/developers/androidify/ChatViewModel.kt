@@ -28,6 +28,8 @@ import com.maswadkar.developers.androidify.data.Message
 import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.data.SalesLeadRepository
 import com.maswadkar.developers.androidify.data.SalesLeadRequest
+import com.maswadkar.developers.androidify.data.sanitizeLeadMobileInput
+import com.maswadkar.developers.androidify.data.withLeadContactFallbacks
 import com.maswadkar.developers.androidify.util.ImageUtils
 import com.maswadkar.developers.androidify.util.AppConfigManager
 import kotlinx.coroutines.Job
@@ -372,7 +374,10 @@ class ChatViewModel(
                 val existingProfile = farmerProfileRepository.getUserProfile(uid)
                 val profile = (existingProfile ?: FarmerProfile()).copy(
                     name = existingProfile?.name ?: auth.currentUser?.displayName
-                ).normalized()
+                ).withLeadContactFallbacks(
+                    auth.currentUser?.phoneNumber,
+                    auth.currentUser?.email,
+                )
 
                 if (!profile.hasLeadRequiredFields()) {
                     _leadUiState.update {
@@ -381,6 +386,7 @@ class ChatViewModel(
                             showProfileDialog = true,
                             profileDraft = LeadProfileDraft(
                                 name = profile.name.orEmpty(),
+                                mobileNumber = profile.mobileNumber.orEmpty(),
                                 village = profile.village.orEmpty(),
                                 tehsil = profile.tehsil.orEmpty(),
                                 district = profile.district,
@@ -407,6 +413,15 @@ class ChatViewModel(
 
     fun onLeadNameChanged(value: String) {
         _leadUiState.update { it.copy(profileDraft = it.profileDraft.copy(name = value), nameError = null) }
+    }
+
+    fun onLeadMobileNumberChanged(value: String) {
+        _leadUiState.update {
+            it.copy(
+                profileDraft = it.profileDraft.copy(mobileNumber = sanitizeLeadMobileInput(value)),
+                mobileNumberError = null,
+            )
+        }
     }
 
     fun onLeadVillageChanged(value: String) {
@@ -438,6 +453,7 @@ class ChatViewModel(
                 showProfileDialog = false,
                 pendingRequest = null,
                 nameError = null,
+                mobileNumberError = null,
                 villageError = null,
                 tehsilError = null,
                 districtError = null,
@@ -466,6 +482,11 @@ class ChatViewModel(
 
         val draft = _leadUiState.value.profileDraft.normalized()
         val nameError = if (draft.name.isBlank()) "Name is required" else null
+        val mobileNumberError = when {
+            draft.mobileNumber.isBlank() -> "Mobile number is required"
+            draft.mobileNumber.length != 10 -> "Enter a valid 10-digit mobile number"
+            else -> null
+        }
         val villageError = if (draft.village.isBlank()) "Village is required" else null
         val tehsilError = if (draft.tehsil.isBlank()) "Tehsil is required" else null
         val districtError = if (draft.district.isBlank()) "District is required" else null
@@ -475,10 +496,11 @@ class ChatViewModel(
             else -> null
         }
 
-        if (listOf(nameError, villageError, tehsilError, districtError, totalFarmAcresError).any { it != null }) {
+        if (listOf(nameError, mobileNumberError, villageError, tehsilError, districtError, totalFarmAcresError).any { it != null }) {
             _leadUiState.update {
                 it.copy(
                     nameError = nameError,
+                    mobileNumberError = mobileNumberError,
                     villageError = villageError,
                     tehsilError = tehsilError,
                     districtError = districtError,
@@ -491,9 +513,11 @@ class ChatViewModel(
         viewModelScope.launch {
             _leadUiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                val existingProfile = farmerProfileRepository.getUserProfile(uid) ?: FarmerProfile()
+                val existingProfile = (farmerProfileRepository.getUserProfile(uid) ?: FarmerProfile())
+                    .withLeadContactFallbacks(auth.currentUser?.phoneNumber, auth.currentUser?.email)
                 val mergedProfile = existingProfile.copy(
                     name = draft.name,
+                    mobileNumber = draft.mobileNumber,
                     village = draft.village,
                     tehsil = draft.tehsil,
                     district = draft.district,
@@ -560,6 +584,7 @@ class ChatViewModel(
                     confirmationRequestNumber = result.requestNumber,
                     errorMessage = null,
                     nameError = null,
+                    mobileNumberError = null,
                     villageError = null,
                     tehsilError = null,
                     districtError = null,
