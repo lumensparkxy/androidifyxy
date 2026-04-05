@@ -361,6 +361,11 @@ fun ChatScreen(
         )
     }
 
+    val submittingRecommendation = leadUiState.pendingRequest?.recommendation
+        ?.takeIf { leadUiState.isSubmitting }
+    val submittingSourceText = leadUiState.pendingRequest?.chatMessageText
+        ?.takeIf { leadUiState.isSubmitting }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -479,7 +484,9 @@ fun ChatScreen(
                         ) { message ->
                             ChatBubble(
                                 message = message,
-                                onRecommendationClick = onRecommendationClick
+                                onRecommendationClick = onRecommendationClick,
+                                submittingRecommendation = submittingRecommendation,
+                                submittingSourceText = submittingSourceText
                             )
                         }
                     }
