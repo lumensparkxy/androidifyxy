@@ -3,20 +3,16 @@ package com.maswadkar.developers.androidify.data
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 
 /**
  * Repository for managing farmer profile data in Firestore.
- * Handles silent migration from old MandiPreferences to new FarmerProfile.
  */
 class FarmerProfileRepository {
 
     companion object {
         private const val TAG = "FarmerProfileRepository"
-        private const val USERS_COLLECTION = "users"
-        private const val SETTINGS_COLLECTION = "settings"
-        private const val FARMER_PROFILE_DOC = "farmer_profile"
-        private const val MANDI_PREFERENCES_DOC = "mandi_preferences"
 
         @Volatile
         private var instance: FarmerProfileRepository? = null
@@ -32,56 +28,20 @@ class FarmerProfileRepository {
 
     /**
      * Get user's farmer profile.
-     * If profile doesn't exist but old mandi_preferences does, silently migrate.
      */
     suspend fun getUserProfile(userId: String): FarmerProfile? {
         return try {
-            val profileDoc = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(FARMER_PROFILE_DOC)
+            val profileDoc = firestore.farmerProfileDocument(userId)
                 .get()
                 .await()
 
             if (profileDoc.exists()) {
                 profileDoc.toObject(FarmerProfile::class.java)
             } else {
-                // Try to migrate from old mandi_preferences
-                migrateFromMandiPreferences(userId)
+                null
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching user profile: ${e.message}")
-            null
-        }
-    }
-
-    /**
-     * Migrate existing mandi_preferences to farmer_profile (silent migration)
-     */
-    private suspend fun migrateFromMandiPreferences(userId: String): FarmerProfile? {
-        return try {
-            val prefsDoc = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
-                .get()
-                .await()
-
-            if (prefsDoc.exists()) {
-                val oldPrefs = prefsDoc.toObject(MandiPreferences::class.java)
-                if (oldPrefs != null) {
-                    val newProfile = FarmerProfile.fromMandiPreferences(oldPrefs).copy(
-                        updatedAt = Timestamp.now()
-                    )
-                    // Save the migrated profile
-                    saveUserProfile(userId, newProfile)
-                    Log.d(TAG, "Migrated mandi_preferences to farmer_profile for user: $userId")
-                    return newProfile
-                }
-            }
-            null
-        } catch (e: Exception) {
-            Log.e(TAG, "Error migrating from mandi_preferences: ${e.message}")
             null
         }
     }
@@ -92,20 +52,8 @@ class FarmerProfileRepository {
     suspend fun saveUserProfile(userId: String, profile: FarmerProfile): Boolean {
         return try {
             val profileWithTimestamp = profile.normalized().copy(updatedAt = Timestamp.now())
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(FARMER_PROFILE_DOC)
+            firestore.farmerProfileDocument(userId)
                 .set(profileWithTimestamp)
-                .await()
-
-            // Also update mandi_preferences for backward compatibility with MandiPricesViewModel
-            val mandiPrefs = profileWithTimestamp.toMandiPreferences()
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
-                .set(mandiPrefs)
                 .await()
 
             Log.d(TAG, "Saved user profile: $profileWithTimestamp")
@@ -122,22 +70,11 @@ class FarmerProfileRepository {
     suspend fun updateLastCommodity(userId: String, commodity: String): Boolean {
         return try {
             val updates = mapOf(
-                "lastCommodity" to commodity,
+                "lastCommodity" to commodity.trim(),
                 "updatedAt" to Timestamp.now()
             )
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(FARMER_PROFILE_DOC)
-                .update(updates)
-                .await()
-
-            // Also update mandi_preferences for backward compatibility
-            firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(MANDI_PREFERENCES_DOC)
-                .update("lastCommodity", commodity)
+            firestore.farmerProfileDocument(userId)
+                .set(updates, SetOptions.merge())
                 .await()
 
             true

@@ -141,6 +141,7 @@ fun AppNavigation(
                     )
                 },
                 onLeadNameChanged = leadRequestViewModel::onLeadNameChanged,
+                onLeadMobileNumberChanged = leadRequestViewModel::onLeadMobileNumberChanged,
                 onLeadVillageChanged = leadRequestViewModel::onLeadVillageChanged,
                 onLeadTehsilChanged = leadRequestViewModel::onLeadTehsilChanged,
                 onLeadDistrictChanged = leadRequestViewModel::onLeadDistrictChanged,

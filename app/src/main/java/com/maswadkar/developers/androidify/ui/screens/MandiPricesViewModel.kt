@@ -261,7 +261,11 @@ class MandiPricesViewModel : ViewModel() {
     private suspend fun updateLastCommodity() {
         val uid = userId ?: return
         val commodity = _uiState.value.selectedCommodity ?: return
-        repository.updateLastCommodity(uid, commodity)
+        if (repository.updateLastCommodity(uid, commodity)) {
+            _uiState.value = _uiState.value.copy(
+                savedPreferences = _uiState.value.savedPreferences?.copy(lastCommodity = commodity)
+            )
+        }
     }
 
 

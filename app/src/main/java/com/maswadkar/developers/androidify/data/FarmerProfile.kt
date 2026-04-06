@@ -2,15 +2,34 @@ package com.maswadkar.developers.androidify.data
 
 import com.google.firebase.Timestamp
 
+internal fun sanitizeLeadMobileInput(value: String): String = value
+    .filter(Char::isDigit)
+    .takeLast(10)
+
+internal fun normalizeLeadMobileNumber(value: String?): String? = sanitizeLeadMobileInput(value.orEmpty())
+    .takeIf { it.length == 10 }
+
+internal fun normalizeLeadEmail(value: String?): String? = value
+    ?.trim()
+    ?.takeIf { it.isNotBlank() }
+
+internal fun hasValidLeadMobileNumber(value: String?): Boolean = normalizeLeadMobileNumber(value) != null
+
+internal fun FarmerProfile.withLeadContactFallbacks(phoneNumber: String?, email: String? = null): FarmerProfile = copy(
+    mobileNumber = normalizeLeadMobileNumber(mobileNumber) ?: normalizeLeadMobileNumber(phoneNumber),
+    emailId = normalizeLeadEmail(emailId) ?: normalizeLeadEmail(email)
+).normalized()
+
 /**
- * Comprehensive farmer profile containing location preferences, farm details, and contact info.
- * Extends the previous MandiPreferences with additional fields for personalization.
+ * Canonical farmer profile containing location preferences, farm details, and contact info.
+ * This is the primary persisted user settings document, and mandi UI state derives a
+ * compact projection from this model instead of owning a separate source of truth.
  */
 data class FarmerProfile(
     // Identity
     val name: String? = null,
 
-    // Location fields (migrated from MandiPreferences)
+    // Location fields (mandi preferences now project from these)
     val state: String = "",
     val district: String = "",
     val village: String? = null,
@@ -53,7 +72,8 @@ data class FarmerProfile(
             !village.isNullOrBlank() &&
             !tehsil.isNullOrBlank() &&
             district.isNotBlank() &&
-            totalFarmAcres != null && totalFarmAcres > 0
+            totalFarmAcres != null && totalFarmAcres > 0 &&
+            hasValidLeadMobileNumber(mobileNumber)
 
     /**
      * Return the missing lead-required fields for UI prompts.
@@ -64,6 +84,7 @@ data class FarmerProfile(
         if (tehsil.isNullOrBlank()) add("tehsil")
         if (district.isBlank()) add("district")
         if (totalFarmAcres == null || totalFarmAcres <= 0) add("totalFarmAcres")
+        if (!hasValidLeadMobileNumber(mobileNumber)) add("mobileNumber")
     }
 
     /**
@@ -77,12 +98,13 @@ data class FarmerProfile(
         tehsil = tehsil?.trim()?.takeIf { it.isNotBlank() },
         market = market?.trim()?.takeIf { it.isNotBlank() },
         lastCommodity = lastCommodity?.trim()?.takeIf { it.isNotBlank() },
-        mobileNumber = mobileNumber?.trim()?.takeIf { it.isNotBlank() },
-        emailId = emailId?.trim()?.takeIf { it.isNotBlank() }
+        mobileNumber = normalizeLeadMobileNumber(mobileNumber),
+        emailId = normalizeLeadEmail(emailId)
     )
 
     /**
-     * Convert to MandiPreferences for backward compatibility
+     * Build the compact mandi-preferences projection used by the mandi prices UI
+        * state.
      */
     fun toMandiPreferences(): MandiPreferences = MandiPreferences(
         state = state,
@@ -111,17 +133,5 @@ data class FarmerProfile(
         if (majorCrops.isNotEmpty()) filledFields++
 
         return (filledFields * 100) / totalFields
-    }
-
-    companion object {
-        /**
-         * Create a FarmerProfile from existing MandiPreferences (for migration)
-         */
-        fun fromMandiPreferences(prefs: MandiPreferences): FarmerProfile = FarmerProfile(
-            state = prefs.state,
-            district = prefs.district,
-            market = prefs.market,
-            lastCommodity = prefs.lastCommodity
-        )
     }
 }

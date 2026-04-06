@@ -88,6 +88,56 @@ class VisualUiTests {
         }
     }
 
+    private fun ensureLoggedIn() {
+        visualDelay(1000)
+
+        val isAlreadyLoggedIn = try {
+            composeTestRule.onAllNodesWithText(getString(R.string.home_feature_chat_title)).onFirst().assertIsDisplayed()
+            true
+        } catch (_: AssertionError) {
+            false
+        }
+
+        if (isAlreadyLoggedIn) {
+            return
+        }
+
+        composeTestRule.onNodeWithText("Krishi AI").assertIsDisplayed()
+        visualDelay(500)
+
+        composeTestRule.onNodeWithText("Sign in with Phone").performClick()
+        visualDelay(1000)
+
+        composeTestRule.onNodeWithText("+91").assertIsDisplayed()
+        composeTestRule.onNode(hasText("Phone number") or hasContentDescription("Phone number"))
+            .performTextInput(testPhoneNumber)
+        visualDelay(500)
+
+        composeTestRule.onNodeWithText("Send OTP").performClick()
+        visualDelay(3000)
+
+        waitForNode("Verify OTP", 15000)
+        visualDelay(500)
+
+        try {
+            composeTestRule.onNode(hasContentDescription("OTP") or hasText("Enter OTP"))
+                .performTextInput(testOtp)
+        } catch (_: Exception) {
+            testOtp.forEachIndexed { index, digit ->
+                try {
+                    composeTestRule.onAllNodesWithText("")[index].performTextInput(digit.toString())
+                } catch (_: Exception) {
+                    // Ignore if the OTP boxes cannot be found individually.
+                }
+            }
+        }
+        visualDelay(500)
+
+        composeTestRule.onNodeWithText("Verify").performClick()
+        visualDelay(5000)
+        waitForNode(getString(R.string.home_feature_chat_title), 15000)
+    }
+
     // ==================== END-TO-END TEST ====================
 
     /**
@@ -360,5 +410,61 @@ class VisualUiTests {
         }
 
         visualDelay(1000)
+    }
+
+    /**
+     * Smoke test focused on the refactored farmer profile + mandi preferences flow.
+     * Verifies that the profile screen still renders and mandi prices still show either
+     * compact saved-preferences mode or the full filter flow after the profile storage cleanup.
+     */
+    @Test
+    fun test_farmerProfileAndMandiPricesFlow() {
+        ensureLoggedIn()
+
+        // Open Farmer Profile from the drawer.
+        composeTestRule.onNodeWithContentDescription(getString(R.string.open_drawer)).performClick()
+        visualDelay(500)
+        composeTestRule.onAllNodesWithText(getString(R.string.menu_mandi_settings)).onFirst().performClick()
+        visualDelay(2000)
+
+        composeTestRule.onAllNodesWithText(getString(R.string.farmer_profile_title)).onFirst().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(getString(R.string.profile_section_identity)).onFirst().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(getString(R.string.profile_name)).onFirst().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(getString(R.string.profile_mobile)).onFirst().performScrollTo()
+        composeTestRule.onAllNodesWithText(getString(R.string.profile_mobile)).onFirst().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(getString(R.string.save_profile)).onFirst().performScrollTo()
+        composeTestRule.onAllNodesWithText(getString(R.string.save_profile)).onFirst().assertIsDisplayed()
+
+        navigateToHome()
+        waitForNode(getString(R.string.home_feature_chat_title), 10000)
+
+        // Open Mandi Prices from the home feature grid.
+        composeTestRule.onAllNodesWithText(getString(R.string.home_feature_mandi_title)).onFirst().performScrollTo()
+        visualDelay(500)
+        composeTestRule.onAllNodesWithText(getString(R.string.home_feature_mandi_title)).onFirst().performClick()
+        visualDelay(2500)
+
+        composeTestRule.onAllNodesWithText(getString(R.string.menu_mandi_prices)).onFirst().assertIsDisplayed()
+
+        val isFullMode = try {
+            composeTestRule.onAllNodesWithText(getString(R.string.filter_state)).onFirst().assertIsDisplayed()
+            true
+        } catch (_: AssertionError) {
+            false
+        }
+
+        if (isFullMode) {
+            composeTestRule.onAllNodesWithText(getString(R.string.filter_district)).onFirst().assertIsDisplayed()
+        } else {
+            composeTestRule.onAllNodesWithText(getString(R.string.change_location)).onFirst().assertIsDisplayed()
+            composeTestRule.onAllNodesWithText(getString(R.string.change_location)).onFirst().performClick()
+            visualDelay(1000)
+            composeTestRule.onAllNodesWithText(getString(R.string.change_location_title)).onFirst().assertIsDisplayed()
+            composeTestRule.onAllNodesWithText(getString(R.string.filter_state)).onFirst().assertIsDisplayed()
+            composeTestRule.onAllNodesWithText(getString(R.string.filter_district)).onFirst().assertIsDisplayed()
+        }
+
+        navigateToHome()
+        waitForNode(getString(R.string.home_feature_chat_title), 10000)
     }
 }

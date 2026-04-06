@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -59,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -86,6 +88,7 @@ fun ChatScreen(
     onSendMessage: (String, Uri?) -> Unit,
     onRecommendationClick: (ProductRecommendation, String) -> Unit,
     onLeadNameChanged: (String) -> Unit,
+    onLeadMobileNumberChanged: (String) -> Unit,
     onLeadVillageChanged: (String) -> Unit,
     onLeadTehsilChanged: (String) -> Unit,
     onLeadDistrictChanged: (String) -> Unit,
@@ -257,6 +260,17 @@ fun ChatScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
+                        value = leadUiState.profileDraft.mobileNumber,
+                        onValueChange = onLeadMobileNumberChanged,
+                        label = { Text(stringResource(R.string.profile_mobile)) },
+                        placeholder = { Text(stringResource(R.string.profile_mobile_hint)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                        isError = leadUiState.mobileNumberError != null,
+                        supportingText = leadUiState.mobileNumberError?.let { error -> ({ Text(error) }) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
                         value = leadUiState.profileDraft.village,
                         onValueChange = onLeadVillageChanged,
                         label = { Text(stringResource(R.string.profile_village)) },
@@ -346,6 +360,11 @@ fun ChatScreen(
             }
         )
     }
+
+    val submittingRecommendation = leadUiState.pendingRequest?.recommendation
+        ?.takeIf { leadUiState.isSubmitting }
+    val submittingSourceText = leadUiState.pendingRequest?.chatMessageText
+        ?.takeIf { leadUiState.isSubmitting }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -465,7 +484,9 @@ fun ChatScreen(
                         ) { message ->
                             ChatBubble(
                                 message = message,
-                                onRecommendationClick = onRecommendationClick
+                                onRecommendationClick = onRecommendationClick,
+                                submittingRecommendation = submittingRecommendation,
+                                submittingSourceText = submittingSourceText
                             )
                         }
                     }

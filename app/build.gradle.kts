@@ -40,8 +40,8 @@ android {
         minSdk = 29
 
         targetSdk = 36
-        versionCode = 114
-        versionName = "0.1.14"
+        versionCode = 115
+        versionName = "0.1.15"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -127,6 +127,7 @@ dependencies {
 
     // Google Mobile Ads SDK
     implementation(libs.play.services.ads)
+    implementation(libs.google.play.install.referrer)
 
     // Jetpack Compose
     implementation(platform(libs.compose.bom))

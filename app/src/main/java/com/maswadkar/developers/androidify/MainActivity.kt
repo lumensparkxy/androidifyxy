@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.maswadkar.developers.androidify.auth.AuthRepository
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
+import com.maswadkar.developers.androidify.data.InstallAttributionRepository
 import com.maswadkar.developers.androidify.ui.navigation.AppNavigation
 import com.maswadkar.developers.androidify.ui.navigation.Screen
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private val chatViewModel: ChatViewModel by viewModels()
     private val authViewModel: AuthViewModel by viewModels()
     private lateinit var authRepository: AuthRepository
+    private lateinit var installAttributionRepository: InstallAttributionRepository
     private var navController: NavHostController? = null
 
     // Permission launcher for POST_NOTIFICATIONS (Android 13+)
@@ -68,6 +70,11 @@ class MainActivity : ComponentActivity() {
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
         authViewModel.initRepository(authRepository)
+        installAttributionRepository = InstallAttributionRepository.getInstance(applicationContext)
+
+        lifecycleScope.launch {
+            installAttributionRepository.captureAttributionIfNeeded()
+        }
 
         // Determine start destination based on auth state
         val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
@@ -102,6 +109,13 @@ class MainActivity : ComponentActivity() {
                 }
 
                 // Show error toasts
+                LaunchedEffect(authState) {
+                    val authenticatedState = authState as? AuthState.Authenticated
+                    if (authenticatedState != null) {
+                        installAttributionRepository.linkUserToInstall(authenticatedState.user.uid)
+                    }
+                }
+
                 LaunchedEffect(authState) {
                     if (authState is AuthState.Error) {
                         Toast.makeText(

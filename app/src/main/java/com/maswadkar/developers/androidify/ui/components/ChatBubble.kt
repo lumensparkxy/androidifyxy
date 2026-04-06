@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.maswadkar.developers.androidify.ChatMessage
+import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
 import com.maswadkar.developers.androidify.util.ProductRecommendationParser
 import com.mikepenz.markdown.compose.Markdown
@@ -37,11 +38,18 @@ import com.mikepenz.markdown.m3.markdownTypography
 fun ChatBubble(
     message: ChatMessage,
     onRecommendationClick: (com.maswadkar.developers.androidify.data.ProductRecommendation, String) -> Unit = { _, _ -> },
+    submittingRecommendation: ProductRecommendation? = null,
+    submittingSourceText: String? = null,
     modifier: Modifier = Modifier
 ) {
     val chatColors = KrishiMitraTheme.chatColors
     val configuration = LocalConfiguration.current
     val maxWidth = (configuration.screenWidthDp * 0.8).dp
+    val loadingRecommendation = if (submittingSourceText == message.text) {
+        submittingRecommendation
+    } else {
+        null
+    }
 
     // Parse product recommendations for model messages (not loading, not user)
     val parseResult = remember(message.text, message.isUser, message.isLoading) {
@@ -159,6 +167,7 @@ fun ChatBubble(
                 onRecommendationClick = { recommendation ->
                     onRecommendationClick(recommendation, message.text)
                 },
+                loadingRecommendation = loadingRecommendation,
                 modifier = Modifier.padding(start = 4.dp, end = 48.dp) // Align with model bubble
             )
         }

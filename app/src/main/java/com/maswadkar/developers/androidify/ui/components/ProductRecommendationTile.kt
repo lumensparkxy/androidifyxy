@@ -1,5 +1,11 @@
 package com.maswadkar.developers.androidify.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,11 +27,13 @@ import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,18 +55,35 @@ import com.maswadkar.developers.androidify.data.ProductType
 fun ProductRecommendationTile(
     recommendation: ProductRecommendation,
     onClick: (ProductRecommendation) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
 ) {
     val productType = recommendation.getProductTypeEnum()
+    val ctaPulseTransition = rememberInfiniteTransition(label = "recommendationCtaPulse")
+    val ctaLoadingAlpha by ctaPulseTransition.animateFloat(
+        initialValue = 0.58f,
+        targetValue = 0.90f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 850),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "recommendationCtaAlpha"
+    )
 
     val shape = RoundedCornerShape(14.dp)
 
     // Slightly more premium background than flat tertiaryContainer
     val containerStart = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
-    val containerEnd = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f)
+    val containerEnd = MaterialTheme.colorScheme.tertiaryContainer.copy(
+        alpha = if (isLoading) 0.45f else 0.35f
+    )
 
     Card(
-        onClick = { onClick(recommendation) },
+        onClick = {
+            if (!isLoading) {
+                onClick(recommendation)
+            }
+        },
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
@@ -147,20 +172,39 @@ fun ProductRecommendationTile(
             // CTA "chip"
             Row(
                 modifier = Modifier
+                    .animateContentSize()
                     .clip(RoundedCornerShape(999.dp))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.65f))
+                    .background(
+                        MaterialTheme.colorScheme.tertiaryContainer.copy(
+                            alpha = if (isLoading) ctaLoadingAlpha else 0.65f
+                        )
+                    )
                     .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.tertiary
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                }
                 Text(
-                    text = stringResource(R.string.product_recommendation_cta),
+                    text = stringResource(
+                        if (isLoading) {
+                            R.string.product_recommendation_cta_loading
+                        } else {
+                            R.string.product_recommendation_cta
+                        }
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.tertiary
@@ -186,7 +230,8 @@ fun ProductRecommendationTile(
 fun ProductRecommendationList(
     recommendations: List<ProductRecommendation>,
     onRecommendationClick: (ProductRecommendation) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loadingRecommendation: ProductRecommendation? = null
 ) {
     if (recommendations.isEmpty()) return
 
@@ -197,7 +242,8 @@ fun ProductRecommendationList(
         recommendations.forEach { recommendation ->
             ProductRecommendationTile(
                 recommendation = recommendation,
-                onClick = onRecommendationClick
+                onClick = onRecommendationClick,
+                isLoading = recommendation == loadingRecommendation
             )
         }
     }

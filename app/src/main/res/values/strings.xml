@@ -92,9 +92,6 @@
     <string name="change_location_title">Change Location</string>
     <string name="cancel">Cancel</string>
     <string name="menu_mandi_settings">Farmer Profile</string>
-    <string name="preferences_description">Set your default location to quickly view mandi prices without selecting state and district each time.</string>
-    <string name="current_location">Current Location</string>
-    <string name="save_preferences">Save Preferences</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">Farmer Profile</string>
@@ -221,6 +218,7 @@
 
     <!-- Product Recommendation Tiles -->
     <string name="product_recommendation_cta">Check best offers</string>
+    <string name="product_recommendation_cta_loading">Checking best offers</string>
     <string name="product_recommendation_whatsapp_message">Hi, I\'m interested in %1$s%2$s as suggested by Krishi AI. Please share the best available offers.</string>
     <string name="product_type_pesticide">Pesticide</string>
     <string name="product_type_fertilizer">Fertilizer</string>

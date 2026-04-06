@@ -6,9 +6,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.functions.FirebaseFunctionsException
 import com.maswadkar.developers.androidify.data.FarmerProfile
 import com.maswadkar.developers.androidify.data.FarmerProfileRepository
+import com.maswadkar.developers.androidify.data.LeadProfileDraft
 import com.maswadkar.developers.androidify.data.ProductRecommendation
 import com.maswadkar.developers.androidify.data.SalesLeadRepository
 import com.maswadkar.developers.androidify.data.SalesLeadRequest
+import com.maswadkar.developers.androidify.data.sanitizeLeadMobileInput
+import com.maswadkar.developers.androidify.data.withLeadContactFallbacks
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,15 +64,19 @@ class LeadRequestViewModel(
                 val existingProfile = farmerProfileRepository.getUserProfile(uid)
                 val profile = (existingProfile ?: FarmerProfile()).copy(
                     name = existingProfile?.name ?: auth.currentUser?.displayName
-                ).normalized()
+                ).withLeadContactFallbacks(
+                    auth.currentUser?.phoneNumber,
+                    auth.currentUser?.email,
+                )
 
                 if (!profile.hasLeadRequiredFields()) {
                     _uiState.update {
                         it.copy(
                             isSubmitting = false,
                             showProfileDialog = true,
-                            profileDraft = com.maswadkar.developers.androidify.data.LeadProfileDraft(
+                            profileDraft = LeadProfileDraft(
                                 name = profile.name.orEmpty(),
+                                mobileNumber = profile.mobileNumber.orEmpty(),
                                 village = profile.village.orEmpty(),
                                 tehsil = profile.tehsil.orEmpty(),
                                 district = profile.district,
@@ -96,6 +103,15 @@ class LeadRequestViewModel(
 
     fun onLeadNameChanged(value: String) {
         _uiState.update { it.copy(profileDraft = it.profileDraft.copy(name = value), nameError = null) }
+    }
+
+    fun onLeadMobileNumberChanged(value: String) {
+        _uiState.update {
+            it.copy(
+                profileDraft = it.profileDraft.copy(mobileNumber = sanitizeLeadMobileInput(value)),
+                mobileNumberError = null
+            )
+        }
     }
 
     fun onLeadVillageChanged(value: String) {
@@ -127,6 +143,7 @@ class LeadRequestViewModel(
                 showProfileDialog = false,
                 pendingRequest = null,
                 nameError = null,
+                mobileNumberError = null,
                 villageError = null,
                 tehsilError = null,
                 districtError = null,
@@ -155,6 +172,11 @@ class LeadRequestViewModel(
 
         val draft = _uiState.value.profileDraft.normalized()
         val nameError = if (draft.name.isBlank()) "Name is required" else null
+        val mobileNumberError = when {
+            draft.mobileNumber.isBlank() -> "Mobile number is required"
+            draft.mobileNumber.length != 10 -> "Enter a valid 10-digit mobile number"
+            else -> null
+        }
         val villageError = if (draft.village.isBlank()) "Village is required" else null
         val tehsilError = if (draft.tehsil.isBlank()) "Tehsil is required" else null
         val districtError = if (draft.district.isBlank()) "District is required" else null
@@ -164,10 +186,11 @@ class LeadRequestViewModel(
             else -> null
         }
 
-        if (listOf(nameError, villageError, tehsilError, districtError, totalFarmAcresError).any { it != null }) {
+        if (listOf(nameError, mobileNumberError, villageError, tehsilError, districtError, totalFarmAcresError).any { it != null }) {
             _uiState.update {
                 it.copy(
                     nameError = nameError,
+                    mobileNumberError = mobileNumberError,
                     villageError = villageError,
                     tehsilError = tehsilError,
                     districtError = districtError,
@@ -180,9 +203,11 @@ class LeadRequestViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             try {
-                val existingProfile = farmerProfileRepository.getUserProfile(uid) ?: FarmerProfile()
+                val existingProfile = (farmerProfileRepository.getUserProfile(uid) ?: FarmerProfile())
+                    .withLeadContactFallbacks(auth.currentUser?.phoneNumber, auth.currentUser?.email)
                 val mergedProfile = existingProfile.copy(
                     name = draft.name,
+                    mobileNumber = draft.mobileNumber,
                     village = draft.village,
                     tehsil = draft.tehsil,
                     district = draft.district,
@@ -244,6 +269,7 @@ class LeadRequestViewModel(
                     confirmationRequestNumber = result.requestNumber,
                     errorMessage = null,
                     nameError = null,
+                    mobileNumberError = null,
                     villageError = null,
                     tehsilError = null,
                     districtError = null,
