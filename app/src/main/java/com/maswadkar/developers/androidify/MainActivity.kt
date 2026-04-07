@@ -22,6 +22,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.MessagingAnalytics
 import com.maswadkar.developers.androidify.auth.AuthRepository
 import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
@@ -140,6 +141,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        logNotificationOpen(intent)
+
         // Handle deep link when app is already running
         intent.data?.let { uri ->
             val path = uri.path ?: return@let
@@ -163,6 +167,14 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_CONVERSATION_ID = "conversation_id"
+        private const val FCM_ANALYTICS_DATA_EXTRA = "gcm.n.analytics_data"
+    }
+
+    private fun logNotificationOpen(intent: Intent) {
+        val analyticsData = intent.getBundleExtra(FCM_ANALYTICS_DATA_EXTRA) ?: return
+        if (MessagingAnalytics.shouldUploadScionMetrics(analyticsData)) {
+            MessagingAnalytics.logNotificationOpen(analyticsData)
+        }
     }
 
     private fun requestNotificationPermission() {
