@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
@@ -26,11 +27,29 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         private const val CHANNEL_ID = "krishi_notifications"
         private const val CHANNEL_NAME = "Krishi AI Notifications"
         private const val FCM_ANALYTICS_DATA_EXTRA = "gcm.n.analytics_data"
+        private const val PREFS_NAME = "krishi_fcm_prefs"
+        private const val KEY_LAST_USER_TOPIC = "last_user_topic"
+        private const val USER_TOPIC_PREFIX = "user_"
 
         // Topic for all users - use this in Firebase Console to send to all users
         const val TOPIC_ALL = "all"
         const val TOPIC_PROMOTIONS = "promotions"
         const val TOPIC_UPDATES = "updates"
+
+        fun ensureNotificationChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications from Krishi AI"
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
 
         /**
          * Subscribe to default topics. Call this from MainActivity or Application class.
@@ -58,6 +77,43 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                     }
                 }
         }
+
+        fun syncUserTopic(context: Context, userId: String?) {
+            val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val previousTopic = prefs.getString(KEY_LAST_USER_TOPIC, null)
+            val nextTopic = buildUserTopic(userId)
+            val messaging = FirebaseMessaging.getInstance()
+
+            if (previousTopic != null && previousTopic != nextTopic) {
+                messaging.unsubscribeFromTopic(previousTopic)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d(TAG, "Unsubscribed from user topic: $previousTopic")
+                        } else {
+                            Log.e(TAG, "Failed to unsubscribe from user topic: $previousTopic", task.exception)
+                        }
+                    }
+            }
+
+            if (nextTopic != null && nextTopic != previousTopic) {
+                messaging.subscribeToTopic(nextTopic)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Log.d(TAG, "Subscribed to user topic: $nextTopic")
+                        } else {
+                            Log.e(TAG, "Failed to subscribe to user topic: $nextTopic", task.exception)
+                        }
+                    }
+            }
+
+            prefs.edit().putString(KEY_LAST_USER_TOPIC, nextTopic).apply()
+        }
+
+        private fun buildUserTopic(userId: String?): String? {
+            if (userId.isNullOrBlank()) return null
+            val sanitized = userId.replace(Regex("[^A-Za-z0-9\\-_.~%]"), "_")
+            return "$USER_TOPIC_PREFIX$sanitized"
+        }
     }
 
     override fun onNewToken(token: String) {
@@ -65,6 +121,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.d(TAG, "FCM Token refreshed: $token")
         // Re-subscribe to topics when token is refreshed
         subscribeToDefaultTopics()
+        syncUserTopic(applicationContext, FirebaseAuth.getInstance().currentUser?.uid)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
@@ -91,17 +148,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
         val messageExtras = messageIntent.extras?.let(::Bundle)
 
-        // Create notification channel for Android 8.0+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notifications from Krishi AI"
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
+        ensureNotificationChannel(this)
 
         // Create intent to open app when notification is tapped
         val launchIntent = Intent(this, MainActivity::class.java).apply {
@@ -124,7 +171,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(message.notification?.title ?: getString(R.string.app_name))
             .setContentText(message.notification?.body)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()

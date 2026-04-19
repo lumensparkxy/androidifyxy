@@ -1,6 +1,13 @@
 const OFFER_STATUS_ACTIVE = "ACTIVE";
 const OFFER_STATUS_APPROVED = "APPROVED";
 const SUPPLIER_STATUS_APPROVED = "APPROVED";
+const {
+  AFFILIATE_PROVIDER_AMAZON,
+  COMMERCE_CHANNEL_ADMIN_REVIEW,
+  COMMERCE_CHANNEL_AMAZON_AFFILIATE,
+  COMMERCE_CHANNEL_SUPPLIER_LOCAL,
+  buildAmazonAffiliateCandidate,
+} = require("./salesPipeline");
 
 const COMMISSION_BY_CATEGORY = Object.freeze({
   fertilizer: 150,
@@ -159,7 +166,7 @@ function scoreCandidate({ lead, offer, supplier }) {
   };
 }
 
-function buildLeadRecommendation({ lead, suppliersById = new Map(), offers = [] }) {
+function buildLeadRecommendation({ lead, suppliersById = new Map(), offers = [], affiliateFallback = {} }) {
   const commissionPreview = computeCommissionPreview(lead?.leadCategory);
   const eligibleOffers = offers.filter((offer) => isOfferPublished(offer));
   let bestMatch = null;
@@ -197,6 +204,10 @@ function buildLeadRecommendation({ lead, suppliersById = new Map(), offers = [] 
   }
 
   if (!bestMatch) {
+    const amazonAffiliateCandidate = affiliateFallback.enabled === true
+      ? buildAmazonAffiliateCandidate({ lead, reason: "no_matching_supplier" })
+      : null;
+
     return {
       routingStatus: "admin_queue",
       reviewStatus: "pending_admin_review",
@@ -204,6 +215,18 @@ function buildLeadRecommendation({ lead, suppliersById = new Map(), offers = [] 
       suggestedSupplier: null,
       commissionPreview,
       adminFallbackReason: "no_matching_supplier",
+      commerceChannel: amazonAffiliateCandidate ? COMMERCE_CHANNEL_AMAZON_AFFILIATE : COMMERCE_CHANNEL_ADMIN_REVIEW,
+      channelDecisionReason: "no_matching_supplier",
+      affiliateProvider: amazonAffiliateCandidate ? AFFILIATE_PROVIDER_AMAZON : null,
+      affiliateCandidate: amazonAffiliateCandidate,
+      amazonAsin: null,
+      amazonSearchQuery: amazonAffiliateCandidate?.searchQuery || null,
+      amazonSpecialLink: null,
+      amazonContentRefreshedAt: null,
+      affiliateDisclosureRequired: Boolean(amazonAffiliateCandidate),
+      conversionStatus: "intent_captured",
+      whatsappState: "not_ready",
+      fallbackTriggered: Boolean(amazonAffiliateCandidate),
     };
   }
 
@@ -214,6 +237,18 @@ function buildLeadRecommendation({ lead, suppliersById = new Map(), offers = [] 
     suggestedSupplier: bestMatch,
     commissionPreview,
     adminFallbackReason: null,
+    commerceChannel: COMMERCE_CHANNEL_SUPPLIER_LOCAL,
+    channelDecisionReason: "supplier_match_found",
+    affiliateProvider: null,
+    affiliateCandidate: null,
+    amazonAsin: null,
+    amazonSearchQuery: null,
+    amazonSpecialLink: null,
+    amazonContentRefreshedAt: null,
+    affiliateDisclosureRequired: false,
+    conversionStatus: "intent_captured",
+    whatsappState: "not_ready",
+    fallbackTriggered: false,
   };
 }
 

@@ -31,6 +31,7 @@ import com.maswadkar.developers.androidify.ui.navigation.AppNavigation
 import com.maswadkar.developers.androidify.ui.navigation.Screen
 import com.maswadkar.developers.androidify.ui.theme.KrishiMitraTheme
 import com.maswadkar.developers.androidify.util.AppConfigManager
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +41,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var authRepository: AuthRepository
     private lateinit var installAttributionRepository: InstallAttributionRepository
     private var navController: NavHostController? = null
+    private val pendingConversationIdFlow = MutableStateFlow<String?>(null)
+    private val userTopicAuthStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        MyFirebaseMessagingService.syncUserTopic(applicationContext, firebaseAuth.currentUser?.uid)
+    }
 
     // Permission launcher for POST_NOTIFICATIONS (Android 13+)
     private val requestNotificationPermissionLauncher = registerForActivityResult(
@@ -64,9 +69,12 @@ class MainActivity : ComponentActivity() {
 
         // Request notification permission for Android 13+
         requestNotificationPermission()
+        MyFirebaseMessagingService.ensureNotificationChannel(applicationContext)
 
         // Subscribe to FCM topics for broadcast notifications
         MyFirebaseMessagingService.subscribeToDefaultTopics()
+        FirebaseAuth.getInstance().addAuthStateListener(userTopicAuthStateListener)
+        MyFirebaseMessagingService.syncUserTopic(applicationContext, FirebaseAuth.getInstance().currentUser?.uid)
 
         // Initialize auth repository with activity context
         authRepository = AuthRepository(this)
@@ -81,17 +89,14 @@ class MainActivity : ComponentActivity() {
         val isLoggedIn = FirebaseAuth.getInstance().currentUser != null
         val startDestination = if (isLoggedIn) Screen.Home.route else Screen.Login.route
 
-        // Handle intent for loading specific conversation
-        val conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        if (conversationId != null && isLoggedIn) {
-            chatViewModel.loadConversation(conversationId)
-        }
+        queueConversationFromIntent(intent)
 
         setContent {
             KrishiMitraTheme {
                 val navControllerLocal = rememberNavController()
                 navController = navControllerLocal
                 val authState by authViewModel.authState.collectAsState()
+                val pendingConversationId by pendingConversationIdFlow.collectAsState()
 
                 // Handle deep link navigation after initial composition
                 LaunchedEffect(navControllerLocal) {
@@ -115,6 +120,17 @@ class MainActivity : ComponentActivity() {
                     if (authenticatedState != null) {
                         installAttributionRepository.linkUserToInstall(authenticatedState.user.uid)
                     }
+                }
+
+                LaunchedEffect(authState, pendingConversationId, navControllerLocal) {
+                    val conversationId = pendingConversationId ?: return@LaunchedEffect
+                    val authenticatedState = authState as? AuthState.Authenticated ?: return@LaunchedEffect
+
+                    chatViewModel.loadConversation(conversationId)
+                    navControllerLocal.navigate(Screen.Chat.route) {
+                        launchSingleTop = true
+                    }
+                    pendingConversationIdFlow.value = null
                 }
 
                 LaunchedEffect(authState) {
@@ -143,6 +159,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         logNotificationOpen(intent)
+        queueConversationFromIntent(intent)
 
         // Handle deep link when app is already running
         intent.data?.let { uri ->
@@ -156,6 +173,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun queueConversationFromIntent(intent: Intent?) {
+        pendingConversationIdFlow.value = intent
+            ?.getStringExtra(EXTRA_CONVERSATION_ID)
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+    }
+
     override fun onStop() {
         super.onStop()
         // Use lifecycleScope to save the conversation without blocking the main thread
@@ -163,6 +187,11 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             chatViewModel.saveCurrentConversationSync()
         }
+    }
+
+    override fun onDestroy() {
+        FirebaseAuth.getInstance().removeAuthStateListener(userTopicAuthStateListener)
+        super.onDestroy()
     }
 
     companion object {

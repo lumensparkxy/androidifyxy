@@ -49,7 +49,41 @@ test("buildAdminLeadView derives compatibility workflow fields and supplier fall
   assert.equal(lead.supplierVisibility, "unlocked");
   assert.deepEqual(lead.selectedSupplier, { supplierId: "supplier-1", businessName: "Best Inputs" });
   assert.deepEqual(lead.assignedSupplier, { supplierId: "supplier-1", businessName: "Best Inputs" });
+  assert.equal(lead.commerceChannel, "supplier_local");
+  assert.equal(lead.channelDecisionReason, "default_supplier_first");
+  assert.equal(lead.fallbackPolicy, "amazon_on_no_match_or_timeout");
+  assert.equal(lead.conversionStatus, "intent_captured");
+  assert.equal(lead.whatsappState, "not_ready");
   assert.equal(lead.createdAt, createdAt.toISOString());
   assert.equal(lead.backendProcessingStatus, "pending");
   assert.equal(lead.commissionStatus, "preview");
+});
+
+test("buildAdminLeadView carries affiliate fallback stub fields", () => {
+  const fallbackTriggeredAt = new Date("2026-04-10T08:30:00.000Z");
+  const lead = buildAdminLeadView("lead-3", {
+    productName: "Neem Spray",
+    normalizedProductName: "neem spray",
+    commerceChannel: "amazon_affiliate",
+    channelDecisionReason: "no_matching_supplier",
+    fallbackPolicy: "amazon_on_no_match_or_timeout",
+    affiliateProvider: "amazon",
+    affiliateCandidate: {
+      provider: "amazon",
+      providerStatus: "stub_pending_provider",
+      productName: "Neem Spray",
+      searchQuery: "neem spray",
+    },
+    amazonSearchQuery: "neem spray",
+    affiliateDisclosureRequired: true,
+    fallbackTriggeredAt,
+  });
+
+  assert.equal(lead.commerceChannel, "amazon_affiliate");
+  assert.equal(lead.channelDecisionReason, "no_matching_supplier");
+  assert.equal(lead.affiliateProvider, "amazon");
+  assert.equal(lead.affiliateCandidate?.providerStatus, "stub_pending_provider");
+  assert.equal(lead.amazonSearchQuery, "neem spray");
+  assert.equal(lead.affiliateDisclosureRequired, true);
+  assert.equal(lead.fallbackTriggeredAt, fallbackTriggeredAt.toISOString());
 });

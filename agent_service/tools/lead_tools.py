@@ -16,6 +16,11 @@ USERS_COLLECTION = "users"
 SETTINGS_COLLECTION = "settings"
 FARMER_PROFILE_DOC = "farmer_profile"
 SALES_PIPELINE_STATUS_INITIATED = "initiated"
+COMMERCE_CHANNEL_SUPPLIER_LOCAL = "supplier_local"
+DEFAULT_CHANNEL_DECISION_REASON = "default_supplier_first"
+DEFAULT_FALLBACK_POLICY = "amazon_on_no_match_or_timeout"
+DEFAULT_CONVERSION_STATUS = "intent_captured"
+DEFAULT_WHATSAPP_STATE = "not_ready"
 
 
 def _normalize_product_name(product_name: str) -> str:
@@ -71,6 +76,19 @@ def _build_initial_routing_fields(profile: dict[str, Any], product_name: str, ch
         "suggestedSupplier": None,
         "selectedSupplier": None,
         "assignedSupplier": None,
+        "commerceChannel": COMMERCE_CHANNEL_SUPPLIER_LOCAL,
+        "channelDecisionReason": DEFAULT_CHANNEL_DECISION_REASON,
+        "fallbackPolicy": DEFAULT_FALLBACK_POLICY,
+        "affiliateProvider": None,
+        "affiliateCandidate": None,
+        "amazonAsin": None,
+        "amazonSearchQuery": _normalize_product_name(product_name) or None,
+        "amazonSpecialLink": None,
+        "amazonContentRefreshedAt": None,
+        "affiliateDisclosureRequired": False,
+        "conversionStatus": DEFAULT_CONVERSION_STATUS,
+        "whatsappState": DEFAULT_WHATSAPP_STATE,
+        "fallbackTriggeredAt": None,
         "commissionPreview": {
             "category": lead_category,
             "amount": None,

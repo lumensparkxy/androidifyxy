@@ -30,6 +30,7 @@ This directory contains Firebase Cloud Functions for the Androidify app.
    firebase login
    ```
 
+   - `AMAZON_AFFILIATE_FALLBACK_ENABLED` — optional feature flag (`true`/`false`) that enables Amazon affiliate fallback stub candidates when supplier recommendation finds no local match
 3. **Initialize Firebase in the project** (if not already done):
    ```bash
    cd /path/to/androidifyxy
@@ -59,8 +60,20 @@ If you enable the new agentic chat path, configure these runtime values for func
 
 - `AGENT_SERVICE_URL` — Cloud Run base URL for the Python ADK service
 - `AGENT_SERVICE_SHARED_SECRET` — shared secret sent as `X-Agent-Service-Token`
+- `AMAZON_AFFILIATE_FALLBACK_ENABLED` — enables supplier no-match fallback into the Amazon affiliate provider path
+- `AMAZON_ASSOCIATES_TAG` — Amazon Associates tracking/store ID for the India marketplace
+- `AMAZON_PAAPI_ACCESS_KEY` — Product Advertising API access key
+- `AMAZON_PAAPI_SECRET_KEY` — Product Advertising API secret key
+- `AMAZON_PAAPI_HOST` — optional override, defaults to `webservices.amazon.in`
+- `AMAZON_PAAPI_REGION` — optional override, defaults to `eu-west-1`
+- `AMAZON_PAAPI_MARKETPLACE` — optional override, defaults to `www.amazon.in`
+- `AMAZON_PAAPI_LANGUAGE` — optional override, defaults to `en_IN`
+- `AMAZON_PAAPI_SEARCH_INDEX` — optional override for SearchItems, defaults to `All`
+- `AMAZON_PAAPI_ITEM_COUNT` — optional SearchItems result count, defaults to `1`
 
 The proxy expects the Cloud Run service to expose `POST /chat` and `GET /health`.
+
+> Note: Amazon's PA-API documentation currently announces deprecation on 30 April 2026 in favor of Creators API. The implementation is isolated behind `functions/amazonAffiliate.js` so the provider can be swapped without rewriting lead-routing logic.
 
 ## Functions
 

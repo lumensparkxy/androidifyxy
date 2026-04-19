@@ -4,6 +4,20 @@ export type SalesLeadStatus = 'initiated';
 export type SalesLeadOpsStatus = 'new' | 'claimed' | 'called' | 'qualified' | 'callback' | 'lost';
 export type SalesLeadCommissionStatus = 'preview' | 'approved' | 'paid';
 export type SalesLeadBackendProcessingStatus = 'pending' | 'completed';
+export type SalesLeadCommerceChannel = 'supplier_local' | 'amazon_affiliate' | 'admin_review';
+export type SalesLeadFallbackPolicy = 'amazon_on_no_match_or_timeout' | 'admin_review_only';
+export type SalesLeadConversionStatus =
+  | 'intent_captured'
+  | 'handoff_ready'
+  | 'handoff_sent'
+  | 'conversion_pending'
+  | 'conversion_confirmed'
+  | 'commission_realized'
+  | 'lost';
+export type SalesLeadWhatsAppState = 'not_ready' | 'ready' | 'shared' | 'failed';
+export type LeadAffiliateProvider = 'amazon';
+export type LeadAffiliateCandidateStatus = 'stub_pending_provider' | 'provider_ready' | 'shared' | 'rejected';
+export type SalesLeadHandoffChannel = 'app' | 'whatsapp';
 export type SalesLeadRoutingStatus =
   | 'initiated'
   | 'suggested_for_supplier'
@@ -54,6 +68,27 @@ export interface LeadCommissionPreview {
   ruleId?: string | null;
 }
 
+export interface LeadAffiliateCandidate {
+  provider: LeadAffiliateProvider;
+  providerStatus?: LeadAffiliateCandidateStatus;
+  reason?: string | null;
+  stubbed?: boolean;
+  productName?: string | null;
+  normalizedProductName?: string | null;
+  leadCategory?: string | null;
+  searchQuery?: string | null;
+  asin?: string | null;
+  specialLink?: string | null;
+  matchedTitle?: string | null;
+  imageUrl?: string | null;
+  priceAmount?: number | null;
+  priceCurrency?: string | null;
+  priceDisplay?: string | null;
+  marketplace?: string | null;
+  searchIndex?: string | null;
+  languageOfPreference?: string | null;
+}
+
 export interface CommissionMonthSummary {
   monthKey: string;
   approvedCount: number;
@@ -97,6 +132,27 @@ export interface SalesPipelineLead {
   reviewStatus?: SalesLeadReviewStatus;
   recommendationStatus?: SalesLeadRecommendationStatus;
   supplierVisibility?: SalesLeadSupplierVisibility;
+  commerceChannel?: SalesLeadCommerceChannel;
+  channelDecisionReason?: string | null;
+  fallbackPolicy?: SalesLeadFallbackPolicy | string | null;
+  affiliateProvider?: LeadAffiliateProvider | null;
+  affiliateCandidate?: LeadAffiliateCandidate | null;
+  amazonAsin?: string | null;
+  amazonSearchQuery?: string | null;
+  amazonSpecialLink?: string | null;
+  amazonContentRefreshedAt?: string;
+  affiliateDisclosureRequired?: boolean;
+  conversionStatus?: SalesLeadConversionStatus;
+  whatsappState?: SalesLeadWhatsAppState;
+  fallbackTriggeredAt?: string;
+  appMessageSentAt?: string;
+  appMessageSentByUid?: string | null;
+  appMessageSentByEmail?: string | null;
+  whatsappPreparedAt?: string;
+  whatsappPreparedByUid?: string | null;
+  whatsappPreparedByEmail?: string | null;
+  lastHandoffChannel?: SalesLeadHandoffChannel | null;
+  lastHandoffMessagePreview?: string | null;
   suggestedSupplier?: LeadSupplierSnapshot | null;
   selectedSupplier?: LeadSupplierSnapshot | null;
   assignedSupplier?: LeadSupplierSnapshot | null;

@@ -60,6 +60,7 @@ class ChatViewModel(
         private const val MESSAGES_KEY = "chat_messages"
         private const val CONVERSATION_ID_KEY = "conversation_id"
         private const val CONVERSATION_SAVED_KEY = "conversation_saved"
+        private const val CONVERSATION_DIRTY_KEY = "conversation_dirty"
         private const val LEAD_REQUEST_SOURCE = "chat_recommendation"
     }
 
@@ -79,6 +80,8 @@ class ChatViewModel(
 
     private var currentConversationId: String? = savedStateHandle.get<String>(CONVERSATION_ID_KEY)
     private var isConversationSaved: Boolean = savedStateHandle.get<Boolean>(CONVERSATION_SAVED_KEY) ?: false
+    private var hasUnsavedConversationChanges: Boolean = savedStateHandle.get<Boolean>(CONVERSATION_DIRTY_KEY)
+        ?: (!isConversationSaved && _messages.value.any { !it.isLoading })
 
     private val _userIdFlow = MutableStateFlow(currentUserId)
 
@@ -162,7 +165,12 @@ class ChatViewModel(
         _userIdFlow.value = currentUserId
     }
 
-    private fun updateMessages(newMessages: List<ChatMessage>) {
+    private fun setConversationDirty(isDirty: Boolean) {
+        hasUnsavedConversationChanges = isDirty
+        savedStateHandle[CONVERSATION_DIRTY_KEY] = isDirty
+    }
+
+    private fun updateMessages(newMessages: List<ChatMessage>, markDirty: Boolean = true) {
         val limitedMessages = if (newMessages.size > AppConstants.MAX_MESSAGES) {
             newMessages.takeLast(AppConstants.MAX_MESSAGES)
         } else {
@@ -170,6 +178,7 @@ class ChatViewModel(
         }
         _messages.value = limitedMessages
         savedStateHandle[MESSAGES_KEY] = ArrayList(limitedMessages)
+        setConversationDirty(markDirty)
     }
 
     fun startNewConversation() {
@@ -178,7 +187,7 @@ class ChatViewModel(
         savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
         isConversationSaved = false
         savedStateHandle[CONVERSATION_SAVED_KEY] = false
-        updateMessages(emptyList())
+        updateMessages(emptyList(), markDirty = false)
         chat = model.startChat()
         Log.d(TAG, "Started new conversation with pre-generated ID: $currentConversationId")
     }
@@ -188,13 +197,16 @@ class ChatViewModel(
         savedStateHandle[CONVERSATION_ID_KEY] = currentConversationId
         isConversationSaved = false
         savedStateHandle[CONVERSATION_SAVED_KEY] = false
-        updateMessages(emptyList())
+        updateMessages(emptyList(), markDirty = false)
         chat = model.startChat()
         Log.d(TAG, "Cleared current conversation, new pre-generated ID: $currentConversationId")
     }
 
     fun loadConversation(conversationId: String) {
-        saveCurrentConversation()
+        val isReloadingCurrentConversation = conversationId == currentConversationId
+        if (!isReloadingCurrentConversation) {
+            saveCurrentConversation()
+        }
 
         viewModelScope.launch {
             try {
@@ -214,7 +226,7 @@ class ChatViewModel(
                             imageUrl = msg.imageUrl
                         )
                     }
-                    updateMessages(chatMessages)
+                    updateMessages(chatMessages, markDirty = false)
                     initializeChatWithHistory()
                     Log.d(TAG, "Loaded conversation: $conversationId with ${chatMessages.size} messages")
                 }
@@ -274,6 +286,7 @@ class ChatViewModel(
         val messagesToSave = _messages.value.toList()
         val wasAlreadySaved = isConversationSaved
 
+        if (!hasUnsavedConversationChanges) return
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         viewModelScope.launch {
@@ -287,6 +300,7 @@ class ChatViewModel(
         val messagesToSave = _messages.value.toList()
         val wasAlreadySaved = isConversationSaved
 
+        if (!hasUnsavedConversationChanges) return
         if (messagesToSave.isEmpty() || messagesToSave.all { it.isLoading }) return
 
         saveConversationInternal(userId, conversationIdToSave, messagesToSave, wasAlreadySaved)
@@ -330,6 +344,7 @@ class ChatViewModel(
                         isConversationSaved = true
                         savedStateHandle[CONVERSATION_SAVED_KEY] = true
                     }
+                    setConversationDirty(false)
 
                     Log.d(TAG, "Saved conversation: ${conversationIdToSave ?: "new"} (isNew: $isNew)")
                 } catch (e: Exception) {

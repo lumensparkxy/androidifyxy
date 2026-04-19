@@ -40,6 +40,9 @@ const API_KEY = process.env.DATA_GOV_API_KEY || "579b464db66ec23bdd0000015d0d42c
 const BATCH_SIZE = 500; // Firestore batch write limit
 const AGENT_SERVICE_URL = (process.env.AGENT_SERVICE_URL || "").replace(/\/+$/, "");
 const AGENT_SERVICE_SHARED_SECRET = process.env.AGENT_SERVICE_SHARED_SECRET || "";
+const AMAZON_AFFILIATE_FALLBACK_ENABLED = /^(1|true|yes)$/i.test(
+  process.env.AMAZON_AFFILIATE_FALLBACK_ENABLED || "",
+);
 const AGENT_PROXY_TIMEOUT_MS = 60000;
 const googleAuth = new GoogleAuth();
 let agentServiceIdTokenClientPromise = null;
@@ -864,6 +867,8 @@ exports.deleteAllKnowledgeDocuments = functions
   });
 
 const {
+  COMMERCE_CHANNEL_ADMIN_REVIEW,
+  buildInitialCommerceFields,
   SALES_PIPELINE_COLLECTION,
   SALES_PIPELINE_STATUS_INITIATED,
   buildSalesPipelineDocId,
@@ -878,6 +883,20 @@ const {
   mergeLeadFarmerProfileSnapshots,
 } = require("./leadProfile");
 const { buildAdminLeadView } = require("./adminLeadView");
+const {
+  CONVERSATIONS_COLLECTION,
+  buildAffiliateHandoffMessage,
+  buildAffiliateNotificationPayload,
+  buildAssistantConversationMessage,
+  buildConversationTitle,
+  buildManualAmazonAffiliateLeadPatch,
+  buildUserNotificationTopic,
+} = require("./adminAffiliateMessaging");
+const {
+  buildAmazonAffiliateConfig,
+  finalizeAmazonAffiliateRecommendation,
+  resolveAmazonAffiliateCandidate,
+} = require("./amazonAffiliate");
 const { buildLeadRecommendation } = require("./leadRecommendation");
 const {
   buildCommissionLifecycleDefaults,
@@ -1010,8 +1029,11 @@ function buildInitialLeadRoutingFields({ farmerProfile = {}, productName, chatMe
       villageKey: normalizeLeadLocationPart(village),
     },
     routingStatus: "initiated",
+    reviewStatus: "pending_recommendation",
     recommendationStatus: "pending",
+    supplierVisibility: "hidden",
     suggestedSupplier: null,
+    selectedSupplier: null,
     assignedSupplier: null,
     commissionPreview: {
       category: leadCategory,
@@ -1019,6 +1041,7 @@ function buildInitialLeadRoutingFields({ farmerProfile = {}, productName, chatMe
       currency: "INR",
       ruleId: null,
     },
+    ...buildInitialCommerceFields({ productName }),
     ...buildCommissionLifecycleDefaults(),
     suggestionGeneratedAt: null,
     assignmentPublishedAt: null,
@@ -1569,12 +1592,26 @@ function buildAdminLeadAssignmentUpdate({ supplierId, supplierData, actor, selec
   const selectedSupplier = buildAdminAssignedSupplierSnapshot(supplierId, supplierData, actor, selectedAt);
 
   return {
+    commerceChannel: "supplier_local",
+    channelDecisionReason: "admin_manual_supplier",
+    affiliateProvider: null,
+    affiliateCandidate: null,
+    amazonAsin: null,
+    amazonSpecialLink: null,
+    amazonContentRefreshedAt: null,
+    affiliateDisclosureRequired: false,
+    conversionStatus: "intent_captured",
+    whatsappState: "not_ready",
+    fallbackTriggeredAt: null,
     assignedSupplier: {
       ...selectedSupplier,
       assignedAt: selectedAt,
     },
+    selectedSupplier,
     routingStatus: "supplier_pending",
+    reviewStatus: "assigned_to_supplier",
     recommendationStatus: "ready",
+    supplierVisibility: "masked",
     ...buildCommissionLifecycleDefaults(),
     assignmentPublishedAt: admin.firestore.FieldValue.serverTimestamp(),
     supplierResponseDeadlineAt: buildSupplierResponseDeadlineTimestamp(selectedAt),
@@ -2057,14 +2094,47 @@ async function buildSupplierRecommendationContext(leadData) {
 async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReason = "recommendation_failed" }) {
   try {
     const recommendationContext = await buildSupplierRecommendationContext(leadData);
-    const recommendation = buildLeadRecommendation(recommendationContext);
+    const recommendation = buildLeadRecommendation({
+      ...recommendationContext,
+      affiliateFallback: {
+        enabled: AMAZON_AFFILIATE_FALLBACK_ENABLED,
+      },
+    });
+    const amazonAffiliateResolution = recommendation.affiliateCandidate?.provider === "amazon"
+      ? await resolveAmazonAffiliateCandidate({
+        lead: recommendationContext.lead,
+        affiliateCandidate: recommendation.affiliateCandidate,
+        config: buildAmazonAffiliateConfig(process.env),
+      })
+      : null;
+    const finalizedRecommendation = finalizeAmazonAffiliateRecommendation({
+      recommendation,
+      resolution: amazonAffiliateResolution,
+    });
     await leadRef.set({
       leadCategory: recommendationContext.lead.leadCategory,
-      routingStatus: recommendation.routingStatus,
-      recommendationStatus: recommendation.recommendationStatus,
-      suggestedSupplier: recommendation.suggestedSupplier,
-      commissionPreview: recommendation.commissionPreview,
-      adminFallbackReason: recommendation.adminFallbackReason,
+      routingStatus: finalizedRecommendation.routingStatus,
+      reviewStatus: finalizedRecommendation.reviewStatus,
+      recommendationStatus: finalizedRecommendation.recommendationStatus,
+      suggestedSupplier: finalizedRecommendation.suggestedSupplier,
+      commissionPreview: finalizedRecommendation.commissionPreview,
+      commerceChannel: finalizedRecommendation.commerceChannel,
+      channelDecisionReason: finalizedRecommendation.channelDecisionReason,
+      affiliateProvider: finalizedRecommendation.affiliateProvider,
+      affiliateCandidate: finalizedRecommendation.affiliateCandidate,
+      amazonAsin: finalizedRecommendation.amazonAsin,
+      amazonSearchQuery: finalizedRecommendation.amazonSearchQuery,
+      amazonSpecialLink: finalizedRecommendation.amazonSpecialLink,
+      amazonContentRefreshedAt: finalizedRecommendation.amazonSpecialLink
+        ? admin.firestore.FieldValue.serverTimestamp()
+        : null,
+      affiliateDisclosureRequired: finalizedRecommendation.affiliateDisclosureRequired,
+      conversionStatus: finalizedRecommendation.conversionStatus,
+      whatsappState: finalizedRecommendation.whatsappState,
+      fallbackTriggeredAt: finalizedRecommendation.fallbackTriggered
+        ? admin.firestore.FieldValue.serverTimestamp()
+        : null,
+      adminFallbackReason: finalizedRecommendation.adminFallbackReason,
       suggestionGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastRoutingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
@@ -2072,16 +2142,32 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
     return {
       ok: true,
       leadId,
-      recommendationStatus: recommendation.recommendationStatus,
-      routingStatus: recommendation.routingStatus,
-      suggestedSupplierId: recommendation.suggestedSupplier?.supplierId || null,
-      adminFallbackReason: recommendation.adminFallbackReason,
+      recommendationStatus: finalizedRecommendation.recommendationStatus,
+      routingStatus: finalizedRecommendation.routingStatus,
+      commerceChannel: finalizedRecommendation.commerceChannel,
+      suggestedSupplierId: finalizedRecommendation.suggestedSupplier?.supplierId || null,
+      adminFallbackReason: finalizedRecommendation.adminFallbackReason,
+      amazonAsin: finalizedRecommendation.amazonAsin || null,
+      amazonSpecialLink: finalizedRecommendation.amazonSpecialLink || null,
     };
   } catch (error) {
     console.error(`Failed to recommend supplier for lead ${leadId}:`, error);
     await leadRef.set({
       routingStatus: "admin_queue",
+      reviewStatus: "pending_admin_review",
       recommendationStatus: "no_match",
+      commerceChannel: COMMERCE_CHANNEL_ADMIN_REVIEW,
+      channelDecisionReason: fallbackReason,
+      affiliateProvider: null,
+      affiliateCandidate: null,
+      amazonAsin: null,
+      amazonSearchQuery: normalizeProductName(leadData?.productName) || null,
+      amazonSpecialLink: null,
+      amazonContentRefreshedAt: null,
+      affiliateDisclosureRequired: false,
+      conversionStatus: "intent_captured",
+      whatsappState: "not_ready",
+      fallbackTriggeredAt: null,
       adminFallbackReason: fallbackReason,
       suggestionGeneratedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastRoutingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -2092,6 +2178,7 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
       leadId,
       recommendationStatus: "no_match",
       routingStatus: "admin_queue",
+      commerceChannel: COMMERCE_CHANNEL_ADMIN_REVIEW,
       suggestedSupplierId: null,
       adminFallbackReason: fallbackReason,
       error: trimString(error?.message) || "Recommendation failed",
@@ -2311,6 +2398,126 @@ exports.adminAssignLeadsToSupplier = functions
       leadIds,
       supplierId,
       assignedCount: leadIds.length,
+    };
+  });
+
+exports.adminSendLeadAffiliateAppMessage = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const leadId = trimString(data?.leadId);
+    const affiliateLinkOverride = optionalString(data?.affiliateLink);
+    if (!leadId) {
+      throw new functions.https.HttpsError("invalid-argument", "leadId is required");
+    }
+
+    const actor = buildAdminActor(context);
+    const leadRef = db.collection(SALES_PIPELINE_COLLECTION).doc(leadId);
+    const leadSnapshot = await leadRef.get();
+    if (!leadSnapshot.exists) {
+      throw new functions.https.HttpsError("not-found", "Lead not found");
+    }
+
+    const leadData = leadSnapshot.data() || {};
+    const userId = trimString(leadData.userId);
+    const conversationId = trimString(leadData.conversationId);
+    const affiliateLink = affiliateLinkOverride
+      || trimString(leadData.amazonSpecialLink)
+      || trimString(leadData?.affiliateCandidate?.specialLink);
+
+    if (!affiliateLink) {
+      throw new functions.https.HttpsError("failed-precondition", "Affiliate link is required before sending an app message");
+    }
+    if (!userId || !conversationId) {
+      throw new functions.https.HttpsError("failed-precondition", "Lead is missing conversation context");
+    }
+
+    const handoffMessage = buildAffiliateHandoffMessage({
+      leadData,
+      affiliateLink,
+    });
+    const notificationPayload = buildAffiliateNotificationPayload({ leadData });
+    const now = admin.firestore.Timestamp.now();
+    const conversationRef = db.collection(CONVERSATIONS_COLLECTION).doc(conversationId);
+
+    await db.runTransaction(async (transaction) => {
+      const conversationSnapshot = await transaction.get(conversationRef);
+      const conversationData = conversationSnapshot.exists ? (conversationSnapshot.data() || {}) : {};
+      const existingMessages = Array.isArray(conversationData.messages)
+        ? conversationData.messages
+        : [];
+      const nextMessage = buildAssistantConversationMessage({
+        text: handoffMessage,
+        timestamp: now,
+      });
+
+      transaction.set(conversationRef, {
+        userId,
+        title: trimString(conversationData.title) || buildConversationTitle(leadData),
+        messages: [...existingMessages, nextMessage],
+        createdAt: conversationData.createdAt || now,
+        updatedAt: now,
+      }, { merge: true });
+
+      transaction.set(leadRef, {
+        ...buildManualAmazonAffiliateLeadPatch({
+          leadData,
+          affiliateLink,
+          actor,
+          timestampValue: now,
+          handoffChannel: "app",
+          handoffMessagePreview: handoffMessage,
+        }),
+        lastOpsActionAt: now,
+      }, { merge: true });
+    });
+
+    let notificationSent = false;
+    let notificationMessageId = null;
+    const userTopic = buildUserNotificationTopic(userId);
+    if (userTopic) {
+      try {
+        notificationMessageId = await admin.messaging().send({
+          topic: userTopic,
+          android: {
+            priority: "high",
+            notification: {
+              channelId: "krishi_notifications",
+              sound: "default",
+              tag: `lead-${leadId}`,
+            },
+          },
+          notification: {
+            title: notificationPayload.title,
+            body: notificationPayload.body,
+          },
+          data: {
+            conversation_id: conversationId,
+            lead_id: leadId,
+            handoff_channel: "app",
+          },
+        });
+        notificationSent = true;
+      } catch (error) {
+        console.error(`Failed to send affiliate handoff notification for lead ${leadId}:`, error);
+      }
+    }
+
+    return {
+      ok: true,
+      leadId,
+      conversationId,
+      notificationSent,
+      notificationMessageId,
     };
   });
 

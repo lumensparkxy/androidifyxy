@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -478,10 +478,12 @@ fun ChatScreen(
                         state = listState,
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        items(
+                        itemsIndexed(
                             items = messages,
-                            key = { "${it.isUser}-${it.text.hashCode()}-${messages.indexOf(it)}" }
-                        ) { message ->
+                            key = { index: Int, message: ChatMessage ->
+                                "${message.isUser}-${message.text.hashCode()}-${message.imageUrl.hashCode()}-$index"
+                            }
+                        ) { _: Int, message: ChatMessage ->
                             ChatBubble(
                                 message = message,
                                 onRecommendationClick = onRecommendationClick,

@@ -46,6 +46,36 @@ function buildAdminLeadView(leadId, leadData = {}, liveFarmerProfile = null) {
     reviewStatus: deriveLeadReviewStatus(leadData),
     recommendationStatus: trimString(leadData.recommendationStatus) || null,
     supplierVisibility: deriveLeadSupplierVisibility(leadData),
+    commerceChannel: trimString(leadData.commerceChannel) || "supplier_local",
+    channelDecisionReason: trimString(leadData.channelDecisionReason) || "default_supplier_first",
+    fallbackPolicy: trimString(leadData.fallbackPolicy) || "amazon_on_no_match_or_timeout",
+    affiliateProvider: trimString(leadData.affiliateProvider)
+      || trimString(leadData?.affiliateCandidate?.provider)
+      || null,
+    affiliateCandidate: leadData.affiliateCandidate || null,
+    amazonAsin: trimString(leadData.amazonAsin)
+      || trimString(leadData?.affiliateCandidate?.asin)
+      || null,
+    amazonSearchQuery: trimString(leadData.amazonSearchQuery)
+      || trimString(leadData?.affiliateCandidate?.searchQuery)
+      || trimString(leadData.normalizedProductName)
+      || null,
+    amazonSpecialLink: trimString(leadData.amazonSpecialLink)
+      || trimString(leadData?.affiliateCandidate?.specialLink)
+      || null,
+    amazonContentRefreshedAt: timestampToIsoString(leadData.amazonContentRefreshedAt),
+    affiliateDisclosureRequired: leadData.affiliateDisclosureRequired === true,
+    conversionStatus: trimString(leadData.conversionStatus) || "intent_captured",
+    whatsappState: trimString(leadData.whatsappState) || "not_ready",
+    fallbackTriggeredAt: timestampToIsoString(leadData.fallbackTriggeredAt),
+    appMessageSentAt: timestampToIsoString(leadData.appMessageSentAt),
+    appMessageSentByUid: trimString(leadData.appMessageSentByUid) || null,
+    appMessageSentByEmail: trimString(leadData.appMessageSentByEmail) || null,
+    whatsappPreparedAt: timestampToIsoString(leadData.whatsappPreparedAt),
+    whatsappPreparedByUid: trimString(leadData.whatsappPreparedByUid) || null,
+    whatsappPreparedByEmail: trimString(leadData.whatsappPreparedByEmail) || null,
+    lastHandoffChannel: trimString(leadData.lastHandoffChannel) || null,
+    lastHandoffMessagePreview: trimString(leadData.lastHandoffMessagePreview) || null,
     suggestedSupplier: leadData.suggestedSupplier || null,
     selectedSupplier: leadData.selectedSupplier || leadData.assignedSupplier || null,
     assignedSupplier: leadData.assignedSupplier || leadData.selectedSupplier || null,

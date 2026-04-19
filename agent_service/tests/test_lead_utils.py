@@ -63,6 +63,19 @@ def test_build_initial_routing_fields_populates_location_and_defaults() -> None:
     assert fields["suggestedSupplier"] is None
     assert fields["selectedSupplier"] is None
     assert fields["assignedSupplier"] is None
+    assert fields["commerceChannel"] == "supplier_local"
+    assert fields["channelDecisionReason"] == "default_supplier_first"
+    assert fields["fallbackPolicy"] == "amazon_on_no_match_or_timeout"
+    assert fields["affiliateProvider"] is None
+    assert fields["affiliateCandidate"] is None
+    assert fields["amazonAsin"] is None
+    assert fields["amazonSearchQuery"] == "hybrid seed pack"
+    assert fields["amazonSpecialLink"] is None
+    assert fields["amazonContentRefreshedAt"] is None
+    assert fields["affiliateDisclosureRequired"] is False
+    assert fields["conversionStatus"] == "intent_captured"
+    assert fields["whatsappState"] == "not_ready"
+    assert fields["fallbackTriggeredAt"] is None
     assert fields["commissionPreview"] == {
         "category": "seed",
         "amount": None,

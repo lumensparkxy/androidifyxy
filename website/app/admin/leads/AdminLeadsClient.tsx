@@ -38,9 +38,13 @@ import type {
   CommissionMonthSummary,
   SalesLeadBackendProcessingStatus,
   SalesLeadCommissionStatus,
+  LeadAffiliateCandidate,
   LeadCommissionPreview,
   LeadLocationSnapshot,
   LeadSupplierSnapshot,
+  SalesLeadCommerceChannel,
+  SalesLeadConversionStatus,
+  SalesLeadHandoffChannel,
   SalesLeadOpsStatus,
   SalesLeadRecommendationStatus,
   SalesLeadReviewStatus,
@@ -48,11 +52,14 @@ import type {
   SalesLeadSupplierVisibility,
   SalesPipelineLead,
   SupplierProfile,
+  SalesLeadWhatsAppState,
 } from '@/lib/types';
 
 type AdminGateState = 'checking' | 'allowed' | 'forbidden' | 'signed-out';
 
 type AdminSupplierOption = SupplierProfile & { id: string };
+
+const MANUAL_AMAZON_AFFILIATE_OPTION_ID = '__amazon_affiliate__';
 
 const PRIVILEGED_ADMIN_EMAILS = new Set(['maswadkar@gmail.com', 'neophilex@gmail.com']);
 
@@ -106,6 +113,13 @@ function toSupplierSnapshot(value: unknown): LeadSupplierSnapshot | null | undef
 function toCommissionPreview(value: unknown): LeadCommissionPreview | undefined {
   return typeof value === 'object' && value !== null
     ? value as LeadCommissionPreview
+    : undefined;
+}
+
+function toAffiliateCandidate(value: unknown): LeadAffiliateCandidate | null | undefined {
+  if (value === null) return null;
+  return typeof value === 'object' && value !== null
+    ? value as LeadAffiliateCandidate
     : undefined;
 }
 
@@ -350,6 +364,7 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
   );
   const selectedSupplier = toPreferredSupplierSnapshot(data.selectedSupplier, data.assignedSupplier);
   const assignedSupplier = toPreferredSupplierSnapshot(data.assignedSupplier, data.selectedSupplier);
+  const affiliateCandidate = toAffiliateCandidate(data.affiliateCandidate);
 
   return {
     id,
@@ -371,6 +386,27 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
     reviewStatus,
     recommendationStatus,
     supplierVisibility,
+    commerceChannel: typeof data.commerceChannel === 'string' ? data.commerceChannel as SalesLeadCommerceChannel : 'supplier_local',
+    channelDecisionReason: typeof data.channelDecisionReason === 'string' ? data.channelDecisionReason : undefined,
+    fallbackPolicy: typeof data.fallbackPolicy === 'string' ? data.fallbackPolicy : undefined,
+    affiliateProvider: typeof data.affiliateProvider === 'string' ? data.affiliateProvider : undefined,
+    affiliateCandidate,
+    amazonAsin: typeof data.amazonAsin === 'string' ? data.amazonAsin : null,
+    amazonSearchQuery: typeof data.amazonSearchQuery === 'string' ? data.amazonSearchQuery : null,
+    amazonSpecialLink: typeof data.amazonSpecialLink === 'string' ? data.amazonSpecialLink : null,
+    amazonContentRefreshedAt: convertTimestamp(data.amazonContentRefreshedAt),
+    affiliateDisclosureRequired: data.affiliateDisclosureRequired === true,
+    conversionStatus: typeof data.conversionStatus === 'string' ? data.conversionStatus as SalesLeadConversionStatus : 'intent_captured',
+    whatsappState: typeof data.whatsappState === 'string' ? data.whatsappState as SalesLeadWhatsAppState : 'not_ready',
+    fallbackTriggeredAt: convertTimestamp(data.fallbackTriggeredAt),
+    appMessageSentAt: convertTimestamp(data.appMessageSentAt),
+    appMessageSentByUid: typeof data.appMessageSentByUid === 'string' ? data.appMessageSentByUid : null,
+    appMessageSentByEmail: typeof data.appMessageSentByEmail === 'string' ? data.appMessageSentByEmail : null,
+    whatsappPreparedAt: convertTimestamp(data.whatsappPreparedAt),
+    whatsappPreparedByUid: typeof data.whatsappPreparedByUid === 'string' ? data.whatsappPreparedByUid : null,
+    whatsappPreparedByEmail: typeof data.whatsappPreparedByEmail === 'string' ? data.whatsappPreparedByEmail : null,
+    lastHandoffChannel: typeof data.lastHandoffChannel === 'string' ? data.lastHandoffChannel as SalesLeadHandoffChannel : null,
+    lastHandoffMessagePreview: typeof data.lastHandoffMessagePreview === 'string' ? data.lastHandoffMessagePreview : null,
     suggestedSupplier: toSupplierSnapshot(data.suggestedSupplier),
     selectedSupplier,
     assignedSupplier,
@@ -557,6 +593,9 @@ function formatMonthKey(monthKey?: string | null): string {
 }
 
 function getRecommendedSupplierLabel(lead: SalesPipelineLead): string {
+  if (lead.commerceChannel === 'amazon_affiliate') {
+    return lead.amazonSpecialLink ? 'Amazon affiliate (link ready)' : 'Amazon affiliate';
+  }
   if (lead.selectedSupplier?.businessName) return `${lead.selectedSupplier.businessName} (admin selected)`;
   if (lead.suggestedSupplier?.businessName) return lead.suggestedSupplier.businessName;
   return lead.adminFallbackReason === 'no_matching_supplier' ? 'No matching supplier' : 'Pending recommendation';
@@ -567,6 +606,125 @@ function getSupplierSnapshotLabel(snapshot?: LeadSupplierSnapshot | null): strin
 
   const parts = [snapshot.businessName, snapshot.districtName || snapshot.districtId].filter(Boolean);
   return parts.length > 0 ? parts.join(' · ') : snapshot.supplierId;
+}
+
+function normalizeProductSearchQuery(value?: string | null): string | null {
+  const normalized = (value || '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+  return normalized || null;
+}
+
+function extractAmazonAsin(value?: string | null): string | null {
+  if (!value) return null;
+  try {
+    const parsed = new URL(value);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    for (let index = 0; index < segments.length; index += 1) {
+      const segment = segments[index]?.toLowerCase();
+      if ((segment === 'dp' || segment === 'product') && segments[index + 1]) {
+        const asin = segments[index + 1].trim();
+        return /^[A-Z0-9]{10}$/i.test(asin) ? asin.toUpperCase() : null;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function buildManualAmazonAffiliateCandidate(lead: SalesPipelineLead, specialLink: string): LeadAffiliateCandidate {
+  return {
+    provider: 'amazon',
+    providerStatus: 'provider_ready',
+    reason: 'admin_manual_affiliate',
+    stubbed: false,
+    productName: lead.productName || null,
+    normalizedProductName: lead.normalizedProductName || null,
+    leadCategory: lead.leadCategory || null,
+    searchQuery: lead.amazonSearchQuery || normalizeProductSearchQuery(lead.normalizedProductName || lead.productName),
+    asin: extractAmazonAsin(specialLink),
+    specialLink,
+    matchedTitle: lead.productName || null,
+  };
+}
+
+function buildAffiliateWhatsAppMessage(lead: SalesPipelineLead, affiliateLink: string): string {
+  const greeting = lead.farmerProfileSnapshot?.name
+    ? `Hi ${lead.farmerProfileSnapshot.name.split(/\s+/)[0]},`
+    : 'Hi,';
+  const lines = [`${greeting} we found an Amazon option for ${lead.productName || 'your requested product'}.`];
+  if (lead.requestNumber) {
+    lines.push(`Request ID: ${lead.requestNumber}`);
+  }
+  lines.push(`Link: ${affiliateLink}`);
+  lines.push('If needed, we can also help compare alternatives.');
+  return lines.join('\n');
+}
+
+function normalizeIndianPhoneNumber(value?: string | null): string | null {
+  const digits = (value || '').replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.length === 12 && digits.startsWith('91')) return digits;
+  return null;
+}
+
+function buildWhatsAppDeepLink(phoneNumber: string, message: string): string {
+  return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+}
+
+function buildManualAmazonAffiliatePayload(
+  lead: SalesPipelineLead,
+  affiliateLink: string,
+  handoff?: {
+    channel?: SalesLeadHandoffChannel;
+    messagePreview?: string;
+    actorUid?: string | null;
+    actorEmail?: string | null;
+  },
+): Record<string, unknown> {
+  const manualAffiliateCandidate = buildManualAmazonAffiliateCandidate(lead, affiliateLink);
+  const payload: Record<string, unknown> = {
+    commerceChannel: 'amazon_affiliate',
+    channelDecisionReason: 'admin_manual_affiliate',
+    affiliateProvider: 'amazon',
+    affiliateCandidate: manualAffiliateCandidate,
+    amazonAsin: manualAffiliateCandidate.asin || null,
+    amazonSearchQuery: manualAffiliateCandidate.searchQuery || null,
+    amazonSpecialLink: affiliateLink,
+    amazonContentRefreshedAt: serverTimestamp(),
+    affiliateDisclosureRequired: true,
+    routingStatus: 'admin_queue',
+    reviewStatus: 'reviewed',
+    recommendationStatus: 'ready',
+    supplierVisibility: 'hidden',
+    selectedSupplier: null,
+    assignedSupplier: null,
+    assignmentPublishedAt: null,
+    supplierResponseDeadlineAt: null,
+    supplierRespondedAt: null,
+    supplierRejectedReason: null,
+    adminFallbackReason: 'admin_manual_affiliate',
+    fallbackTriggeredAt: serverTimestamp(),
+    lastRoutingUpdatedAt: serverTimestamp(),
+  };
+
+  if (handoff?.channel === 'whatsapp') {
+    payload.conversionStatus = 'handoff_sent';
+    payload.whatsappState = 'shared';
+    payload.whatsappPreparedAt = serverTimestamp();
+    payload.whatsappPreparedByUid = handoff.actorUid || null;
+    payload.whatsappPreparedByEmail = handoff.actorEmail || null;
+    payload.lastHandoffChannel = 'whatsapp';
+    payload.lastHandoffMessagePreview = handoff.messagePreview || null;
+  } else {
+    payload.conversionStatus = 'handoff_ready';
+    payload.whatsappState = 'ready';
+  }
+
+  return payload;
 }
 
 function isRecommendationPending(lead: SalesPipelineLead): boolean {
@@ -658,6 +816,7 @@ export default function AdminLeadsClient() {
     opsNotes: '',
     assignToMe: true,
     selectedSupplierId: '',
+    affiliateLink: '',
   });
 
   useEffect(() => {
@@ -1009,7 +1168,11 @@ export default function AdminLeadsClient() {
       unit: lead.unit || '',
       opsNotes: lead.opsNotes || '',
       assignToMe: !lead.opsOwnerUid || lead.opsOwnerUid === user?.uid,
-      selectedSupplierId: lead.selectedSupplier?.supplierId || lead.assignedSupplier?.supplierId || '',
+      selectedSupplierId:
+        lead.commerceChannel === 'amazon_affiliate'
+          ? MANUAL_AMAZON_AFFILIATE_OPTION_ID
+          : (lead.selectedSupplier?.supplierId || lead.assignedSupplier?.supplierId || ''),
+      affiliateLink: lead.amazonSpecialLink || lead.affiliateCandidate?.specialLink || '',
     });
   };
 
@@ -1146,8 +1309,53 @@ export default function AdminLeadsClient() {
       opsOwnerEmail: editForm.assignToMe ? (user?.email || null) : (editingLead.opsOwnerEmail || null),
     };
     let assignedSupplierChanged = false;
+    let manualAffiliateChanged = false;
+    const manualAffiliateSelected = editForm.selectedSupplierId === MANUAL_AMAZON_AFFILIATE_OPTION_ID;
 
-    if (editForm.selectedSupplierId) {
+    if (manualAffiliateSelected) {
+      const normalizedAffiliateLink = editForm.affiliateLink.trim();
+      if (!normalizedAffiliateLink) {
+        setError('Paste the Amazon affiliate link before saving the manual affiliate assignment.');
+        return;
+      }
+
+      const currentAffiliateLink = editingLead.amazonSpecialLink || editingLead.affiliateCandidate?.specialLink || '';
+      manualAffiliateChanged = (
+        editingLead.commerceChannel !== 'amazon_affiliate'
+        || currentAffiliateLink !== normalizedAffiliateLink
+        || editingLead.channelDecisionReason !== 'admin_manual_affiliate'
+      );
+
+      if (manualAffiliateChanged) {
+        const manualAffiliateCandidate = buildManualAmazonAffiliateCandidate(editingLead, normalizedAffiliateLink);
+        payload.commerceChannel = 'amazon_affiliate';
+        payload.channelDecisionReason = 'admin_manual_affiliate';
+        payload.affiliateProvider = 'amazon';
+        payload.affiliateCandidate = manualAffiliateCandidate;
+        payload.amazonAsin = manualAffiliateCandidate.asin || null;
+        payload.amazonSearchQuery = manualAffiliateCandidate.searchQuery || null;
+        payload.amazonSpecialLink = normalizedAffiliateLink;
+        payload.amazonContentRefreshedAt = serverTimestamp();
+        payload.affiliateDisclosureRequired = true;
+        payload.conversionStatus = 'handoff_ready';
+        payload.whatsappState = 'ready';
+        payload.fallbackTriggeredAt = serverTimestamp();
+        payload.routingStatus = 'admin_queue';
+        payload.reviewStatus = 'reviewed';
+        payload.recommendationStatus = 'ready';
+        payload.supplierVisibility = 'hidden';
+        payload.selectedSupplier = null;
+        payload.assignedSupplier = null;
+        payload.assignmentPublishedAt = null;
+        payload.supplierResponseDeadlineAt = null;
+        payload.supplierRespondedAt = null;
+        payload.supplierRejectedReason = null;
+        payload.adminFallbackReason = 'admin_manual_affiliate';
+        payload.lastRoutingUpdatedAt = serverTimestamp();
+      }
+    }
+
+    if (editForm.selectedSupplierId && !manualAffiliateSelected) {
       const currentAssignedSupplierId = editingLead.assignedSupplier?.supplierId || editingLead.selectedSupplier?.supplierId || '';
       const selectedSupplier = approvedSuppliers.find((supplier) => supplier.id === editForm.selectedSupplierId);
       if (!selectedSupplier) {
@@ -1178,7 +1386,9 @@ export default function AdminLeadsClient() {
       || Boolean(payload.firstOpsContactAt)
     );
 
-    if (hasOpsChanges) {
+    const hasDirectLeadChanges = hasOpsChanges || manualAffiliateChanged;
+
+    if (hasDirectLeadChanges) {
       await updateLeadOps(editingLead.id, payload);
     } else if (assignedSupplierChanged) {
       setError(null);
@@ -1216,6 +1426,74 @@ export default function AdminLeadsClient() {
     } finally {
       setActionLeadId((current) => (current === editingLead.id ? null : current));
     }
+  };
+
+  const handleSendAffiliateAppMessage = async () => {
+    if (!editingLead) return;
+    if (!functions) {
+      setError('Firebase Functions is not configured in the website client');
+      return;
+    }
+
+    const affiliateLink = editForm.affiliateLink.trim() || editingLead.amazonSpecialLink || editingLead.affiliateCandidate?.specialLink || '';
+    if (!affiliateLink) {
+      setError('Add the Amazon affiliate link before sending the app message.');
+      return;
+    }
+
+    setError(null);
+    setActionLeadId(editingLead.id);
+    try {
+      const sendCallable = httpsCallable<
+        { leadId: string; affiliateLink?: string },
+        { ok: boolean; notificationSent?: boolean }
+      >(functions, 'adminSendLeadAffiliateAppMessage');
+      const response = await sendCallable({
+        leadId: editingLead.id,
+        affiliateLink,
+      });
+      await refreshAdminLeads();
+      if (response.data?.notificationSent === false) {
+        setLeadLoadNotice('In-app message was added to the conversation, but the push notification could not be sent to the user device.');
+      }
+    } catch (sendError) {
+      setError(sendError instanceof Error ? sendError.message : 'Failed to send app message');
+    } finally {
+      setActionLeadId((current) => (current === editingLead.id ? null : current));
+    }
+  };
+
+  const handleSendAffiliateWhatsAppMessage = async () => {
+    if (!editingLead || !user) return;
+
+    const affiliateLink = editForm.affiliateLink.trim() || editingLead.amazonSpecialLink || editingLead.affiliateCandidate?.specialLink || '';
+    if (!affiliateLink) {
+      setError('Add the Amazon affiliate link before preparing the WhatsApp message.');
+      return;
+    }
+
+    const mobileNumber = normalizeIndianPhoneNumber(getLeadMobileNumber(editingLead));
+    if (!mobileNumber) {
+      setError('The farmer mobile number is missing or invalid for WhatsApp handoff.');
+      return;
+    }
+
+    const whatsappMessage = buildAffiliateWhatsAppMessage(editingLead, affiliateLink);
+    const whatsappUrl = buildWhatsAppDeepLink(mobileNumber, whatsappMessage);
+    const openedWindow = window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    if (!openedWindow) {
+      setError('The WhatsApp window was blocked by the browser. Please allow pop-ups and try again.');
+      return;
+    }
+
+    const payload = buildManualAmazonAffiliatePayload(editingLead, affiliateLink, {
+      channel: 'whatsapp',
+      messagePreview: whatsappMessage,
+      actorUid: user.uid,
+      actorEmail: user.email,
+    });
+
+    await updateLeadOps(editingLead.id, payload);
   };
 
   const editingLeadCommissionStatus = editingLead?.commissionStatus || 'preview';
@@ -1740,9 +2018,9 @@ export default function AdminLeadsClient() {
                       className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                       value={editForm.selectedSupplierId}
                       onChange={(event) => setEditForm((current) => ({ ...current, selectedSupplierId: event.target.value }))}
-                      disabled={suppliersLoading || rankedSupplierOptions.length === 0}
                     >
-                      <option value="">{suppliersLoading ? 'Loading approved suppliers…' : 'No manual supplier selected'}</option>
+                      <option value="">{suppliersLoading ? 'Loading approved suppliers…' : 'No manual supplier or affiliate selected'}</option>
+                      <option value={MANUAL_AMAZON_AFFILIATE_OPTION_ID}>Amazon affiliate (manual link)</option>
                       {rankedSupplierOptions.map((supplier) => {
                         const hint = editingLead ? getSupplierAssignmentHint(editingLead, supplier) : '';
                         return (
@@ -1758,6 +2036,41 @@ export default function AdminLeadsClient() {
                       Top matches are sorted first using district + category fit. Current suggested supplier: {getSupplierSnapshotLabel(editingLead.suggestedSupplier)}.
                     </p>
                   </div>
+
+                  {editForm.selectedSupplierId === MANUAL_AMAZON_AFFILIATE_OPTION_ID && (
+                    <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                      <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">Amazon affiliate link</label>
+                      <input
+                        type="url"
+                        className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        value={editForm.affiliateLink}
+                        onChange={(event) => setEditForm((current) => ({ ...current, affiliateLink: event.target.value }))}
+                        placeholder="https://www.amazon.in/dp/...?...tag=yourtag-21"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Use this when no local supplier is available yet. Saving will keep the lead in admin review but mark the Amazon handoff as ready.
+                      </p>
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleSendAffiliateAppMessage}
+                          disabled={actionLeadId === editingLead.id || !editForm.affiliateLink.trim()}
+                        >
+                          {actionLeadId === editingLead.id ? 'Sending…' : 'Send App message'}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSendAffiliateWhatsAppMessage}
+                          disabled={actionLeadId === editingLead.id || !editForm.affiliateLink.trim()}
+                        >
+                          Send WhatsApp message
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 )}
 
@@ -1830,6 +2143,36 @@ export default function AdminLeadsClient() {
                   <div className="space-y-1">
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 pb-1">Supplier assignment</p>
                     <dl className="space-y-2.5 text-sm border-l-2 border-blue-200 pl-3">
+                      {editingLead.commerceChannel === 'amazon_affiliate' && (
+                        <>
+                          <div>
+                            <dt className="text-gray-500">Affiliate path</dt>
+                            <dd className="font-medium text-gray-900">Amazon affiliate</dd>
+                          </div>
+                          {editingLead.amazonSpecialLink && (
+                            <div>
+                              <dt className="text-gray-500">Affiliate link</dt>
+                              <dd className="font-medium text-primary break-all">
+                                <a href={editingLead.amazonSpecialLink} target="_blank" rel="noreferrer" className="hover:underline">
+                                  {editingLead.amazonSpecialLink}
+                                </a>
+                              </dd>
+                            </div>
+                          )}
+                          {editingLead.appMessageSentAt && (
+                            <div>
+                              <dt className="text-gray-500">App message sent</dt>
+                              <dd className="font-medium text-gray-900">{formatDate(editingLead.appMessageSentAt)}</dd>
+                            </div>
+                          )}
+                          {editingLead.whatsappPreparedAt && (
+                            <div>
+                              <dt className="text-gray-500">WhatsApp prepared</dt>
+                              <dd className="font-medium text-gray-900">{formatDate(editingLead.whatsappPreparedAt)}</dd>
+                            </div>
+                          )}
+                        </>
+                      )}
                       <div>
                         <dt className="text-gray-500">Recommendation</dt>
                         <dd className="font-medium text-gray-900">{getRecommendedSupplierLabel(editingLead)}</dd>
@@ -1923,6 +2266,9 @@ export default function AdminLeadsClient() {
                     if (editingLead.assignmentPublishedAt) events.push({ label: 'Assignment published', value: formatDate(editingLead.assignmentPublishedAt) });
                     if (editingLead.supplierResponseDeadlineAt) events.push({ label: 'Supplier deadline', value: formatDate(editingLead.supplierResponseDeadlineAt) });
                     if (editingLead.supplierRespondedAt) events.push({ label: 'Supplier responded', value: formatDate(editingLead.supplierRespondedAt) });
+                    if (editingLead.appMessageSentAt) events.push({ label: 'App message sent', value: formatDate(editingLead.appMessageSentAt) });
+                    if (editingLead.whatsappPreparedAt) events.push({ label: 'WhatsApp opened', value: formatDate(editingLead.whatsappPreparedAt) });
+                    if (editingLead.lastHandoffChannel) events.push({ label: 'Last handoff channel', value: editingLead.lastHandoffChannel });
                     if (editingLead.firstOpsContactAt) events.push({ label: 'First contact', value: formatDate(editingLead.firstOpsContactAt) });
                     if (editingLead.closedAt) events.push({ label: 'Closed at', value: formatDate(editingLead.closedAt) });
                     if (editingLead.closedReason) events.push({ label: 'Closed reason', value: editingLead.closedReason });
