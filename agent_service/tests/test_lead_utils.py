@@ -5,6 +5,10 @@ from agent_service.tools.lead_tools import (
     _infer_lead_category,
     _normalize_product_name,
 )
+from agent_service.tools.profile_tools import (
+    _missing_required_fields,
+    build_lead_farmer_profile_snapshot,
+)
 
 
 def test_normalize_product_name_collapses_whitespace() -> None:
@@ -65,3 +69,45 @@ def test_build_initial_routing_fields_populates_location_and_defaults() -> None:
         "currency": "INR",
         "ruleId": None,
     }
+
+
+def test_build_lead_farmer_profile_snapshot_normalizes_contact_aliases() -> None:
+    snapshot = build_lead_farmer_profile_snapshot(
+        {
+            "name": " Ramesh Patil ",
+            "district": " Pune ",
+            "village": " Baramati ",
+            "tehsil": " Daund ",
+            "totalFarmAcres": "5",
+            "phoneNumber": "+91 98765 43210",
+            "email": " ramesh@example.com ",
+            "majorCrops": ["soybean"],
+        }
+    )
+
+    assert snapshot == {
+        "name": "Ramesh Patil",
+        "district": "Pune",
+        "village": "Baramati",
+        "tehsil": "Daund",
+        "totalFarmAcres": 5,
+        "mobileNumber": "9876543210",
+        "emailId": "ramesh@example.com",
+        "email": "ramesh@example.com",
+    }
+
+
+def test_missing_required_fields_requires_mobile_number() -> None:
+    missing = _missing_required_fields(
+        {
+            "name": "Ramesh Patil",
+            "district": "Pune",
+            "village": "Baramati",
+            "tehsil": "Daund",
+            "totalFarmAcres": 5,
+        }
+    )
+
+    assert missing == ["mobileNumber"]
+
+

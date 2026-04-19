@@ -55,7 +55,6 @@ function buildLeadFarmerProfileSnapshot(farmerProfile = {}, authPhoneNumber = ""
   if (totalFarmAcres != null) snapshot.totalFarmAcres = totalFarmAcres;
 
   snapshot.mobileNumber = mobileNumber;
-  snapshot.phoneNumber = mobileNumber;
   snapshot.emailId = email;
   snapshot.email = email;
 
@@ -85,7 +84,6 @@ function mergeLeadFarmerProfileSnapshots(primaryProfile = {}, fallbackProfile = 
   if (totalFarmAcres != null) mergedSnapshot.totalFarmAcres = totalFarmAcres;
 
   mergedSnapshot.mobileNumber = mobileNumber;
-  mergedSnapshot.phoneNumber = mobileNumber;
   mergedSnapshot.emailId = email;
   mergedSnapshot.email = email;
 

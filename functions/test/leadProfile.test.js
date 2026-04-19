@@ -14,7 +14,7 @@ test("normalizeLeadMobileNumber extracts the last 10 digits", () => {
   assert.equal(normalizeLeadMobileNumber("+91 98765 43210"), "9876543210");
 });
 
-test("buildLeadFarmerProfileSnapshot exposes canonical phone and email aliases", () => {
+test("buildLeadFarmerProfileSnapshot exposes canonical mobile and email fields", () => {
   const snapshot = buildLeadFarmerProfileSnapshot({
     name: "Ramesh Patil",
     mobileNumber: " 98765 43210 ",
@@ -22,7 +22,6 @@ test("buildLeadFarmerProfileSnapshot exposes canonical phone and email aliases",
   });
 
   assert.equal(snapshot.mobileNumber, "9876543210");
-  assert.equal(snapshot.phoneNumber, "9876543210");
   assert.equal(snapshot.emailId, "ramesh@example.com");
   assert.equal(snapshot.email, "ramesh@example.com");
 });

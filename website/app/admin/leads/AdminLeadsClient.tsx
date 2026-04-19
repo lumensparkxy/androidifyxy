@@ -115,10 +115,10 @@ function toFarmerProfileSnapshot(value: unknown): SalesPipelineLead['farmerProfi
   }
 
   const snapshot = value as Record<string, unknown>;
-  const phoneNumber = typeof snapshot.phoneNumber === 'string'
-    ? snapshot.phoneNumber
-    : typeof snapshot.mobileNumber === 'string'
-      ? snapshot.mobileNumber
+  const mobileNumber = typeof snapshot.mobileNumber === 'string'
+    ? snapshot.mobileNumber
+    : typeof snapshot.phoneNumber === 'string'
+      ? snapshot.phoneNumber
       : undefined;
   const email = typeof snapshot.email === 'string'
     ? snapshot.email
@@ -128,8 +128,7 @@ function toFarmerProfileSnapshot(value: unknown): SalesPipelineLead['farmerProfi
 
   return {
     ...(snapshot as SalesPipelineLead['farmerProfileSnapshot']),
-    phoneNumber,
-    mobileNumber: typeof snapshot.mobileNumber === 'string' ? snapshot.mobileNumber : phoneNumber,
+    mobileNumber,
     email,
     emailId: typeof snapshot.emailId === 'string' ? snapshot.emailId : email,
   };
@@ -516,8 +515,8 @@ function getLeadVillageTehsil(lead: SalesPipelineLead): string {
   ].filter(Boolean).join(', ') || 'Not available';
 }
 
-function getLeadPhone(lead: SalesPipelineLead): string | undefined {
-  return lead.farmerProfileSnapshot?.phoneNumber || lead.farmerProfileSnapshot?.mobileNumber;
+function getLeadMobileNumber(lead: SalesPipelineLead): string | undefined {
+  return lead.farmerProfileSnapshot?.mobileNumber;
 }
 
 function formatCommission(commission?: LeadCommissionPreview): string {
@@ -1492,6 +1491,12 @@ export default function AdminLeadsClient() {
                               <td className="px-4 py-4 min-w-[140px]">
                                 <div className="text-sm font-medium text-gray-900">{lead.farmerProfileSnapshot?.name || 'Unknown'}</div>
                                 <div className="mt-0.5 text-xs text-gray-500">{getLeadDistrict(lead)}</div>
+                                {getLeadMobileNumber(lead) && (
+                                  <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+                                    <Phone className="h-3.5 w-3.5 text-gray-400" />
+                                    <span>{getLeadMobileNumber(lead)}</span>
+                                  </div>
+                                )}
                               </td>
                               <td className="px-4 py-4 min-w-[180px]">
                                 <div className="flex items-center gap-1.5 text-sm text-gray-900">
@@ -1901,10 +1906,10 @@ export default function AdminLeadsClient() {
                         <dd className="font-medium text-gray-900">{getLeadVillageTehsil(editingLead)}</dd>
                       </div>
                       <div>
-                        <dt className="text-gray-500">Phone</dt>
+                        <dt className="text-gray-500">Mobile</dt>
                         <dd className="font-medium text-gray-900 flex items-center gap-2">
                           <Phone className="w-4 h-4 text-gray-400" />
-                          {getLeadPhone(editingLead) || 'Phone not available in live profile'}
+                          {getLeadMobileNumber(editingLead) || 'Mobile number not available in live profile'}
                         </dd>
                       </div>
                     </dl>
@@ -1943,10 +1948,10 @@ export default function AdminLeadsClient() {
                   })()}
                 </div>
 
-                {!getLeadPhone(editingLead) && (
+                {!getLeadMobileNumber(editingLead) && (
                   <div className="flex items-start gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <span>No phone number was found in the current farmer profile or the stored lead fallback.</span>
+                    <span>No mobile number was found in the current farmer profile or the stored lead fallback.</span>
                   </div>
                 )}
               </div>

@@ -72,7 +72,7 @@ export interface FarmerProfileSnapshot {
   district?: string;
   totalFarmAcres?: number;
   mobileNumber?: string;
-  phoneNumber?: string;
+  phoneNumber?: string; // deprecated legacy alias; prefer mobileNumber
   emailId?: string;
   email?: string;
 }

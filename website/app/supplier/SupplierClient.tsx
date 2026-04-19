@@ -137,6 +137,7 @@ interface SupplierLeadInboxItem {
     village?: string | null;
     tehsil?: string | null;
     district?: string | null;
+    mobileNumber?: string | null;
     phoneNumber?: string | null;
     email?: string | null;
   } | null;
@@ -1080,9 +1081,9 @@ export default function SupplierClient() {
                                               </dd>
                                             </div>
                                             <div className="flex justify-between gap-4">
-                                              <dt className="text-slate-500">Phone</dt>
+                                              <dt className="text-slate-500">Mobile</dt>
                                               <dd className="text-right font-medium text-slate-900">
-                                                {lead.farmerProfileSnapshot?.phoneNumber || "Hidden until accepted"}
+                                                {lead.farmerProfileSnapshot?.mobileNumber || lead.farmerProfileSnapshot?.phoneNumber || "Hidden until accepted"}
                                               </dd>
                                             </div>
                                             {lead.farmerProfileSnapshot?.email && (
@@ -1291,9 +1292,9 @@ export default function SupplierClient() {
                                   </dd>
                                 </div>
                                 <div className="flex justify-between gap-4">
-                                  <dt className="text-slate-500">Phone</dt>
+                                  <dt className="text-slate-500">Mobile</dt>
                                   <dd className="text-right font-medium text-slate-900">
-                                    {lead.farmerProfileSnapshot?.phoneNumber || "Hidden until accepted"}
+                                    {lead.farmerProfileSnapshot?.mobileNumber || lead.farmerProfileSnapshot?.phoneNumber || "Hidden until accepted"}
                                   </dd>
                                 </div>
                                 {lead.farmerProfileSnapshot?.email && (

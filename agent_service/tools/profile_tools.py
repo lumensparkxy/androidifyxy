@@ -9,7 +9,35 @@ from ..firebase_client import get_firestore_client
 USERS_COLLECTION = "users"
 SETTINGS_COLLECTION = "settings"
 FARMER_PROFILE_DOC = "farmer_profile"
-REQUIRED_PROFILE_FIELDS = ("name", "village", "tehsil", "district", "totalFarmAcres")
+REQUIRED_PROFILE_FIELDS = ("name", "village", "tehsil", "district", "totalFarmAcres", "mobileNumber")
+
+
+def _normalize_mobile_number(value: Any) -> str | None:
+    digits = "".join(ch for ch in str(value or "") if ch.isdigit())
+    if not digits:
+        return None
+
+    normalized = digits[-10:]
+    return normalized if len(normalized) == 10 else None
+
+
+def _normalize_email(value: Any) -> str | None:
+    email = str(value or "").strip()
+    return email or None
+
+
+def _pick_positive_number(*values: Any) -> float | int | None:
+    for value in values:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            continue
+
+        if number <= 0:
+            continue
+        return int(number) if number.is_integer() else number
+
+    return None
 
 
 def _normalize_profile(profile: dict[str, Any]) -> dict[str, Any]:
@@ -18,18 +46,52 @@ def _normalize_profile(profile: dict[str, Any]) -> dict[str, Any]:
         value = normalized.get(key)
         if isinstance(value, str):
             normalized[key] = value.strip()
+
+    mobile_number = _normalize_mobile_number(
+        normalized.get("mobileNumber") or normalized.get("phoneNumber")
+    )
+    email = _normalize_email(normalized.get("emailId") or normalized.get("email"))
+
+    normalized["mobileNumber"] = mobile_number
+    normalized["emailId"] = email
+    normalized["email"] = email
     return normalized
 
 
+def build_lead_farmer_profile_snapshot(profile: dict[str, Any]) -> dict[str, Any]:
+    normalized = _normalize_profile(profile)
+    snapshot: dict[str, Any] = {}
+
+    for key in ("name", "village", "tehsil", "district"):
+        value = normalized.get(key)
+        if isinstance(value, str) and value.strip():
+            snapshot[key] = value.strip()
+
+    total_farm_acres = _pick_positive_number(normalized.get("totalFarmAcres"))
+    if total_farm_acres is not None:
+        snapshot["totalFarmAcres"] = total_farm_acres
+
+    snapshot["mobileNumber"] = normalized.get("mobileNumber")
+    snapshot["emailId"] = normalized.get("emailId")
+    snapshot["email"] = normalized.get("email")
+
+    return snapshot
+
+
 def _missing_required_fields(profile: dict[str, Any]) -> list[str]:
+    normalized = _normalize_profile(profile)
     missing: list[str] = []
     for field_name in REQUIRED_PROFILE_FIELDS:
-        value = profile.get(field_name)
+        value = normalized.get(field_name)
         if field_name == "totalFarmAcres":
             try:
                 if float(value) <= 0:
                     missing.append(field_name)
             except (TypeError, ValueError):
+                missing.append(field_name)
+            continue
+        if field_name == "mobileNumber":
+            if not _normalize_mobile_number(value):
                 missing.append(field_name)
             continue
         if not isinstance(value, str) or not value.strip():

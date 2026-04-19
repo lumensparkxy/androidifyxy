@@ -9,7 +9,7 @@ from firebase_admin import firestore
 from google.adk.tools import ToolContext
 
 from ..firebase_client import get_firestore_client
-from .profile_tools import REQUIRED_PROFILE_FIELDS, _missing_required_fields, _normalize_profile
+from .profile_tools import _missing_required_fields, build_lead_farmer_profile_snapshot
 
 SALES_PIPELINE_COLLECTION = "sales_pipeline"
 USERS_COLLECTION = "users"
@@ -139,7 +139,7 @@ def create_sales_lead(
         .document(FARMER_PROFILE_DOC)
     )
     farmer_profile_snapshot = farmer_profile_ref.get()
-    profile = _normalize_profile(farmer_profile_snapshot.to_dict() or {})
+    profile = build_lead_farmer_profile_snapshot(farmer_profile_snapshot.to_dict() or {})
     missing_fields = _missing_required_fields(profile)
     if missing_fields:
         tool_context.state["temp:last_profile_missing_fields"] = missing_fields

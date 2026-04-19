@@ -109,7 +109,6 @@ private fun buildLeadFarmerProfileSnapshot(
     toPositiveDoubleOrNull(farmerProfileData["totalFarmAcres"])?.let { snapshot["totalFarmAcres"] = it }
 
     snapshot["mobileNumber"] = mobileNumber
-    snapshot["phoneNumber"] = mobileNumber
     snapshot["emailId"] = emailId
     snapshot["email"] = emailId
 

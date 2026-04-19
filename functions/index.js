@@ -1701,7 +1701,7 @@ function buildSupplierLeadView(leadId, leadData = {}, liveFarmerProfile = null) 
     liveFarmerProfile || {},
     leadData.farmerProfileSnapshot || {},
   );
-  const farmerPhone = trimString(farmerProfile.phoneNumber || farmerProfile.mobileNumber);
+  const farmerPhone = trimString(farmerProfile.mobileNumber || farmerProfile.phoneNumber);
   const farmerEmail = trimString(farmerProfile.email || farmerProfile.emailId);
 
   return {
@@ -1722,7 +1722,6 @@ function buildSupplierLeadView(leadId, leadData = {}, liveFarmerProfile = null) 
       village: trimString(farmerProfile.village) || null,
       tehsil: trimString(farmerProfile.tehsil) || null,
       district: trimString(farmerProfile.district) || null,
-      phoneNumber: isUnlocked ? (farmerPhone || null) : maskPhoneNumber(farmerPhone),
       mobileNumber: isUnlocked ? (farmerPhone || null) : maskPhoneNumber(farmerPhone),
       email: isUnlocked ? (farmerEmail || null) : null,
       emailId: isUnlocked ? (farmerEmail || null) : null,
