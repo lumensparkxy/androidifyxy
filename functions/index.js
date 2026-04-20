@@ -2482,9 +2482,18 @@ exports.adminSendLeadAffiliateAppMessage = functions
     });
 
     let notificationSent = false;
+    let notificationAttempted = false;
     let notificationMessageId = null;
+    let notificationSkipReason = null;
     const userTopic = buildUserNotificationTopic(userId);
     if (userTopic) {
+      notificationAttempted = true;
+      console.log("Attempting affiliate handoff notification", {
+        leadId,
+        conversationId,
+        userId,
+        userTopic,
+      });
       try {
         notificationMessageId = await admin.messaging().send({
           topic: userTopic,
@@ -2507,9 +2516,29 @@ exports.adminSendLeadAffiliateAppMessage = functions
           },
         });
         notificationSent = true;
+        console.log("Affiliate handoff notification accepted by FCM", {
+          leadId,
+          conversationId,
+          userId,
+          userTopic,
+          notificationMessageId,
+        });
       } catch (error) {
-        console.error(`Failed to send affiliate handoff notification for lead ${leadId}:`, error);
+        notificationSkipReason = "fcm_send_failed";
+        console.error(`Failed to send affiliate handoff notification for lead ${leadId}:`, {
+          conversationId,
+          userId,
+          userTopic,
+          error: error instanceof Error ? error.message : error,
+        });
       }
+    } else {
+      notificationSkipReason = "missing_user_topic";
+      console.warn("Skipping affiliate handoff notification because user topic could not be resolved", {
+        leadId,
+        conversationId,
+        userId,
+      });
     }
 
     return {
@@ -2517,7 +2546,10 @@ exports.adminSendLeadAffiliateAppMessage = functions
       leadId,
       conversationId,
       notificationSent,
+      notificationAttempted,
       notificationMessageId,
+      notificationSkipReason,
+      notificationTarget: userTopic || null,
     };
   });
 

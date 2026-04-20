@@ -50,37 +50,51 @@ function buildAffiliateGreeting(leadData = {}) {
   return `Hi ${firstName},`;
 }
 
-function buildAffiliateHandoffMessage({ leadData = {}, affiliateLink }) {
+function buildAffiliateOfferMessageLines({ leadData = {}, affiliateLink }) {
   const productName = trimString(leadData?.productName) || "your requested product";
   const requestNumber = trimString(leadData?.requestNumber);
   const lines = [
-    `${buildAffiliateGreeting(leadData)} we found an Amazon option for ${productName}.`,
+    buildAffiliateGreeting(leadData),
+    "",
+    `Good news — we found a great Amazon offer for ${productName}.`,
   ];
 
   if (requestNumber) {
     lines.push(`Request ID: ${requestNumber}`);
   }
 
-  lines.push(`Link: ${trimString(affiliateLink)}`);
-  lines.push("As an Amazon Associate, Krishi AI may earn from qualifying purchases.");
-  lines.push("Reply here if you want help comparing alternatives.");
+  lines.push(
+    "",
+    "We are associated with Amazon, which allows us to share special links and offers with you.",
+    "",
+    "If you'd like to place the order, we recommend using the link below within the next 24 hours, as pricing and availability can change quickly:",
+    trimString(affiliateLink),
+  );
+
+  return lines;
+}
+
+function buildAffiliateHandoffMessage({ leadData = {}, affiliateLink }) {
+  const lines = buildAffiliateOfferMessageLines({ leadData, affiliateLink });
+
+  lines.push(
+    "",
+    "As an Amazon Associate, Krishi AI may earn from qualifying purchases.",
+    "If you need any more help or want us to compare alternatives, just reply here.",
+    "Thank you.",
+  );
 
   return lines.join("\n");
 }
 
 function buildAffiliateWhatsAppMessage({ leadData = {}, affiliateLink }) {
-  const productName = trimString(leadData?.productName) || "your requested product";
-  const requestNumber = trimString(leadData?.requestNumber);
-  const lines = [
-    `${buildAffiliateGreeting(leadData)} we found an Amazon option for ${productName}.`,
-  ];
+  const lines = buildAffiliateOfferMessageLines({ leadData, affiliateLink });
 
-  if (requestNumber) {
-    lines.push(`Request ID: ${requestNumber}`);
-  }
-
-  lines.push(`Link: ${trimString(affiliateLink)}`);
-  lines.push("If needed, we can also help compare alternatives.");
+  lines.push(
+    "",
+    "If you need any more help or want us to compare alternatives, just reply here.",
+    "Thank you.",
+  );
 
   return lines.join("\n");
 }

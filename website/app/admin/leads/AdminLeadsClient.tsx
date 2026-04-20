@@ -654,12 +654,24 @@ function buildAffiliateWhatsAppMessage(lead: SalesPipelineLead, affiliateLink: s
   const greeting = lead.farmerProfileSnapshot?.name
     ? `Hi ${lead.farmerProfileSnapshot.name.split(/\s+/)[0]},`
     : 'Hi,';
-  const lines = [`${greeting} we found an Amazon option for ${lead.productName || 'your requested product'}.`];
+  const lines = [
+    greeting,
+    '',
+    `Good news — we found a great Amazon offer for ${lead.productName || 'your requested product'}.`,
+  ];
   if (lead.requestNumber) {
     lines.push(`Request ID: ${lead.requestNumber}`);
   }
-  lines.push(`Link: ${affiliateLink}`);
-  lines.push('If needed, we can also help compare alternatives.');
+  lines.push(
+    '',
+    'We are associated with Amazon, which allows us to share special links and offers with you.',
+    '',
+    "If you'd like to place the order, we recommend using the link below within the next 24 hours, as pricing and availability can change quickly:",
+    affiliateLink,
+    '',
+    'If you need any more help or want us to compare alternatives, just reply here.',
+    'Thank you.',
+  );
   return lines.join('\n');
 }
 
@@ -928,7 +940,11 @@ export default function AdminLeadsClient() {
 
           setPreferAdminLeadCallable(false);
           nextLeads = await loadAdminLeadsFromFirestore();
-          setLeadLoadNotice('Using direct Firestore lead snapshots because the `listAdminSalesLeads` Cloud Function is not reachable from this browser. In practice this usually means the new function has not been deployed yet, even though the browser reports it as a CORS failure. Deploy Functions to restore live farmer profile enrichment.');
+          if (isLocalDevelopmentHost()) {
+            setLeadLoadNotice('Using direct Firestore lead snapshots on localhost so the admin page does not keep calling an undeployed `listAdminSalesLeads` endpoint and triggering a misleading browser CORS error. Deploy Functions when you want the live server-enriched admin feed.');
+          } else {
+            setLeadLoadNotice('Using direct Firestore lead snapshots because the `listAdminSalesLeads` Cloud Function was unreachable in this browser session. Reload after deploying Functions if you want to retry the live server-enriched admin feed.');
+          }
         }
       }
 
@@ -1446,7 +1462,14 @@ export default function AdminLeadsClient() {
     try {
       const sendCallable = httpsCallable<
         { leadId: string; affiliateLink?: string },
-        { ok: boolean; notificationSent?: boolean }
+        {
+          ok: boolean;
+          notificationSent?: boolean;
+          notificationAttempted?: boolean;
+          notificationMessageId?: string | null;
+          notificationSkipReason?: string | null;
+          notificationTarget?: string | null;
+        }
       >(functions, 'adminSendLeadAffiliateAppMessage');
       const response = await sendCallable({
         leadId: editingLead.id,
@@ -1454,7 +1477,13 @@ export default function AdminLeadsClient() {
       });
       await refreshAdminLeads();
       if (response.data?.notificationSent === false) {
-        setLeadLoadNotice('In-app message was added to the conversation, but the push notification could not be sent to the user device.');
+        if (response.data?.notificationSkipReason === 'missing_user_topic') {
+          setLeadLoadNotice('In-app message was added to the conversation, but the server could not resolve the farmer notification topic, so no push notification was attempted.');
+        } else {
+          setLeadLoadNotice('In-app message was added to the conversation, but the push notification could not be sent from the server. The farmer can still see the message when they open the app.');
+        }
+      } else if (response.data?.notificationSent) {
+        setLeadLoadNotice('In-app message was added to the conversation, and the push notification was accepted by Firebase Cloud Messaging. If the farmer still does not see a notification, the likely issue is on the device side: app notifications are disabled, Android 13+ notification permission was denied, or the app has not re-synced its user topic yet.');
       }
     } catch (sendError) {
       setError(sendError instanceof Error ? sendError.message : 'Failed to send app message');

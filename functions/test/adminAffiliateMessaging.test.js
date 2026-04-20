@@ -18,7 +18,7 @@ test("buildUserNotificationTopic sanitizes a user id into a topic", () => {
   assert.equal(buildUserNotificationTopic(""), null);
 });
 
-test("buildAffiliateHandoffMessage includes request id, link, and disclosure", () => {
+test("buildAffiliateHandoffMessage includes the richer offer copy and disclosure", () => {
   const text = buildAffiliateHandoffMessage({
     leadData: {
       farmerProfileSnapshot: { name: "Ramesh Patil" },
@@ -31,11 +31,15 @@ test("buildAffiliateHandoffMessage includes request id, link, and disclosure", (
   assert.match(text, /^Hi Ramesh,/);
   assert.match(text, /Neem Spray/);
   assert.match(text, /KR-20260419-ABC123/);
+  assert.match(text, /great Amazon offer/i);
+  assert.match(text, /special links and offers/i);
   assert.match(text, /amazon\.in/);
+  assert.match(text, /next 24 hours/i);
   assert.match(text, /Amazon Associate/);
+  assert.match(text, /Thank you\./);
 });
 
-test("buildAffiliateWhatsAppMessage omits disclosure and keeps short follow-up copy", () => {
+test("buildAffiliateWhatsAppMessage keeps the richer offer copy without the associate disclosure", () => {
   const text = buildAffiliateWhatsAppMessage({
     leadData: {
       productName: "Neem Spray",
@@ -46,8 +50,12 @@ test("buildAffiliateWhatsAppMessage omits disclosure and keeps short follow-up c
 
   assert.match(text, /Neem Spray/);
   assert.match(text, /KR-20260419-ABC123/);
+  assert.match(text, /great Amazon offer/i);
+  assert.match(text, /special links and offers/i);
+  assert.match(text, /next 24 hours/i);
   assert.doesNotMatch(text, /Amazon Associate/);
-  assert.match(text, /compare alternatives/);
+  assert.match(text, /compare alternatives/i);
+  assert.match(text, /Thank you\./);
 });
 
 test("buildAffiliateNotificationPayload returns a concise push notification payload", () => {
