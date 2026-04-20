@@ -8,7 +8,7 @@ Modern, minimalist informational website for Krishi AI (कृषि AI) - an AI
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React
-- **Hosting:** Firebase Hosting
+- **Hosting:** GitHub Pages for the live production site (`maswadkar.com`), with Firebase Hosting config also available in the repo
 
 ## Getting Started
 
@@ -51,17 +51,19 @@ npm run build
 
 This creates a static export in the `out/` directory.
 
-### Deploy to Firebase
+### Deploy to GitHub Pages
 
-```bash
-npm run deploy
-```
+Production deploys are triggered by `.github/workflows/deploy.yml` when a commit lands on `main` with changes under `website/**`.
 
-Or deploy manually:
+You can also run the same workflow manually from the GitHub Actions tab using the `workflow_dispatch` trigger.
+
+### Alternative: Deploy to Firebase Hosting
+
+The repo still includes a Firebase Hosting configuration if you want to publish the static export there instead of GitHub Pages.
 
 ```bash
 npm run build
-cd ../functions
+cd ..
 firebase deploy --only hosting
 ```
 
