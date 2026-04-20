@@ -389,7 +389,7 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
     commerceChannel: typeof data.commerceChannel === 'string' ? data.commerceChannel as SalesLeadCommerceChannel : 'supplier_local',
     channelDecisionReason: typeof data.channelDecisionReason === 'string' ? data.channelDecisionReason : undefined,
     fallbackPolicy: typeof data.fallbackPolicy === 'string' ? data.fallbackPolicy : undefined,
-    affiliateProvider: typeof data.affiliateProvider === 'string' ? data.affiliateProvider : undefined,
+    affiliateProvider: data.affiliateProvider === 'amazon' ? 'amazon' : undefined,
     affiliateCandidate,
     amazonAsin: typeof data.amazonAsin === 'string' ? data.amazonAsin : null,
     amazonSearchQuery: typeof data.amazonSearchQuery === 'string' ? data.amazonSearchQuery : null,
