@@ -131,6 +131,37 @@ test("buildManualAmazonAffiliateLeadPatch tracks app handoff metadata", () => {
   assert.equal(patch.lastHandoffMessagePreview, "Preview");
 });
 
+test("buildManualAmazonAffiliateLeadPatch can carry registry-backed auto-send metadata", () => {
+  const timestampValue = { seconds: 999 };
+  const patch = buildManualAmazonAffiliateLeadPatch({
+    leadData: {
+      productName: "Neem Spray",
+      normalizedProductName: "neem spray",
+      leadCategory: "pesticide",
+    },
+    affiliateLink: "https://www.amazon.in/dp/B0TESTASIN?tag=store-21",
+    timestampValue,
+    handoffChannel: "app",
+    channelDecisionReason: "registry_exact_match",
+    candidateReason: "registry_exact_match",
+    adminFallbackReason: "no_matching_supplier",
+    affiliateMatchSource: "registry_exact",
+    affiliateRegistryEntryId: "registry-1",
+    affiliateRegistryProductName: "Neem Spray",
+    affiliateRegistryMatchedAt: timestampValue,
+    affiliateAutoAppMessageAt: timestampValue,
+    affiliateAutoAppMessageSource: "registry_exact",
+  });
+
+  assert.equal(patch.channelDecisionReason, "registry_exact_match");
+  assert.equal(patch.affiliateCandidate.reason, "registry_exact_match");
+  assert.equal(patch.affiliateCandidate.matchSource, "registry_exact");
+  assert.equal(patch.affiliateCandidate.registryEntryId, "registry-1");
+  assert.equal(patch.affiliateRegistryEntryId, "registry-1");
+  assert.equal(patch.affiliateRegistryProductName, "Neem Spray");
+  assert.equal(patch.affiliateAutoAppMessageSource, "registry_exact");
+});
+
 test("exports the conversations collection name used for app handoff writes", () => {
   assert.equal(CONVERSATIONS_COLLECTION, "conversations");
 });

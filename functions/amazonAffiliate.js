@@ -79,6 +79,21 @@ function buildAmazonSearchItemsPayload({ lead = {}, affiliateCandidate = {}, con
   };
 }
 
+function buildAmazonAffiliateDetailPageUrl({
+  asin,
+  partnerTag,
+  marketplace = AMAZON_PAAPI_MARKETPLACE_DEFAULT,
+} = {}) {
+  const normalizedAsin = trimString(asin).toUpperCase();
+  const normalizedPartnerTag = trimString(partnerTag);
+  const normalizedMarketplace = trimString(marketplace).toLowerCase() || AMAZON_PAAPI_MARKETPLACE_DEFAULT;
+  if (!normalizedAsin || !normalizedPartnerTag) {
+    return null;
+  }
+
+  return `https://${normalizedMarketplace}/dp/${encodeURIComponent(normalizedAsin)}?tag=${encodeURIComponent(normalizedPartnerTag)}`;
+}
+
 function formatAmzDate(now = new Date()) {
   const date = now instanceof Date ? now : new Date(now);
   const yyyy = date.getUTCFullYear();
@@ -293,11 +308,12 @@ function finalizeAmazonAffiliateRecommendation({ recommendation = {}, resolution
   }
 
   if (resolution.outcome === "resolved" && resolution.candidate) {
+    const resolvedReason = trimString(resolution.reason || resolution.candidate.reason) || "amazon_search_match";
     return {
       ...recommendation,
       recommendationStatus: "ready",
       commerceChannel: COMMERCE_CHANNEL_AMAZON_AFFILIATE,
-      channelDecisionReason: "amazon_search_match",
+      channelDecisionReason: resolvedReason,
       affiliateProvider: AFFILIATE_PROVIDER_AMAZON,
       affiliateCandidate: resolution.candidate,
       amazonAsin: resolution.candidate.asin || null,
@@ -367,6 +383,7 @@ module.exports = {
   AMAZON_PAAPI_REGION_DEFAULT,
   AMAZON_PAAPI_TARGET_SEARCH_ITEMS,
   buildAmazonAffiliateConfig,
+  buildAmazonAffiliateDetailPageUrl,
   buildAmazonSearchItemsPayload,
   buildSignedAmazonSearchRequest,
   finalizeAmazonAffiliateRecommendation,

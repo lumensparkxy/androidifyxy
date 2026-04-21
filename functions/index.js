@@ -867,6 +867,7 @@ exports.deleteAllKnowledgeDocuments = functions
   });
 
 const {
+  AFFILIATE_PROVIDER_AMAZON,
   COMMERCE_CHANNEL_ADMIN_REVIEW,
   buildInitialCommerceFields,
   SALES_PIPELINE_COLLECTION,
@@ -894,9 +895,24 @@ const {
 } = require("./adminAffiliateMessaging");
 const {
   buildAmazonAffiliateConfig,
+  buildAmazonAffiliateDetailPageUrl,
   finalizeAmazonAffiliateRecommendation,
   resolveAmazonAffiliateCandidate,
 } = require("./amazonAffiliate");
+const {
+  AFFILIATE_MATCH_SOURCE_REGISTRY_EXACT,
+  AFFILIATE_PRODUCT_REGISTRY_COLLECTION,
+  buildAffiliateProductRegistryDocId,
+  buildAffiliateRegistryCandidate,
+  buildAffiliateRegistryEntryPayload,
+} = require("./affiliateRegistry");
+const {
+  AFFILIATE_CANDIDATE_REVIEW_STATUS_APPROVED,
+  AFFILIATE_HISTORY_SOURCE_AMAZON_REPORT,
+  AFFILIATE_PRODUCT_REGISTRY_CANDIDATES_COLLECTION,
+  buildAffiliateRegistryCandidateImportPayload,
+  buildAffiliateRegistryImportBatches,
+} = require("./affiliateRegistryHistory");
 const { buildLeadRecommendation } = require("./leadRecommendation");
 const {
   buildCommissionLifecycleDefaults,
@@ -917,6 +933,7 @@ const COMMISSION_MONTHLY_COLLECTION = "commission_monthly";
 const SUPPLIER_RESPONSE_TIMEOUT_REASON = "supplier_timeout";
 const SUPPLIER_TIMEOUT_SWEEP_BATCH_SIZE = 50;
 const SUPPLIER_RESPONSE_WINDOW_HOURS = 24;
+const AFFILIATE_REGISTRY_IMPORT_ROW_LIMIT = 500;
 
 function trimString(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -1623,6 +1640,412 @@ function buildAdminLeadAssignmentUpdate({ supplierId, supplierData, actor, selec
   };
 }
 
+function buildAffiliateRegistryAdminView(entryId, entryData = {}) {
+  return {
+    id: entryId,
+    provider: trimString(entryData.provider) || null,
+    productName: trimString(entryData.productName) || null,
+    normalizedProductName: trimString(entryData.normalizedProductName) || null,
+    specialLink: trimString(entryData.specialLink) || null,
+    asin: trimString(entryData.asin) || null,
+    isActive: entryData.isActive !== false,
+    createdAt: timestampToIsoString(entryData.createdAt),
+    updatedAt: timestampToIsoString(entryData.updatedAt),
+    createdByUid: trimString(entryData.createdByUid) || null,
+    createdByEmail: trimString(entryData.createdByEmail) || null,
+    updatedByUid: trimString(entryData.updatedByUid) || null,
+    updatedByEmail: trimString(entryData.updatedByEmail) || null,
+    lastMatchedAt: timestampToIsoString(entryData.lastMatchedAt),
+    lastAutoAppMessageAt: timestampToIsoString(entryData.lastAutoAppMessageAt),
+    replacedByEntryId: trimString(entryData.replacedByEntryId) || null,
+  };
+}
+
+function buildAffiliateRegistryCandidateAdminView(candidateId, candidateData = {}) {
+  const rawTitles = Array.isArray(candidateData.rawTitles)
+    ? candidateData.rawTitles.map((value) => trimString(value)).filter(Boolean)
+    : [];
+  const sourceFiles = Array.isArray(candidateData.sourceFiles)
+    ? candidateData.sourceFiles.map((value) => trimString(value)).filter(Boolean)
+    : [];
+  const marketplaces = Array.isArray(candidateData.marketplaces)
+    ? candidateData.marketplaces.map((value) => trimString(value)).filter(Boolean)
+    : [];
+
+  return {
+    id: candidateId,
+    provider: trimString(candidateData.provider) || null,
+    source: trimString(candidateData.source) || null,
+    sourceFile: trimString(candidateData.sourceFile) || null,
+    sourceFiles,
+    reviewStatus: trimString(candidateData.reviewStatus) || null,
+    sourceProductName: trimString(candidateData.sourceProductName) || null,
+    normalizedSourceProductName: trimString(candidateData.normalizedSourceProductName) || null,
+    rawTitles,
+    asin: trimString(candidateData.asin) || null,
+    marketplace: trimString(candidateData.marketplace) || null,
+    marketplaces,
+    generatedSpecialLink: trimString(candidateData.generatedSpecialLink) || null,
+    orderCount: Number(candidateData.orderCount) || 0,
+    sourceRowCount: Number(candidateData.sourceRowCount) || 0,
+    lastSeenAt: timestampToIsoString(candidateData.lastSeenAt),
+    importedAt: timestampToIsoString(candidateData.importedAt),
+    updatedAt: timestampToIsoString(candidateData.updatedAt),
+    importedByUid: trimString(candidateData.importedByUid) || null,
+    importedByEmail: trimString(candidateData.importedByEmail) || null,
+    updatedByUid: trimString(candidateData.updatedByUid) || null,
+    updatedByEmail: trimString(candidateData.updatedByEmail) || null,
+    promotedEntryId: trimString(candidateData.promotedEntryId) || null,
+    promotedAt: timestampToIsoString(candidateData.promotedAt),
+    promotedByUid: trimString(candidateData.promotedByUid) || null,
+    promotedByEmail: trimString(candidateData.promotedByEmail) || null,
+    approvedProductName: trimString(candidateData.approvedProductName) || null,
+    approvedNormalizedProductName: trimString(candidateData.approvedNormalizedProductName) || null,
+  };
+}
+
+async function saveAffiliateRegistryEntry({
+  provider,
+  existingEntryId = "",
+  productName,
+  normalizedProductName,
+  specialLink,
+  isActive = true,
+  actor = {},
+} = {}) {
+  const normalizedProvider = trimString(provider).toLowerCase() || AFFILIATE_PROVIDER_AMAZON;
+  const nextExistingEntryId = trimString(existingEntryId);
+  const entryPayload = buildAffiliateRegistryEntryPayload({
+    provider: normalizedProvider,
+    productName,
+    normalizedProductName,
+    specialLink,
+    isActive,
+    actor,
+  });
+
+  const nextEntryId = buildAffiliateProductRegistryDocId({
+    provider: normalizedProvider,
+    normalizedProductName: entryPayload.normalizedProductName,
+  });
+  const nextEntryRef = db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION).doc(nextEntryId);
+  const previousEntryRef = nextExistingEntryId && nextExistingEntryId !== nextEntryId
+    ? db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION).doc(nextExistingEntryId)
+    : null;
+
+  await db.runTransaction(async (transaction) => {
+    const nextEntrySnapshot = await transaction.get(nextEntryRef);
+    const previousEntrySnapshot = previousEntryRef
+      ? await transaction.get(previousEntryRef)
+      : null;
+    const nextEntryData = nextEntrySnapshot.exists ? (nextEntrySnapshot.data() || {}) : {};
+    const previousEntryData = previousEntrySnapshot?.exists ? (previousEntrySnapshot.data() || {}) : {};
+
+    transaction.set(nextEntryRef, {
+      ...entryPayload,
+      createdAt: nextEntryData.createdAt
+        || previousEntryData.createdAt
+        || admin.firestore.FieldValue.serverTimestamp(),
+      createdByUid: trimString(nextEntryData.createdByUid)
+        || trimString(previousEntryData.createdByUid)
+        || actor.uid
+        || null,
+      createdByEmail: trimString(nextEntryData.createdByEmail)
+        || trimString(previousEntryData.createdByEmail)
+        || actor.email
+        || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      replacedByEntryId: null,
+      lastMatchedAt: nextEntryData.lastMatchedAt || previousEntryData.lastMatchedAt || null,
+      lastAutoAppMessageAt: nextEntryData.lastAutoAppMessageAt || previousEntryData.lastAutoAppMessageAt || null,
+    }, { merge: true });
+
+    if (previousEntrySnapshot?.exists) {
+      transaction.set(previousEntryRef, {
+        isActive: false,
+        replacedByEntryId: nextEntryId,
+        updatedByUid: actor.uid || null,
+        updatedByEmail: actor.email || null,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    }
+  });
+
+  const savedSnapshot = await nextEntryRef.get();
+  return buildAffiliateRegistryAdminView(savedSnapshot.id, savedSnapshot.data() || {});
+}
+
+async function getAffiliateRegistryExactMatch({ provider, normalizedProductName } = {}) {
+  const docId = buildAffiliateProductRegistryDocId({
+    provider,
+    normalizedProductName,
+  });
+  if (!docId) {
+    return null;
+  }
+
+  const snapshot = await db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION).doc(docId).get();
+  if (!snapshot.exists) {
+    return null;
+  }
+
+  const data = snapshot.data() || {};
+  if (data.isActive === false) {
+    return null;
+  }
+
+  return {
+    id: snapshot.id,
+    ...data,
+  };
+}
+
+function shouldAutoSendAffiliateAppMessage({
+  leadData = {},
+  finalizedRecommendation = {},
+  affiliateRegistryCandidate = null,
+} = {}) {
+  if (!affiliateRegistryCandidate) {
+    return false;
+  }
+
+  const userId = trimString(leadData.userId);
+  const conversationId = trimString(leadData.conversationId);
+  const alreadySent = Boolean(leadData.appMessageSentAt)
+    || trimString(leadData.conversionStatus) === "handoff_sent";
+
+  return Boolean(
+    userId
+    && conversationId
+    && !alreadySent
+    && trimString(finalizedRecommendation.commerceChannel) === "amazon_affiliate"
+    && trimString(finalizedRecommendation.amazonSpecialLink || affiliateRegistryCandidate.specialLink)
+  );
+}
+
+async function sendLeadAffiliateAppMessage({
+  leadId,
+  leadRef,
+  leadData = {},
+  affiliateLink,
+  actor = {},
+  channelDecisionReason = "admin_manual_affiliate",
+  candidateReason = "admin_manual_affiliate",
+  adminFallbackReason = "admin_manual_affiliate",
+  affiliateMatchSource = null,
+  affiliateRegistryEntryId = null,
+  affiliateRegistryProductName = null,
+  autoSendMode = false,
+  skipIfAlreadySent = false,
+} = {}) {
+  const normalizedLeadId = trimString(leadId) || trimString(leadRef?.id);
+  const normalizedAffiliateLink = trimString(affiliateLink);
+  if (!normalizedLeadId) {
+    throw new functions.https.HttpsError("invalid-argument", "leadId is required");
+  }
+  if (!normalizedAffiliateLink) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Affiliate link is required before sending an app message",
+    );
+  }
+
+  const targetLeadRef = leadRef || db.collection(SALES_PIPELINE_COLLECTION).doc(normalizedLeadId);
+  const now = admin.firestore.Timestamp.now();
+  let latestLeadData = leadData;
+  let userId = trimString(leadData.userId);
+  let conversationId = trimString(leadData.conversationId);
+  let handoffMessage = "";
+  let notificationPayload = null;
+  let handoffSkipped = false;
+
+  await db.runTransaction(async (transaction) => {
+    const latestLeadSnapshot = await transaction.get(targetLeadRef);
+    if (!latestLeadSnapshot.exists) {
+      throw new functions.https.HttpsError("not-found", "Lead not found");
+    }
+
+    latestLeadData = latestLeadSnapshot.data() || {};
+    userId = trimString(latestLeadData.userId);
+    conversationId = trimString(latestLeadData.conversationId);
+
+    if (!userId || !conversationId) {
+      throw new functions.https.HttpsError("failed-precondition", "Lead is missing conversation context");
+    }
+
+    if (
+      skipIfAlreadySent
+      && (latestLeadData.appMessageSentAt || trimString(latestLeadData.conversionStatus) === "handoff_sent")
+    ) {
+      handoffSkipped = true;
+      return;
+    }
+
+    handoffMessage = buildAffiliateHandoffMessage({
+      leadData: latestLeadData,
+      affiliateLink: normalizedAffiliateLink,
+    });
+    notificationPayload = buildAffiliateNotificationPayload({ leadData: latestLeadData });
+
+    const conversationRef = db.collection(CONVERSATIONS_COLLECTION).doc(conversationId);
+    const conversationSnapshot = await transaction.get(conversationRef);
+    const conversationData = conversationSnapshot.exists ? (conversationSnapshot.data() || {}) : {};
+    const existingMessages = Array.isArray(conversationData.messages)
+      ? conversationData.messages
+      : [];
+    const nextMessage = buildAssistantConversationMessage({
+      text: handoffMessage,
+      timestamp: now,
+    });
+
+    transaction.set(conversationRef, {
+      userId,
+      title: trimString(conversationData.title) || buildConversationTitle(latestLeadData),
+      messages: [...existingMessages, nextMessage],
+      createdAt: conversationData.createdAt || now,
+      updatedAt: now,
+    }, { merge: true });
+
+    const leadPatch = buildManualAmazonAffiliateLeadPatch({
+      leadData: latestLeadData,
+      affiliateLink: normalizedAffiliateLink,
+      actor,
+      timestampValue: now,
+      handoffChannel: "app",
+      handoffMessagePreview: handoffMessage,
+      channelDecisionReason,
+      candidateReason,
+      adminFallbackReason,
+      affiliateMatchSource,
+      affiliateRegistryEntryId,
+      affiliateRegistryProductName,
+      affiliateRegistryMatchedAt: trimString(affiliateMatchSource)
+        ? latestLeadData.affiliateRegistryMatchedAt || now
+        : null,
+      affiliateAutoAppMessageAt: autoSendMode ? now : null,
+      affiliateAutoAppMessageSource: autoSendMode
+        ? trimString(affiliateMatchSource) || "system"
+        : null,
+    });
+
+    const opsPatch = actor.uid || actor.email ? { lastOpsActionAt: now } : {};
+    transaction.set(targetLeadRef, {
+      ...leadPatch,
+      ...opsPatch,
+    }, { merge: true });
+  });
+
+  if (handoffSkipped) {
+    return {
+      ok: true,
+      leadId: normalizedLeadId,
+      conversationId: conversationId || null,
+      notificationSent: false,
+      notificationAttempted: false,
+      notificationMessageId: null,
+      notificationSkipReason: "handoff_already_sent",
+      notificationTarget: null,
+      skipped: true,
+    };
+  }
+
+  let notificationSent = false;
+  let notificationAttempted = false;
+  let notificationMessageId = null;
+  let notificationSkipReason = null;
+  const userTopic = buildUserNotificationTopic(userId);
+  if (userTopic) {
+    notificationAttempted = true;
+    console.log("Attempting affiliate handoff notification", {
+      leadId: normalizedLeadId,
+      conversationId,
+      userId,
+      userTopic,
+      autoSendMode,
+      affiliateMatchSource,
+    });
+    try {
+      notificationMessageId = await admin.messaging().send({
+        topic: userTopic,
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "krishi_notifications",
+            sound: "default",
+            tag: `lead-${normalizedLeadId}`,
+          },
+        },
+        notification: {
+          title: notificationPayload.title,
+          body: notificationPayload.body,
+        },
+        data: {
+          conversation_id: conversationId,
+          lead_id: normalizedLeadId,
+          handoff_channel: "app",
+        },
+      });
+      notificationSent = true;
+      console.log("Affiliate handoff notification accepted by FCM", {
+        leadId: normalizedLeadId,
+        conversationId,
+        userId,
+        userTopic,
+        notificationMessageId,
+        autoSendMode,
+        affiliateMatchSource,
+      });
+    } catch (error) {
+      notificationSkipReason = "fcm_send_failed";
+      console.error(`Failed to send affiliate handoff notification for lead ${normalizedLeadId}:`, {
+        conversationId,
+        userId,
+        userTopic,
+        error: error instanceof Error ? error.message : error,
+        autoSendMode,
+        affiliateMatchSource,
+      });
+    }
+  } else {
+    notificationSkipReason = "missing_user_topic";
+    console.warn("Skipping affiliate handoff notification because user topic could not be resolved", {
+      leadId: normalizedLeadId,
+      conversationId,
+      userId,
+      autoSendMode,
+      affiliateMatchSource,
+    });
+  }
+
+  if (affiliateRegistryEntryId) {
+    await db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION)
+      .doc(affiliateRegistryEntryId)
+      .set({
+        lastMatchedAt: admin.firestore.FieldValue.serverTimestamp(),
+        ...(autoSendMode ? { lastAutoAppMessageAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
+      }, { merge: true })
+      .catch((error) => {
+        console.warn("Failed to update affiliate registry usage metadata", {
+          leadId: normalizedLeadId,
+          affiliateRegistryEntryId,
+          error: trimString(error?.message) || error,
+        });
+      });
+  }
+
+  return {
+    ok: true,
+    leadId: normalizedLeadId,
+    conversationId,
+    notificationSent,
+    notificationAttempted,
+    notificationMessageId,
+    notificationSkipReason,
+    notificationTarget: userTopic || null,
+    skipped: false,
+  };
+}
+
 function getLeadCommissionAmount(leadData = {}) {
   const amount = Number(leadData?.commissionPreview?.amount);
   return Number.isFinite(amount) && amount > 0 ? amount : null;
@@ -1938,6 +2361,319 @@ exports.listAdminSalesLeads = functions
     };
   });
 
+exports.listAffiliateProductRegistry = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const requestedLimit = Number(data?.limit);
+    const limitCount = Number.isFinite(requestedLimit)
+      ? Math.min(Math.max(Math.floor(requestedLimit), 1), 300)
+      : 200;
+    const providerFilter = trimString(data?.provider).toLowerCase();
+
+    const snapshot = await db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION)
+      .orderBy("normalizedProductName")
+      .limit(limitCount)
+      .get();
+
+    const entries = snapshot.docs
+      .map((docSnapshot) => buildAffiliateRegistryAdminView(docSnapshot.id, docSnapshot.data() || {}))
+      .filter((entry) => !providerFilter || entry.provider === providerFilter);
+
+    return {
+      ok: true,
+      entries,
+    };
+  });
+
+exports.listAffiliateProductRegistryCandidates = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const requestedLimit = Number(data?.limit);
+    const limitCount = Number.isFinite(requestedLimit)
+      ? Math.min(Math.max(Math.floor(requestedLimit), 1), 300)
+      : 200;
+    const providerFilter = trimString(data?.provider).toLowerCase();
+    const reviewStatusFilter = trimString(data?.reviewStatus).toLowerCase();
+
+    const snapshot = await db.collection(AFFILIATE_PRODUCT_REGISTRY_CANDIDATES_COLLECTION)
+      .orderBy("updatedAt", "desc")
+      .limit(limitCount)
+      .get();
+
+    const candidates = snapshot.docs
+      .map((docSnapshot) => buildAffiliateRegistryCandidateAdminView(docSnapshot.id, docSnapshot.data() || {}))
+      .filter((candidate) => (!providerFilter || candidate.provider === providerFilter))
+      .filter((candidate) => (!reviewStatusFilter || candidate.reviewStatus === reviewStatusFilter));
+
+    return {
+      ok: true,
+      candidates,
+    };
+  });
+
+exports.importAffiliateProductRegistryCandidates = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const rows = Array.isArray(data?.rows) ? data.rows : [];
+    if (rows.length === 0) {
+      throw new functions.https.HttpsError("invalid-argument", "rows are required");
+    }
+    if (rows.length > AFFILIATE_REGISTRY_IMPORT_ROW_LIMIT) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        `rows cannot exceed ${AFFILIATE_REGISTRY_IMPORT_ROW_LIMIT} per import`,
+      );
+    }
+
+    let candidateBatches;
+    try {
+      candidateBatches = buildAffiliateRegistryImportBatches({
+        provider: trimString(data?.provider).toLowerCase() || AFFILIATE_PROVIDER_AMAZON,
+        source: trimString(data?.source).toLowerCase() || AFFILIATE_HISTORY_SOURCE_AMAZON_REPORT,
+        sourceFile: data?.sourceFile,
+        rows,
+      });
+    } catch (error) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        trimString(error?.message) || "Invalid affiliate registry import rows",
+      );
+    }
+
+    const actor = buildAdminActor(context);
+    const amazonConfig = buildAmazonAffiliateConfig(process.env);
+    const savedCandidateRefs = [];
+    let addedRows = 0;
+    let skippedRows = 0;
+    let addedOrderCount = 0;
+
+    for (const candidateBatch of candidateBatches) {
+      const candidateRef = db.collection(AFFILIATE_PRODUCT_REGISTRY_CANDIDATES_COLLECTION)
+        .doc(candidateBatch.candidateId);
+      const existingSnapshot = await candidateRef.get();
+      const existingCandidate = existingSnapshot.exists ? (existingSnapshot.data() || {}) : {};
+
+      let payload;
+      try {
+        payload = buildAffiliateRegistryCandidateImportPayload({
+          candidateId: candidateBatch.candidateId,
+          rows: candidateBatch.rows,
+          actor,
+          existingCandidate,
+          buildSpecialLink: ({ asin, marketplace }) => buildAmazonAffiliateDetailPageUrl({
+            asin,
+            marketplace,
+            partnerTag: amazonConfig.partnerTag,
+          }),
+        });
+      } catch (error) {
+        throw new functions.https.HttpsError(
+          "invalid-argument",
+          trimString(error?.message) || "Unable to aggregate affiliate registry candidate rows",
+        );
+      }
+
+      addedRows += payload.addedRowCount;
+      skippedRows += payload.skippedRowCount;
+      addedOrderCount += payload.addedOrderCount;
+
+      await candidateRef.set({
+        ...payload.data,
+        importedAt: existingCandidate.importedAt || admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+      savedCandidateRefs.push(candidateRef);
+    }
+
+    const savedSnapshots = await Promise.all(
+      savedCandidateRefs.map((candidateRef) => candidateRef.get())
+    );
+
+    return {
+      ok: true,
+      processedRows: rows.length,
+      importedCandidates: candidateBatches.length,
+      addedRows,
+      skippedRows,
+      addedOrderCount,
+      candidates: savedSnapshots.map((snapshot) => buildAffiliateRegistryCandidateAdminView(
+        snapshot.id,
+        snapshot.data() || {},
+      )),
+    };
+  });
+
+exports.promoteAffiliateProductRegistryCandidate = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const candidateId = trimString(data?.candidateId);
+    if (!candidateId) {
+      throw new functions.https.HttpsError("invalid-argument", "candidateId is required");
+    }
+
+    const candidateRef = db.collection(AFFILIATE_PRODUCT_REGISTRY_CANDIDATES_COLLECTION).doc(candidateId);
+    const candidateSnapshot = await candidateRef.get();
+    if (!candidateSnapshot.exists) {
+      throw new functions.https.HttpsError("not-found", "Affiliate registry candidate not found");
+    }
+
+    const candidateData = candidateSnapshot.data() || {};
+    const provider = trimString(candidateData.provider).toLowerCase() || AFFILIATE_PROVIDER_AMAZON;
+    if (provider !== AFFILIATE_PROVIDER_AMAZON) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        `Unsupported affiliate provider: ${provider || "unknown"}`,
+      );
+    }
+
+    const productName = trimString(data?.productName)
+      || trimString(candidateData.approvedProductName)
+      || trimString(candidateData.sourceProductName);
+    if (!productName) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "productName is required to promote an affiliate registry candidate",
+      );
+    }
+
+    const specialLink = trimString(data?.specialLink)
+      || trimString(candidateData.generatedSpecialLink);
+    if (!specialLink) {
+      throw new functions.https.HttpsError(
+        "failed-precondition",
+        "Candidate is missing a generated affiliate link; provide specialLink or configure AMAZON_ASSOCIATES_TAG",
+      );
+    }
+
+    const actor = buildAdminActor(context);
+    let entry;
+    try {
+      entry = await saveAffiliateRegistryEntry({
+        provider,
+        existingEntryId: trimString(candidateData.promotedEntryId),
+        productName,
+        normalizedProductName: data?.normalizedProductName,
+        specialLink,
+        isActive: data?.isActive !== false,
+        actor,
+      });
+    } catch (error) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        trimString(error?.message) || "Unable to promote affiliate registry candidate",
+      );
+    }
+
+    await candidateRef.set({
+      reviewStatus: AFFILIATE_CANDIDATE_REVIEW_STATUS_APPROVED,
+      approvedProductName: entry.productName,
+      approvedNormalizedProductName: entry.normalizedProductName,
+      generatedSpecialLink: specialLink,
+      promotedEntryId: entry.id,
+      promotedAt: admin.firestore.FieldValue.serverTimestamp(),
+      promotedByUid: actor.uid || null,
+      promotedByEmail: actor.email || null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedByUid: actor.uid || null,
+      updatedByEmail: actor.email || null,
+    }, { merge: true });
+
+    const savedCandidateSnapshot = await candidateRef.get();
+    return {
+      ok: true,
+      entry,
+      candidate: buildAffiliateRegistryCandidateAdminView(
+        savedCandidateSnapshot.id,
+        savedCandidateSnapshot.data() || {},
+      ),
+    };
+  });
+
+exports.upsertAffiliateProductRegistryEntry = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 60,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const provider = trimString(data?.provider).toLowerCase() || AFFILIATE_PROVIDER_AMAZON;
+    if (provider !== AFFILIATE_PROVIDER_AMAZON) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        `Unsupported affiliate provider: ${provider || "unknown"}`,
+      );
+    }
+
+    const actor = buildAdminActor(context);
+    try {
+      const entry = await saveAffiliateRegistryEntry({
+        provider,
+        existingEntryId: trimString(data?.entryId),
+        productName: data?.productName,
+        normalizedProductName: data?.normalizedProductName,
+        specialLink: data?.specialLink,
+        isActive: data?.isActive !== false,
+        actor,
+      });
+
+      return {
+        ok: true,
+        entry,
+      };
+    } catch (error) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        trimString(error?.message) || "Invalid affiliate registry entry",
+      );
+    }
+  });
+
 exports.respondToSupplierLead = functions
   .region("asia-south1")
   .runWith({
@@ -2100,13 +2836,33 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
         enabled: AMAZON_AFFILIATE_FALLBACK_ENABLED,
       },
     });
-    const amazonAffiliateResolution = recommendation.affiliateCandidate?.provider === "amazon"
-      ? await resolveAmazonAffiliateCandidate({
-        lead: recommendationContext.lead,
-        affiliateCandidate: recommendation.affiliateCandidate,
-        config: buildAmazonAffiliateConfig(process.env),
+    const registryMatch = recommendation.affiliateCandidate?.provider === AFFILIATE_PROVIDER_AMAZON
+      ? await getAffiliateRegistryExactMatch({
+        provider: AFFILIATE_PROVIDER_AMAZON,
+        normalizedProductName: recommendation.affiliateCandidate?.normalizedProductName
+          || recommendation.affiliateCandidate?.searchQuery
+          || recommendationContext.lead.normalizedProductName
+          || normalizeProductName(recommendationContext.lead.productName),
       })
       : null;
+    const affiliateRegistryCandidate = registryMatch
+      ? buildAffiliateRegistryCandidate({
+        lead: recommendationContext.lead,
+        registryEntry: registryMatch,
+      })
+      : null;
+    const amazonAffiliateResolution = affiliateRegistryCandidate
+      ? {
+        outcome: "resolved",
+        candidate: affiliateRegistryCandidate,
+      }
+      : recommendation.affiliateCandidate?.provider === AFFILIATE_PROVIDER_AMAZON
+        ? await resolveAmazonAffiliateCandidate({
+          lead: recommendationContext.lead,
+          affiliateCandidate: recommendation.affiliateCandidate,
+          config: buildAmazonAffiliateConfig(process.env),
+        })
+        : null;
     const finalizedRecommendation = finalizeAmazonAffiliateRecommendation({
       recommendation,
       resolution: amazonAffiliateResolution,
@@ -2122,6 +2878,14 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
       channelDecisionReason: finalizedRecommendation.channelDecisionReason,
       affiliateProvider: finalizedRecommendation.affiliateProvider,
       affiliateCandidate: finalizedRecommendation.affiliateCandidate,
+      affiliateMatchSource: affiliateRegistryCandidate?.matchSource || null,
+      affiliateRegistryEntryId: affiliateRegistryCandidate?.registryEntryId || null,
+      affiliateRegistryProductName: trimString(registryMatch?.productName) || null,
+      affiliateRegistryMatchedAt: affiliateRegistryCandidate
+        ? admin.firestore.FieldValue.serverTimestamp()
+        : null,
+      affiliateAutoAppMessageAt: null,
+      affiliateAutoAppMessageSource: null,
       amazonAsin: finalizedRecommendation.amazonAsin,
       amazonSearchQuery: finalizedRecommendation.amazonSearchQuery,
       amazonSpecialLink: finalizedRecommendation.amazonSpecialLink,
@@ -2139,6 +2903,42 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
       lastRoutingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
 
+    let autoSendResult = null;
+    if (shouldAutoSendAffiliateAppMessage({
+      leadData,
+      finalizedRecommendation,
+      affiliateRegistryCandidate,
+    })) {
+      try {
+        autoSendResult = await sendLeadAffiliateAppMessage({
+          leadId,
+          leadRef,
+          leadData: {
+            ...leadData,
+            ...finalizedRecommendation,
+            affiliateMatchSource: affiliateRegistryCandidate.matchSource,
+            affiliateRegistryEntryId: affiliateRegistryCandidate.registryEntryId,
+            affiliateRegistryProductName: trimString(registryMatch?.productName) || null,
+          },
+          affiliateLink: finalizedRecommendation.amazonSpecialLink || affiliateRegistryCandidate.specialLink,
+          channelDecisionReason: affiliateRegistryCandidate.reason || "registry_exact_match",
+          candidateReason: affiliateRegistryCandidate.reason || "registry_exact_match",
+          adminFallbackReason: finalizedRecommendation.adminFallbackReason || "no_matching_supplier",
+          affiliateMatchSource: affiliateRegistryCandidate.matchSource,
+          affiliateRegistryEntryId: affiliateRegistryCandidate.registryEntryId,
+          affiliateRegistryProductName: trimString(registryMatch?.productName) || null,
+          autoSendMode: true,
+          skipIfAlreadySent: true,
+        });
+      } catch (handoffError) {
+        console.error(`Failed to auto-send affiliate app handoff for lead ${leadId}:`, handoffError);
+        autoSendResult = {
+          ok: false,
+          error: trimString(handoffError?.message) || "Auto handoff failed",
+        };
+      }
+    }
+
     return {
       ok: true,
       leadId,
@@ -2147,8 +2947,12 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
       commerceChannel: finalizedRecommendation.commerceChannel,
       suggestedSupplierId: finalizedRecommendation.suggestedSupplier?.supplierId || null,
       adminFallbackReason: finalizedRecommendation.adminFallbackReason,
+      affiliateMatchSource: affiliateRegistryCandidate?.matchSource || null,
+      affiliateRegistryEntryId: affiliateRegistryCandidate?.registryEntryId || null,
       amazonAsin: finalizedRecommendation.amazonAsin || null,
       amazonSpecialLink: finalizedRecommendation.amazonSpecialLink || null,
+      autoAppMessageSent: Boolean(autoSendResult?.ok && autoSendResult?.skipped !== true),
+      autoAppMessageSkipped: Boolean(autoSendResult?.skipped),
     };
   } catch (error) {
     console.error(`Failed to recommend supplier for lead ${leadId}:`, error);
@@ -2160,6 +2964,12 @@ async function applyLeadRecommendation({ leadRef, leadData, leadId, fallbackReas
       channelDecisionReason: fallbackReason,
       affiliateProvider: null,
       affiliateCandidate: null,
+      affiliateMatchSource: null,
+      affiliateRegistryEntryId: null,
+      affiliateRegistryProductName: null,
+      affiliateRegistryMatchedAt: null,
+      affiliateAutoAppMessageAt: null,
+      affiliateAutoAppMessageSource: null,
       amazonAsin: null,
       amazonSearchQuery: normalizeProductName(leadData?.productName) || null,
       amazonSpecialLink: null,
@@ -2441,116 +3251,13 @@ exports.adminSendLeadAffiliateAppMessage = functions
       throw new functions.https.HttpsError("failed-precondition", "Lead is missing conversation context");
     }
 
-    const handoffMessage = buildAffiliateHandoffMessage({
+    return sendLeadAffiliateAppMessage({
+      leadId,
+      leadRef,
       leadData,
       affiliateLink,
+      actor,
     });
-    const notificationPayload = buildAffiliateNotificationPayload({ leadData });
-    const now = admin.firestore.Timestamp.now();
-    const conversationRef = db.collection(CONVERSATIONS_COLLECTION).doc(conversationId);
-
-    await db.runTransaction(async (transaction) => {
-      const conversationSnapshot = await transaction.get(conversationRef);
-      const conversationData = conversationSnapshot.exists ? (conversationSnapshot.data() || {}) : {};
-      const existingMessages = Array.isArray(conversationData.messages)
-        ? conversationData.messages
-        : [];
-      const nextMessage = buildAssistantConversationMessage({
-        text: handoffMessage,
-        timestamp: now,
-      });
-
-      transaction.set(conversationRef, {
-        userId,
-        title: trimString(conversationData.title) || buildConversationTitle(leadData),
-        messages: [...existingMessages, nextMessage],
-        createdAt: conversationData.createdAt || now,
-        updatedAt: now,
-      }, { merge: true });
-
-      transaction.set(leadRef, {
-        ...buildManualAmazonAffiliateLeadPatch({
-          leadData,
-          affiliateLink,
-          actor,
-          timestampValue: now,
-          handoffChannel: "app",
-          handoffMessagePreview: handoffMessage,
-        }),
-        lastOpsActionAt: now,
-      }, { merge: true });
-    });
-
-    let notificationSent = false;
-    let notificationAttempted = false;
-    let notificationMessageId = null;
-    let notificationSkipReason = null;
-    const userTopic = buildUserNotificationTopic(userId);
-    if (userTopic) {
-      notificationAttempted = true;
-      console.log("Attempting affiliate handoff notification", {
-        leadId,
-        conversationId,
-        userId,
-        userTopic,
-      });
-      try {
-        notificationMessageId = await admin.messaging().send({
-          topic: userTopic,
-          android: {
-            priority: "high",
-            notification: {
-              channelId: "krishi_notifications",
-              sound: "default",
-              tag: `lead-${leadId}`,
-            },
-          },
-          notification: {
-            title: notificationPayload.title,
-            body: notificationPayload.body,
-          },
-          data: {
-            conversation_id: conversationId,
-            lead_id: leadId,
-            handoff_channel: "app",
-          },
-        });
-        notificationSent = true;
-        console.log("Affiliate handoff notification accepted by FCM", {
-          leadId,
-          conversationId,
-          userId,
-          userTopic,
-          notificationMessageId,
-        });
-      } catch (error) {
-        notificationSkipReason = "fcm_send_failed";
-        console.error(`Failed to send affiliate handoff notification for lead ${leadId}:`, {
-          conversationId,
-          userId,
-          userTopic,
-          error: error instanceof Error ? error.message : error,
-        });
-      }
-    } else {
-      notificationSkipReason = "missing_user_topic";
-      console.warn("Skipping affiliate handoff notification because user topic could not be resolved", {
-        leadId,
-        conversationId,
-        userId,
-      });
-    }
-
-    return {
-      ok: true,
-      leadId,
-      conversationId,
-      notificationSent,
-      notificationAttempted,
-      notificationMessageId,
-      notificationSkipReason,
-      notificationTarget: userTopic || null,
-    };
   });
 
 exports.adminAdvanceLeadWorkflow = functions

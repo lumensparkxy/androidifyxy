@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
@@ -391,6 +392,22 @@ function toLead(id: string, data: Record<string, unknown>): SalesPipelineLead {
     fallbackPolicy: typeof data.fallbackPolicy === 'string' ? data.fallbackPolicy : undefined,
     affiliateProvider: data.affiliateProvider === 'amazon' ? 'amazon' : undefined,
     affiliateCandidate,
+    affiliateMatchSource:
+      typeof data.affiliateMatchSource === 'string'
+        ? data.affiliateMatchSource
+        : typeof affiliateCandidate?.matchSource === 'string'
+          ? affiliateCandidate.matchSource
+          : null,
+    affiliateRegistryEntryId:
+      typeof data.affiliateRegistryEntryId === 'string'
+        ? data.affiliateRegistryEntryId
+        : typeof affiliateCandidate?.registryEntryId === 'string'
+          ? affiliateCandidate.registryEntryId
+          : null,
+    affiliateRegistryProductName: typeof data.affiliateRegistryProductName === 'string' ? data.affiliateRegistryProductName : null,
+    affiliateRegistryMatchedAt: convertTimestamp(data.affiliateRegistryMatchedAt),
+    affiliateAutoAppMessageAt: convertTimestamp(data.affiliateAutoAppMessageAt),
+    affiliateAutoAppMessageSource: typeof data.affiliateAutoAppMessageSource === 'string' ? data.affiliateAutoAppMessageSource : null,
     amazonAsin: typeof data.amazonAsin === 'string' ? data.amazonAsin : null,
     amazonSearchQuery: typeof data.amazonSearchQuery === 'string' ? data.amazonSearchQuery : null,
     amazonSpecialLink: typeof data.amazonSpecialLink === 'string' ? data.amazonSpecialLink : null,
@@ -594,6 +611,9 @@ function formatMonthKey(monthKey?: string | null): string {
 
 function getRecommendedSupplierLabel(lead: SalesPipelineLead): string {
   if (lead.commerceChannel === 'amazon_affiliate') {
+    if (lead.affiliateMatchSource === 'registry_exact') {
+      return lead.amazonSpecialLink ? 'Amazon affiliate (registry auto-match)' : 'Amazon affiliate (registry matched)';
+    }
     return lead.amazonSpecialLink ? 'Amazon affiliate (link ready)' : 'Amazon affiliate';
   }
   if (lead.selectedSupplier?.businessName) return `${lead.selectedSupplier.businessName} (admin selected)`;
@@ -1614,15 +1634,23 @@ export default function AdminLeadsClient() {
   return (
     <Container className="py-16">
       <div className="max-w-6xl mx-auto space-y-8">
-        <div className="space-y-3">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wide">Admin lead queue</p>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-            Track app-created best-offer leads
-          </h1>
-          <p className="text-gray-600 max-w-3xl">
-            This admin queue supports core ops actions so your team can claim, update, and annotate
-            app-created sales pipeline leads directly from the website.
-          </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wide">Admin lead queue</p>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Track app-created best-offer leads
+            </h1>
+            <p className="text-gray-600 max-w-3xl">
+              This admin queue supports core ops actions so your team can claim, update, and annotate
+              app-created sales pipeline leads directly from the website.
+            </p>
+          </div>
+          <Link
+            href="/admin/affiliate-links"
+            className="inline-flex items-center justify-center rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+          >
+            Manage affiliate registry
+          </Link>
         </div>
 
         {authCard}
@@ -2178,6 +2206,28 @@ export default function AdminLeadsClient() {
                             <dt className="text-gray-500">Affiliate path</dt>
                             <dd className="font-medium text-gray-900">Amazon affiliate</dd>
                           </div>
+                          {editingLead.affiliateMatchSource && (
+                            <div>
+                              <dt className="text-gray-500">Affiliate source</dt>
+                              <dd className="font-medium text-gray-900">
+                                {editingLead.affiliateMatchSource === 'registry_exact'
+                                  ? 'Registry exact match'
+                                  : editingLead.affiliateMatchSource}
+                              </dd>
+                            </div>
+                          )}
+                          {editingLead.affiliateRegistryMatchedAt && (
+                            <div>
+                              <dt className="text-gray-500">Registry matched</dt>
+                              <dd className="font-medium text-gray-900">{formatDate(editingLead.affiliateRegistryMatchedAt)}</dd>
+                            </div>
+                          )}
+                          {editingLead.affiliateAutoAppMessageAt && (
+                            <div>
+                              <dt className="text-gray-500">Auto app handoff</dt>
+                              <dd className="font-medium text-gray-900">{formatDate(editingLead.affiliateAutoAppMessageAt)}</dd>
+                            </div>
+                          )}
                           {editingLead.amazonSpecialLink && (
                             <div>
                               <dt className="text-gray-500">Affiliate link</dt>
@@ -2292,6 +2342,8 @@ export default function AdminLeadsClient() {
                     const events: Array<{ label: string; value: string }> = [];
                     if (editingLead.opsOwnerEmail) events.push({ label: 'Owner', value: editingLead.opsOwnerEmail });
                     if (editingLead.suggestionGeneratedAt) events.push({ label: 'Suggestion generated', value: formatDate(editingLead.suggestionGeneratedAt) });
+                    if (editingLead.affiliateRegistryMatchedAt) events.push({ label: 'Registry matched', value: formatDate(editingLead.affiliateRegistryMatchedAt) });
+                    if (editingLead.affiliateAutoAppMessageAt) events.push({ label: 'Auto app handoff', value: formatDate(editingLead.affiliateAutoAppMessageAt) });
                     if (editingLead.assignmentPublishedAt) events.push({ label: 'Assignment published', value: formatDate(editingLead.assignmentPublishedAt) });
                     if (editingLead.supplierResponseDeadlineAt) events.push({ label: 'Supplier deadline', value: formatDate(editingLead.supplierResponseDeadlineAt) });
                     if (editingLead.supplierRespondedAt) events.push({ label: 'Supplier responded', value: formatDate(editingLead.supplierRespondedAt) });

@@ -7,6 +7,7 @@ const {
   AMAZON_PAAPI_REGION_DEFAULT,
   AMAZON_PAAPI_TARGET_SEARCH_ITEMS,
   buildAmazonAffiliateConfig,
+  buildAmazonAffiliateDetailPageUrl,
   buildAmazonSearchItemsPayload,
   buildSignedAmazonSearchRequest,
   finalizeAmazonAffiliateRecommendation,
@@ -55,6 +56,23 @@ test("buildAmazonSearchItemsPayload builds a SearchItems request", () => {
         "OffersV2.Listings.Price",
       ],
     },
+  );
+});
+
+test("buildAmazonAffiliateDetailPageUrl builds a tagged India marketplace URL from ASIN", () => {
+  assert.equal(
+    buildAmazonAffiliateDetailPageUrl({
+      asin: "b0testasin",
+      partnerTag: "store-21",
+    }),
+    "https://www.amazon.in/dp/B0TESTASIN?tag=store-21",
+  );
+  assert.equal(
+    buildAmazonAffiliateDetailPageUrl({
+      asin: "B0TESTASIN",
+      partnerTag: "",
+    }),
+    null,
   );
 });
 
@@ -192,6 +210,46 @@ test("finalizeAmazonAffiliateRecommendation promotes resolved Amazon item to han
   assert.equal(finalized.amazonSpecialLink, "https://www.amazon.in/dp/B0TESTASIN?tag=store-21");
   assert.equal(finalized.conversionStatus, "handoff_ready");
   assert.equal(finalized.whatsappState, "ready");
+});
+
+test("finalizeAmazonAffiliateRecommendation preserves registry-backed exact match reasons", () => {
+  const finalized = finalizeAmazonAffiliateRecommendation({
+    recommendation: {
+      routingStatus: "admin_queue",
+      reviewStatus: "pending_admin_review",
+      recommendationStatus: "no_match",
+      adminFallbackReason: "no_matching_supplier",
+      commerceChannel: "amazon_affiliate",
+      channelDecisionReason: "no_matching_supplier",
+      affiliateProvider: "amazon",
+      affiliateCandidate: {
+        provider: "amazon",
+        providerStatus: "stub_pending_provider",
+      },
+      amazonSearchQuery: "neem spray",
+      conversionStatus: "intent_captured",
+      whatsappState: "not_ready",
+      fallbackTriggered: true,
+    },
+    resolution: {
+      outcome: "resolved",
+      candidate: {
+        provider: "amazon",
+        providerStatus: "provider_ready",
+        reason: "registry_exact_match",
+        matchSource: "registry_exact",
+        registryEntryId: "registry-1",
+        searchQuery: "neem spray",
+        asin: "B0TESTASIN",
+        specialLink: "https://www.amazon.in/dp/B0TESTASIN?tag=store-21",
+      },
+    },
+  });
+
+  assert.equal(finalized.channelDecisionReason, "registry_exact_match");
+  assert.equal(finalized.affiliateCandidate.matchSource, "registry_exact");
+  assert.equal(finalized.affiliateCandidate.registryEntryId, "registry-1");
+  assert.equal(finalized.amazonSpecialLink, "https://www.amazon.in/dp/B0TESTASIN?tag=store-21");
 });
 
 test("finalizeAmazonAffiliateRecommendation sends unresolved search back to admin review", () => {

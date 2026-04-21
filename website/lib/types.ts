@@ -16,6 +16,7 @@ export type SalesLeadConversionStatus =
   | 'lost';
 export type SalesLeadWhatsAppState = 'not_ready' | 'ready' | 'shared' | 'failed';
 export type LeadAffiliateProvider = 'amazon';
+export type LeadAffiliateMatchSource = 'registry_exact';
 export type LeadAffiliateCandidateStatus = 'stub_pending_provider' | 'provider_ready' | 'shared' | 'rejected';
 export type SalesLeadHandoffChannel = 'app' | 'whatsapp';
 export type SalesLeadRoutingStatus =
@@ -72,6 +73,8 @@ export interface LeadAffiliateCandidate {
   provider: LeadAffiliateProvider;
   providerStatus?: LeadAffiliateCandidateStatus;
   reason?: string | null;
+  matchSource?: LeadAffiliateMatchSource | string | null;
+  registryEntryId?: string | null;
   stubbed?: boolean;
   productName?: string | null;
   normalizedProductName?: string | null;
@@ -87,6 +90,25 @@ export interface LeadAffiliateCandidate {
   marketplace?: string | null;
   searchIndex?: string | null;
   languageOfPreference?: string | null;
+}
+
+export interface AffiliateProductRegistryEntry {
+  id: string;
+  provider: LeadAffiliateProvider;
+  productName: string;
+  normalizedProductName: string;
+  specialLink: string;
+  asin?: string | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  createdByUid?: string | null;
+  createdByEmail?: string | null;
+  updatedByUid?: string | null;
+  updatedByEmail?: string | null;
+  lastMatchedAt?: string;
+  lastAutoAppMessageAt?: string;
+  replacedByEntryId?: string | null;
 }
 
 export interface CommissionMonthSummary {
@@ -137,6 +159,12 @@ export interface SalesPipelineLead {
   fallbackPolicy?: SalesLeadFallbackPolicy | string | null;
   affiliateProvider?: LeadAffiliateProvider | null;
   affiliateCandidate?: LeadAffiliateCandidate | null;
+  affiliateMatchSource?: LeadAffiliateMatchSource | string | null;
+  affiliateRegistryEntryId?: string | null;
+  affiliateRegistryProductName?: string | null;
+  affiliateRegistryMatchedAt?: string;
+  affiliateAutoAppMessageAt?: string;
+  affiliateAutoAppMessageSource?: LeadAffiliateMatchSource | string | null;
   amazonAsin?: string | null;
   amazonSearchQuery?: string | null;
   amazonSpecialLink?: string | null;

@@ -134,6 +134,15 @@ function buildManualAmazonAffiliateLeadPatch({
   timestampValue,
   handoffChannel = null,
   handoffMessagePreview = null,
+  channelDecisionReason = "admin_manual_affiliate",
+  candidateReason = "admin_manual_affiliate",
+  adminFallbackReason = "admin_manual_affiliate",
+  affiliateMatchSource = null,
+  affiliateRegistryEntryId = null,
+  affiliateRegistryProductName = null,
+  affiliateRegistryMatchedAt = null,
+  affiliateAutoAppMessageAt = null,
+  affiliateAutoAppMessageSource = null,
 } = {}) {
   const normalizedAffiliateLink = trimString(affiliateLink);
   const normalizedProductName = normalizeProductSearchQuery(
@@ -147,12 +156,14 @@ function buildManualAmazonAffiliateLeadPatch({
   const currentWhatsAppState = trimString(leadData?.whatsappState) || "ready";
   const patch = {
     commerceChannel: "amazon_affiliate",
-    channelDecisionReason: "admin_manual_affiliate",
+    channelDecisionReason,
     affiliateProvider: AFFILIATE_PROVIDER_AMAZON,
     affiliateCandidate: {
       provider: AFFILIATE_PROVIDER_AMAZON,
       providerStatus: "provider_ready",
-      reason: "admin_manual_affiliate",
+      reason: candidateReason,
+      matchSource: trimString(affiliateMatchSource) || null,
+      registryEntryId: trimString(affiliateRegistryEntryId) || null,
       stubbed: false,
       productName,
       normalizedProductName,
@@ -177,7 +188,13 @@ function buildManualAmazonAffiliateLeadPatch({
     supplierResponseDeadlineAt: null,
     supplierRespondedAt: null,
     supplierRejectedReason: null,
-    adminFallbackReason: "admin_manual_affiliate",
+    adminFallbackReason,
+    affiliateMatchSource: trimString(affiliateMatchSource) || null,
+    affiliateRegistryEntryId: trimString(affiliateRegistryEntryId) || null,
+    affiliateRegistryProductName: trimString(affiliateRegistryProductName) || null,
+    affiliateRegistryMatchedAt: affiliateRegistryMatchedAt || null,
+    affiliateAutoAppMessageAt: affiliateAutoAppMessageAt || null,
+    affiliateAutoAppMessageSource: trimString(affiliateAutoAppMessageSource) || null,
     fallbackTriggeredAt: timestampValue,
     lastRoutingUpdatedAt: timestampValue,
     updatedAt: timestampValue,

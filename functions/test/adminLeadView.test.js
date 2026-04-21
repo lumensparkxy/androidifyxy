@@ -74,6 +74,12 @@ test("buildAdminLeadView carries affiliate fallback stub fields", () => {
       productName: "Neem Spray",
       searchQuery: "neem spray",
     },
+    affiliateMatchSource: "registry_exact",
+    affiliateRegistryEntryId: "registry-1",
+    affiliateRegistryProductName: "Neem Spray",
+    affiliateRegistryMatchedAt: fallbackTriggeredAt,
+    affiliateAutoAppMessageAt: fallbackTriggeredAt,
+    affiliateAutoAppMessageSource: "registry_exact",
     amazonSearchQuery: "neem spray",
     affiliateDisclosureRequired: true,
     fallbackTriggeredAt,
@@ -83,6 +89,12 @@ test("buildAdminLeadView carries affiliate fallback stub fields", () => {
   assert.equal(lead.channelDecisionReason, "no_matching_supplier");
   assert.equal(lead.affiliateProvider, "amazon");
   assert.equal(lead.affiliateCandidate?.providerStatus, "stub_pending_provider");
+  assert.equal(lead.affiliateMatchSource, "registry_exact");
+  assert.equal(lead.affiliateRegistryEntryId, "registry-1");
+  assert.equal(lead.affiliateRegistryProductName, "Neem Spray");
+  assert.equal(lead.affiliateRegistryMatchedAt, fallbackTriggeredAt.toISOString());
+  assert.equal(lead.affiliateAutoAppMessageAt, fallbackTriggeredAt.toISOString());
+  assert.equal(lead.affiliateAutoAppMessageSource, "registry_exact");
   assert.equal(lead.amazonSearchQuery, "neem spray");
   assert.equal(lead.affiliateDisclosureRequired, true);
   assert.equal(lead.fallbackTriggeredAt, fallbackTriggeredAt.toISOString());

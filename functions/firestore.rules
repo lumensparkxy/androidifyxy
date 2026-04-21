@@ -195,6 +195,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Admin-managed affiliate registry. Writes stay server-only.
+    match /affiliate_product_registry/{entryId} {
+      allow read: if isAdminUser();
+      allow write: if false;
+    }
+
     // Supplier click tracking — for monetization (pay-per-lead)
     // Anyone can create clicks (including anonymous to catch edge cases for debugging)
     // No client-side read/update/delete — aggregation done via Cloud Functions

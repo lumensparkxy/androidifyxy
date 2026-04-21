@@ -53,6 +53,16 @@ function buildAdminLeadView(leadId, leadData = {}, liveFarmerProfile = null) {
       || trimString(leadData?.affiliateCandidate?.provider)
       || null,
     affiliateCandidate: leadData.affiliateCandidate || null,
+    affiliateMatchSource: trimString(leadData.affiliateMatchSource)
+      || trimString(leadData?.affiliateCandidate?.matchSource)
+      || null,
+    affiliateRegistryEntryId: trimString(leadData.affiliateRegistryEntryId)
+      || trimString(leadData?.affiliateCandidate?.registryEntryId)
+      || null,
+    affiliateRegistryProductName: trimString(leadData.affiliateRegistryProductName) || null,
+    affiliateRegistryMatchedAt: timestampToIsoString(leadData.affiliateRegistryMatchedAt),
+    affiliateAutoAppMessageAt: timestampToIsoString(leadData.affiliateAutoAppMessageAt),
+    affiliateAutoAppMessageSource: trimString(leadData.affiliateAutoAppMessageSource) || null,
     amazonAsin: trimString(leadData.amazonAsin)
       || trimString(leadData?.affiliateCandidate?.asin)
       || null,
