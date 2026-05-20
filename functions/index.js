@@ -12,6 +12,8 @@ admin.initializeApp();
 
 const db = admin.firestore();
 const COLLECTION_NAME = "mandi_prices";
+const METADATA_COLLECTION_NAME = "metadata";
+const COMMODITY_LOOKUP_DOC_PREFIX = "mandi_commodity_lookup_";
 const REQUEST_TIMEOUT_MS = 60000; // 60s per API call
 const FETCH_MAX_ATTEMPTS = 5;
 const FETCH_BASE_DELAY_MS = 1500; // 1.5s base delay
@@ -116,6 +118,7 @@ async function syncPricesFromAPI() {
   await deleteOldRecords(7);
 
   const statesSeen = new Set();
+  const commodityLookup = new Map();
 
   while (hasMore) {
     // Fetch all states - data availability varies by day
@@ -141,6 +144,7 @@ async function syncPricesFromAPI() {
     data.records.forEach(record => {
       if (record.state) statesSeen.add(record.state);
     });
+    collectCommodityLookup(data.records, commodityLookup);
 
     // Process records in batches
     await processBatch(data.records);
@@ -160,7 +164,10 @@ async function syncPricesFromAPI() {
   console.log(`States with data: ${[...statesSeen].sort().join(', ')}`);
 
   // Update sync metadata
-  await updateSyncMetadata(totalRecords);
+  await Promise.all([
+    updateSyncMetadata(totalRecords),
+    syncCommodityLookupMetadata(commodityLookup),
+  ]);
 
   return { recordsProcessed: totalRecords, states: [...statesSeen] };
 }
@@ -215,6 +222,80 @@ async function processBatch(records) {
 }
 
 /**
+ * Track unique commodities by state and district so the app can load dropdowns
+ * from compact metadata instead of scanning the full mandi_prices collection.
+ */
+function collectCommodityLookup(records, commodityLookup) {
+  for (const record of records) {
+    const state = (record.state || "").trim();
+    const district = (record.district || "").trim();
+    const commodity = (record.commodity || "").trim();
+
+    if (!state || !district || !commodity) {
+      continue;
+    }
+
+    if (!commodityLookup.has(state)) {
+      commodityLookup.set(state, new Map());
+    }
+
+    const districts = commodityLookup.get(state);
+    if (!districts.has(district)) {
+      districts.set(district, new Set());
+    }
+
+    districts.get(district).add(commodity);
+  }
+}
+
+/**
+ * Persist state-level commodity lookup docs used by the Android app.
+ */
+async function syncCommodityLookupMetadata(commodityLookup) {
+  const states = [...commodityLookup.keys()].sort((left, right) => left.localeCompare(right));
+  if (states.length === 0) {
+    return;
+  }
+
+  let batch = db.batch();
+  let operationCount = 0;
+  const commits = [];
+
+  for (const state of states) {
+    const districts = commodityLookup.get(state);
+    const districtEntries = [...districts.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([district, commodities]) => ({
+        district,
+        commodities: [...commodities].sort((left, right) => left.localeCompare(right)),
+      }));
+
+    const docRef = db.collection(METADATA_COLLECTION_NAME)
+      .doc(buildCommodityLookupDocId(state));
+
+    batch.set(docRef, {
+      lookupType: "mandi_commodity_state",
+      state,
+      districts: districtEntries,
+      updated_at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    operationCount++;
+
+    if (operationCount >= BATCH_SIZE) {
+      commits.push(batch.commit());
+      batch = db.batch();
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) {
+    commits.push(batch.commit());
+  }
+
+  await Promise.all(commits);
+}
+
+/**
  * Generate a unique document ID for a record
  */
 function generateDocId(record) {
@@ -227,6 +308,10 @@ function generateDocId(record) {
     sanitizeForId(record.arrival_date),
   ];
   return components.join("_");
+}
+
+function buildCommodityLookupDocId(state) {
+  return `${COMMODITY_LOOKUP_DOC_PREFIX}${sanitizeForId(state)}`;
 }
 
 /**
@@ -430,7 +515,7 @@ async function deleteOldRecords(daysToKeep = 7) {
  * Update sync metadata for monitoring
  */
 async function updateSyncMetadata(recordCount) {
-  await db.collection("metadata").doc("mandi_prices_sync").set({
+  await db.collection(METADATA_COLLECTION_NAME).doc("mandi_prices_sync").set({
     last_sync: admin.firestore.FieldValue.serverTimestamp(),
     record_count: recordCount,
     status: "success",

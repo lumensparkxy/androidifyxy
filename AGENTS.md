@@ -3,6 +3,7 @@
 ## Repo map
 - `app/` is the primary product: a Kotlin/Compose Android app (`MainActivity`, `ui/navigation/AppNavigation.kt`, `ChatViewModel.kt`).
 - `functions/` is the Firebase backend in Node 22. It owns Firestore-triggered lead routing, callable APIs, and hosting/index/rules deployment.
+- `functions/*.js` now includes shared backend helpers for sales/ops logic (`salesPipeline.js`, `leadRecommendation.js`, `leadProfile.js`, `adminLeadView.js`, `adminAffiliateMessaging.js`, `affiliateRegistry*.js`, `leadWorkflow.js`); `index.js` still wires the deployed exports, but lead/admin changes usually span these helpers too.
 - `agent_service/` is a separate FastAPI + Google ADK service meant to stay behind `functions/index.js:agentChatProxy` and Cloud Run.
 - `website/` is a static-export Next.js 15 app for marketing plus admin/supplier operational screens.
 - `scripts/` contains an alternate local mandi sync path because `data.gov.in` may block GCP IPs; read `scripts/README.md` before assuming Cloud Functions is the only sync path.
@@ -15,8 +16,10 @@
 
 ## Sales lead pipeline
 - Lead creation is deliberately duplicated across Android callable flow and ADK tool flow: see `functions/index.js:createSalesPipelineLead` and `agent_service/tools/lead_tools.py:create_sales_lead`. If you change fields, update both.
+- Android `app/src/main/java/com/maswadkar/developers/androidify/data/SalesLeadRepository.kt` also has a direct Firestore fallback when `createSalesPipelineLead` is unavailable; keep its doc ID, request number, and initial routing/default fields aligned with the callable + ADK paths.
 - `sales_pipeline` docs are deduped by deterministic doc ID (`buildSalesPipelineDocId` / `_build_doc_id`) and start with `status=initiated`, `routingStatus=initiated`, `recommendationStatus=pending`.
 - Firestore trigger `recommendSupplierForLead` in `functions/index.js` enriches new leads with `suggestedSupplier`, `commissionPreview`, and routing status. Admin recovery paths are `retryLeadRecommendation` and `backfillPendingLeadRecommendations`.
+- No-match routing can pivot into Amazon affiliate handling. Shared channel/default fields live in `functions/salesPipeline.js`, exact-match registry logic lives in `functions/affiliateRegistry.js`, admin lead shaping lives in `functions/adminLeadView.js`, and handoff/message formatting lives in `functions/adminAffiliateMessaging.js`; if you change affiliate lead fields, also update `website/app/admin/affiliate-links/AffiliateLinksClient.tsx` and `website/lib/types.ts`.
 - Website admin flow mixes direct Firestore edits and callable functions on purpose: `website/app/admin/leads/AdminLeadsClient.tsx` updates ops notes/status directly, but recommendation retry, bulk assignment, and workflow advancement go through callables.
 - If you add/change lead fields, sync `functions/index.js`, `website/lib/types.ts`, admin/supplier clients, and any Kotlin lead models/repositories together.
 
@@ -28,14 +31,17 @@
 ## Commands you will actually use
 - Android debug/release from repo root: `./gradlew assembleDebug`, `./gradlew bundleRelease`, `./gradlew assembleRelease` (see `docs/BUILD_RELEASE_BUNDLE.md`). Signing comes from `local.properties`.
 - Functions: `cd functions && npm install && npm test`; deploy with `firebase deploy --only functions,firestore:indexes`.
+- Functions unit tests live under `functions/test/*.test.js`; `npm test` exercises helper modules like `salesPipeline.js`, `leadRecommendation.js`, `affiliateRegistry.js`, and `adminLeadView.js`.
 - Agent service local run: `cd agent_service && uvicorn agent_service.main:app --host 0.0.0.0 --port 8080`.
 - Agent service tests are `pytest`-style under `agent_service/tests/`; `test_firestore_session_service_live.py` only runs when `GOOGLE_CLOUD_PROJECT` points to a real project.
 - Website: `cd website && npm install && npm run dev`. `next.config.js` uses `output: 'export'`, and Firebase Hosting serves `website/out` per root `firebase.json`.
 - Local mandi sync fallback: `cd scripts && python mandi_sync_service.py --once` or run the launchd workflow in `scripts/README.md`.
+- Farmer profile backfill helper: `cd scripts && python backfill_farmer_profile_from_legacy.py` for a dry run, then rerun with `--apply` after review; it only fills missing fields into `users/{uid}/settings/farmer_profile`.
 
 ## Project-specific conventions
 - Do not “simplify away” the localhost fallback in `AdminLeadsClient.tsx`; it intentionally avoids misleading undeployed-function/CORS failures by reading Firestore directly during local web development.
 - `ChatRepository.kt` enables Firestore offline persistence and conversation IDs are often pre-generated to align image storage paths with conversation docs.
+- `users/{uid}/settings/farmer_profile` is the canonical persisted profile. `MandiPreferences.kt` is only a compact projection for mandi UI state, and both `SalesLeadRepository.kt` and `agent_service/tools/lead_tools.py` expect `farmer_profile` to carry the lead-required fields.
 - `agent_service/firestore_session_service.py` persists ADK session state/events to Firestore and strips inline image bytes before storage; keep that behavior if you touch session persistence.
 - Keep Cloud Run non-public; the intended ingress is the Firebase callable proxy with both IAM auth headers and optional shared secret (`AGENT_SERVICE_SHARED_SECRET`).
 

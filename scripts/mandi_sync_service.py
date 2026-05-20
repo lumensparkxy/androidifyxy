@@ -36,6 +36,8 @@ from firebase_admin import credentials, firestore
 API_URL = "https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070"
 API_KEY = os.getenv("DATA_GOV_API_KEY", "579b464db66ec23bdd0000015d0d42cb9328410e6bd0a1af77fa3f53")
 COLLECTION_NAME = "mandi_prices"
+METADATA_COLLECTION_NAME = "metadata"
+COMMODITY_LOOKUP_DOC_PREFIX = "mandi_commodity_lookup_"
 BATCH_SIZE = 500  # Firestore batch write limit
 SYNC_INTERVAL_SECONDS = 3600  # 1 hour
 REQUEST_TIMEOUT_SECONDS = 60
@@ -253,6 +255,11 @@ def create_document_id(record: Dict[str, Any]) -> str:
     return "_".join(components)
 
 
+def build_commodity_lookup_doc_id(state: str) -> str:
+    """Create the metadata doc ID for a state's commodity lookup."""
+    return f"{COMMODITY_LOOKUP_DOC_PREFIX}{sanitize_for_id(state)}"
+
+
 def parse_arrival_date(date_str: str) -> Optional[datetime]:
     """
     Parse arrival date from DD/MM/YYYY format to datetime.
@@ -342,6 +349,68 @@ def batch_write_to_firestore(db: firestore.Client, records: List[Dict[str, Any]]
         except Exception as e:
             logger.error(f"Error committing batch: {e}")
             raise
+
+    return written
+
+
+def build_commodity_lookup(records: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Group unique commodities by state and district for fast client dropdowns."""
+    lookup: Dict[str, Dict[str, set[str]]] = {}
+
+    for record in records:
+        state = (record.get("state") or "").strip()
+        district = (record.get("district") or "").strip()
+        commodity = (record.get("commodity") or "").strip()
+
+        if not state or not district or not commodity:
+            continue
+
+        state_lookup = lookup.setdefault(state, {})
+        district_lookup = state_lookup.setdefault(district, set())
+        district_lookup.add(commodity)
+
+    return {
+        state: [
+            {
+                "district": district,
+                "commodities": sorted(commodities),
+            }
+            for district, commodities in sorted(districts.items())
+        ]
+        for state, districts in sorted(lookup.items())
+    }
+
+
+def write_commodity_lookup_metadata(
+    db: firestore.Client,
+    commodity_lookup: Dict[str, List[Dict[str, Any]]],
+) -> int:
+    """Persist state-level commodity lookup metadata used by the Android app."""
+    if not commodity_lookup:
+        return 0
+
+    metadata_ref = db.collection(METADATA_COLLECTION_NAME)
+    written = 0
+    items = list(commodity_lookup.items())
+
+    for i in range(0, len(items), BATCH_SIZE):
+        batch = db.batch()
+        batch_items = items[i:i + BATCH_SIZE]
+
+        for state, districts in batch_items:
+            doc_ref = metadata_ref.document(build_commodity_lookup_doc_id(state))
+            batch.set(
+                doc_ref,
+                {
+                    "lookupType": "mandi_commodity_state",
+                    "state": state,
+                    "districts": districts,
+                    "updated_at": firestore.SERVER_TIMESTAMP,
+                },
+            )
+
+        batch.commit()
+        written += len(batch_items)
 
     return written
 
@@ -440,12 +509,16 @@ def sync_mandi_prices(db: firestore.Client, session: requests.Session) -> Dict[s
     logger.info(f"Writing {len(all_records)} records to Firestore...")
     written = batch_write_to_firestore(db, all_records)
 
+    commodity_lookup = build_commodity_lookup(all_records)
+    lookup_docs_written = write_commodity_lookup_metadata(db, commodity_lookup)
+
     duration = time.time() - start_time
     
     result = {
         "success": True,
         "message": "Sync completed",
         "records_processed": written,
+        "commodity_lookup_docs_written": lookup_docs_written,
         "states": sorted(states_with_data),
         "duration_seconds": round(duration, 2),
         "timestamp": datetime.now(timezone.utc).isoformat(),

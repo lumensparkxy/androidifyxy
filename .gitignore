@@ -29,3 +29,4 @@ scripts/*.log
 __pycache__/
 *.pyc
 mandi_sync.log
+outputs/

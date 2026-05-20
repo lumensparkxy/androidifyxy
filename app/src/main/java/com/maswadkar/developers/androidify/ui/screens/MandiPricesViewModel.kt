@@ -3,6 +3,7 @@ package com.maswadkar.developers.androidify.ui.screens
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.maswadkar.developers.androidify.data.IndianStatesAndDistricts
 import com.maswadkar.developers.androidify.data.MandiPreferences
 import com.maswadkar.developers.androidify.data.MandiPrice
 import com.maswadkar.developers.androidify.data.MandiPriceRepository
@@ -103,21 +104,10 @@ class MandiPricesViewModel : ViewModel() {
     }
 
     private fun loadStates() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                val states = repository.getStates()
-                _uiState.value = _uiState.value.copy(
-                    states = states,
-                    isLoading = false
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message,
-                    isLoading = false
-                )
-            }
-        }
+        _uiState.value = _uiState.value.copy(
+            states = IndianStatesAndDistricts.getStates(),
+            isLoading = false
+        )
     }
 
     fun onStateSelected(state: String?) {
@@ -136,21 +126,10 @@ class MandiPricesViewModel : ViewModel() {
     }
 
     private fun loadDistricts(state: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                val districts = repository.getDistricts(state)
-                _uiState.value = _uiState.value.copy(
-                    districts = districts,
-                    isLoading = false
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message,
-                    isLoading = false
-                )
-            }
-        }
+        _uiState.value = _uiState.value.copy(
+            districts = IndianStatesAndDistricts.getDistricts(state),
+            isLoading = false
+        )
     }
 
     fun onDistrictSelected(district: String?) {
@@ -165,19 +144,17 @@ class MandiPricesViewModel : ViewModel() {
 
         val state = _uiState.value.selectedState
         if (state != null && district != null) {
-            loadCommoditiesAndMarkets(state, district)
+            loadCommodities(state, district)
         }
     }
 
-    private fun loadCommoditiesAndMarkets(state: String, district: String) {
+    private fun loadCommodities(state: String, district: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val commodities = repository.getCommodities(state, district)
-                val markets = repository.getMarkets(state, district)
                 _uiState.value = _uiState.value.copy(
                     commodities = commodities,
-                    markets = markets,
                     isLoading = false
                 )
             } catch (e: Exception) {
@@ -270,10 +247,13 @@ class MandiPricesViewModel : ViewModel() {
 
 
     fun switchToFullMode() {
-        _uiState.value = _uiState.value.copy(isCompactMode = false)
-        if (_uiState.value.states.isEmpty()) {
-            loadStates()
-        }
+        val selectedState = _uiState.value.selectedState
+        _uiState.value = _uiState.value.copy(
+            isCompactMode = false,
+            states = IndianStatesAndDistricts.getStates(),
+            districts = selectedState?.let(IndianStatesAndDistricts::getDistricts) ?: emptyList(),
+            isLoading = false
+        )
     }
 
     fun switchToCompactMode() {

@@ -15,6 +15,8 @@ class MandiPriceRepository {
     companion object {
         private const val TAG = "MandiPriceRepository"
         private const val COLLECTION_NAME = "mandi_prices"
+        private const val METADATA_COLLECTION_NAME = "metadata"
+        private const val COMMODITY_LOOKUP_DOC_PREFIX = "mandi_commodity_lookup_"
 
         @Volatile
         private var instance: MandiPriceRepository? = null
@@ -27,7 +29,8 @@ class MandiPriceRepository {
     }
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
-    private val districtsCache = mutableMapOf<String, List<String>>()
+    private val commoditiesCache = mutableMapOf<String, List<String>>()
+    private val commodityLookupByStateCache = mutableMapOf<String, Map<String, List<String>>>()
 
     private fun normalizePreferences(preferences: MandiPreferences): MandiPreferences = MandiPreferences(
         state = preferences.state.trim(),
@@ -47,58 +50,85 @@ class MandiPriceRepository {
         )
     }
 
-    /**
-     * Get all distinct states
-     */
-    suspend fun getStates(): List<String> {
+    private fun buildCommodityCacheKey(state: String, district: String?): String =
+        listOf(state.trim(), district?.trim().orEmpty()).joinToString("|")
+
+    private fun sanitizeLookupSegment(value: String): String =
+        value.trim()
+            .lowercase()
+            .replace(Regex("[^a-z0-9]+"), "_")
+            .trim('_')
+            .take(30)
+            .ifBlank { "unknown" }
+
+    private fun buildCommodityLookupDocId(state: String): String =
+        "$COMMODITY_LOOKUP_DOC_PREFIX${sanitizeLookupSegment(state)}"
+
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun getCommodityLookupByState(state: String): Map<String, List<String>>? {
+        val normalizedState = state.trim()
+        commodityLookupByStateCache[normalizedState]?.let { return it }
+
         return try {
-            val snapshot = firestore.collection(COLLECTION_NAME)
+            val snapshot = firestore.collection(METADATA_COLLECTION_NAME)
+                .document(buildCommodityLookupDocId(normalizedState))
                 .get()
                 .await()
 
-            snapshot.documents
-                .mapNotNull { it.getString("state") }
-                .distinct()
-                .sorted()
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching states: ${e.message}")
-            emptyList()
-        }
-    }
-
-    /**
-     * Get districts for a given state
-     */
-    suspend fun getDistricts(state: String): List<String> {
-        if (districtsCache.containsKey(state)) {
-            return districtsCache[state] ?: emptyList()
-        }
-
-        return try {
-            val snapshot = firestore.collection(COLLECTION_NAME)
-                .whereEqualTo("state", state)
-                .get()
-                .await()
-
-            val districts = snapshot.documents
-                .mapNotNull { it.getString("district") }
-                .distinct()
-                .sorted()
-
-            if (districts.isNotEmpty()) {
-                districtsCache[state] = districts
+            if (!snapshot.exists()) {
+                return null
             }
+
+            val districts = (snapshot.get("districts") as? List<Map<String, Any?>>)
+                ?.mapNotNull { entry ->
+                    val district = (entry["district"] as? String)?.trim()?.takeIf { it.isNotBlank() }
+                    val commodities = (entry["commodities"] as? List<*>)
+                        ?.mapNotNull { (it as? String)?.trim()?.takeIf { item -> item.isNotBlank() } }
+                        ?.distinct()
+                        ?.sorted()
+                        ?: emptyList()
+
+                    district?.let { it to commodities }
+                }
+                ?.toMap()
+                ?: emptyMap()
+
+            commodityLookupByStateCache[normalizedState] = districts
             districts
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching districts: ${e.message}")
-            emptyList()
+            Log.w(TAG, "Error fetching commodity lookup metadata for $normalizedState: ${e.message}")
+            null
         }
     }
+
+    /**
+     * Get all states from static local data so the preferences UI stays instant.
+     */
+    fun getStates(): List<String> = IndianStatesAndDistricts.getStates()
+
+    /**
+     * Get districts from static local data so state changes do not trigger Firestore scans.
+     */
+    fun getDistricts(state: String): List<String> = IndianStatesAndDistricts.getDistricts(state)
 
     /**
      * Get commodities for a given state and district
      */
     suspend fun getCommodities(state: String, district: String? = null): List<String> {
+        val cacheKey = buildCommodityCacheKey(state, district)
+        commoditiesCache[cacheKey]?.let { return it }
+
+        if (district != null) {
+            val lookupCommodities = getCommodityLookupByState(state)
+                ?.get(district.trim())
+                ?.sorted()
+
+            if (lookupCommodities != null) {
+                commoditiesCache[cacheKey] = lookupCommodities
+                return lookupCommodities
+            }
+        }
+
         return try {
             var query: Query = firestore.collection(COLLECTION_NAME)
                 .whereEqualTo("state", state)
@@ -113,6 +143,9 @@ class MandiPriceRepository {
                 .mapNotNull { it.getString("commodity") }
                 .distinct()
                 .sorted()
+                .also { commodities ->
+                    commoditiesCache[cacheKey] = commodities
+                }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching commodities: ${e.message}")
             emptyList()
