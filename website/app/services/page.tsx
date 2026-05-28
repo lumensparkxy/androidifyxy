@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { Bot, Mic, Camera, TrendingUp, History, Globe, Smartphone } from 'lucide-react';
-import { Container, Button } from '@/components';
+import { Container, SectionHeading, Button } from '@/components';
 
 export const metadata: Metadata = {
   title: 'Services - Krishi AI',
@@ -104,6 +104,29 @@ export default function ServicesPage() {
               Krishi AI offers a comprehensive suite of tools designed to empower 
               Indian farmers with technology. Explore our features below.
             </p>
+          </div>
+        </Container>
+      </section>
+
+      {/* Demo Video Section */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <Container>
+          <SectionHeading
+            title="See Krishi AI in Action"
+            subtitle="Watch the product demo to see how Krishi AI helps farmers use app features and complete key workflows."
+          />
+          <div className="mx-auto max-w-5xl">
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-900 shadow-xl">
+              <iframe
+                className="aspect-video w-full"
+                src="https://www.youtube-nocookie.com/embed/AFKvUwoAjHA"
+                title="Krishi AI product demo video"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
           </div>
         </Container>
       </section>
