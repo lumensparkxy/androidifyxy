@@ -953,6 +953,7 @@ exports.deleteAllKnowledgeDocuments = functions
 
 const {
   AFFILIATE_PROVIDER_AMAZON,
+  COMMERCE_CHANNEL_AMAZON_AFFILIATE,
   COMMERCE_CHANNEL_ADMIN_REVIEW,
   buildInitialCommerceFields,
   SALES_PIPELINE_COLLECTION,
@@ -998,6 +999,12 @@ const {
   buildAffiliateRegistryCandidateImportPayload,
   buildAffiliateRegistryImportBatches,
 } = require("./affiliateRegistryHistory");
+const {
+  buildAffiliateRegistryBackfillPlan,
+  buildEligibleAffiliateRegistryBackfillItem,
+  parseAffiliateRegistryBackfillLimit,
+  selectAffiliateRegistryBackfillCreateRows,
+} = require("./affiliateRegistryBackfill");
 const { buildLeadRecommendation } = require("./leadRecommendation");
 const {
   buildCommissionLifecycleDefaults,
@@ -1789,6 +1796,14 @@ function buildAffiliateRegistryCandidateAdminView(candidateId, candidateData = {
   };
 }
 
+class AffiliateRegistryEntryExistsError extends Error {
+  constructor(entryId) {
+    super("Affiliate registry entry already exists");
+    this.code = "affiliate-registry-entry-exists";
+    this.entryId = entryId;
+  }
+}
+
 async function saveAffiliateRegistryEntry({
   provider,
   existingEntryId = "",
@@ -1797,6 +1812,7 @@ async function saveAffiliateRegistryEntry({
   specialLink,
   isActive = true,
   actor = {},
+  createOnly = false,
 } = {}) {
   const normalizedProvider = trimString(provider).toLowerCase() || AFFILIATE_PROVIDER_AMAZON;
   const nextExistingEntryId = trimString(existingEntryId);
@@ -1825,6 +1841,10 @@ async function saveAffiliateRegistryEntry({
       : null;
     const nextEntryData = nextEntrySnapshot.exists ? (nextEntrySnapshot.data() || {}) : {};
     const previousEntryData = previousEntrySnapshot?.exists ? (previousEntrySnapshot.data() || {}) : {};
+
+    if (createOnly && nextEntrySnapshot.exists) {
+      throw new AffiliateRegistryEntryExistsError(nextEntryId);
+    }
 
     transaction.set(nextEntryRef, {
       ...entryPayload,
@@ -2477,6 +2497,109 @@ exports.listAffiliateProductRegistry = functions
     return {
       ok: true,
       entries,
+    };
+  });
+
+exports.backfillAffiliateProductRegistryFromSalesPipeline = functions
+  .region("asia-south1")
+  .runWith({
+    timeoutSeconds: 120,
+    memory: "256MB",
+  })
+  .https.onCall(async (data, context) => {
+    if (!context.auth?.uid) {
+      throw new functions.https.HttpsError("unauthenticated", "Sign in required");
+    }
+
+    await assertAdminContext(context);
+
+    const dryRun = data?.dryRun !== false;
+    const limitCount = parseAffiliateRegistryBackfillLimit(data?.limit);
+    const actor = buildAdminActor(context);
+
+    const sourceSnapshot = await db.collection(SALES_PIPELINE_COLLECTION)
+      .where("commerceChannel", "==", COMMERCE_CHANNEL_AMAZON_AFFILIATE)
+      .limit(limitCount)
+      .get();
+    const eligibleItems = sourceSnapshot.docs
+      .map((docSnapshot) => buildEligibleAffiliateRegistryBackfillItem({
+        leadId: docSnapshot.id,
+        leadData: docSnapshot.data() || {},
+      }))
+      .filter(Boolean);
+    const entryIds = [...new Set(eligibleItems
+      .map((item) => buildAffiliateProductRegistryDocId({
+        provider: AFFILIATE_PROVIDER_AMAZON,
+        normalizedProductName: item.normalizedProductName,
+      }))
+      .filter(Boolean))];
+    const existingSnapshots = await Promise.all(entryIds.map((entryId) => (
+      db.collection(AFFILIATE_PRODUCT_REGISTRY_COLLECTION).doc(entryId).get()
+    )));
+    const existingEntriesById = new Map();
+    existingSnapshots.forEach((snapshot) => {
+      if (!snapshot.exists) return;
+      existingEntriesById.set(snapshot.id, snapshot.data() || {});
+    });
+
+    const plan = buildAffiliateRegistryBackfillPlan({
+      items: eligibleItems,
+      existingEntriesById,
+    });
+    const createRows = selectAffiliateRegistryBackfillCreateRows(plan, { dryRun });
+    const createdEntries = [];
+    const writeConflictRows = [];
+
+    for (const row of createRows) {
+      try {
+        const entry = await saveAffiliateRegistryEntry({
+          provider: AFFILIATE_PROVIDER_AMAZON,
+          productName: row.productName,
+          normalizedProductName: row.normalizedProductName,
+          specialLink: row.specialLink,
+          isActive: true,
+          actor,
+          createOnly: true,
+        });
+        createdEntries.push(entry);
+      } catch (error) {
+        if (error?.code === "affiliate-registry-entry-exists") {
+          writeConflictRows.push({
+            ...row,
+            action: "conflict",
+            reason: "existing_registry_created_during_backfill",
+          });
+          continue;
+        }
+        throw new functions.https.HttpsError(
+          "internal",
+          trimString(error?.message) || "Failed to create affiliate registry entry",
+        );
+      }
+    }
+
+    const conflictRows = [
+      ...plan.conflictRows,
+      ...writeConflictRows,
+    ];
+
+    return {
+      ok: true,
+      dryRun,
+      limit: limitCount,
+      scannedLeadCount: sourceSnapshot.size,
+      eligibleLeadCount: plan.eligibleLeadCount,
+      sourceProductCount: plan.sourceProductCount,
+      safeCreateCount: plan.safeCreateCount,
+      skippedExistingCount: plan.skippedExistingCount,
+      conflictCount: conflictRows.length,
+      createdCount: createdEntries.length,
+      previewRows: [
+        ...plan.safeCreateRows,
+        ...plan.skippedExistingRows,
+        ...conflictRows,
+      ].slice(0, 100),
+      createdEntries,
     };
   });
 

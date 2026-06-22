@@ -6,11 +6,15 @@ import { onAuthStateChanged, signInWithPopup, signOut, User } from 'firebase/aut
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
 import {
+  AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  Database,
+  ListChecks,
   Loader2,
   LogOut,
   Mail,
+  PlayCircle,
   RefreshCcw,
   Save,
   ShieldCheck,
@@ -28,6 +32,38 @@ type RegistryFormState = {
   productName: string;
   specialLink: string;
   isActive: boolean;
+};
+
+type BackfillActionState = 'preview' | 'apply' | null;
+
+type AffiliateRegistryBackfillRow = {
+  action: 'create' | 'skip_existing' | 'conflict';
+  reason: string;
+  entryId: string;
+  provider: 'amazon';
+  productName: string;
+  normalizedProductName: string;
+  specialLink?: string | null;
+  sourceLeadCount: number;
+  distinctLinkCount: number;
+  latestAppMessageSentAt?: string | null;
+  existingIsActive?: boolean | null;
+  existingSpecialLink?: string | null;
+};
+
+type AffiliateRegistryBackfillResult = {
+  ok: boolean;
+  dryRun: boolean;
+  limit: number;
+  scannedLeadCount: number;
+  eligibleLeadCount: number;
+  sourceProductCount: number;
+  safeCreateCount: number;
+  skippedExistingCount: number;
+  conflictCount: number;
+  createdCount: number;
+  previewRows: AffiliateRegistryBackfillRow[];
+  createdEntries?: AffiliateProductRegistryEntry[];
 };
 
 const PRIVILEGED_ADMIN_EMAILS = new Set(['maswadkar@gmail.com', 'neophilex@gmail.com']);
@@ -81,6 +117,37 @@ function getInitialFormState(): RegistryFormState {
   };
 }
 
+function formatBackfillAction(action: AffiliateRegistryBackfillRow['action']): string {
+  if (action === 'create') return 'Create';
+  if (action === 'skip_existing') return 'Skip';
+  return 'Review';
+}
+
+function formatBackfillReason(reason: string): string {
+  switch (reason) {
+    case 'single_historical_link':
+      return 'Single link';
+    case 'existing_registry_match':
+      return 'Already registered';
+    case 'multiple_historical_links':
+      return 'Multiple links';
+    case 'existing_registry_differs':
+      return 'Existing differs';
+    case 'existing_registry_inactive':
+      return 'Existing archived';
+    case 'existing_registry_created_during_backfill':
+      return 'Created elsewhere';
+    default:
+      return reason.replace(/_/g, ' ');
+  }
+}
+
+function getBackfillActionClass(action: AffiliateRegistryBackfillRow['action']): string {
+  if (action === 'create') return 'bg-emerald-100 text-emerald-700';
+  if (action === 'skip_existing') return 'bg-gray-100 text-gray-700';
+  return 'bg-amber-100 text-amber-800';
+}
+
 export default function AffiliateLinksClient() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -92,6 +159,8 @@ export default function AffiliateLinksClient() {
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [actionEntryId, setActionEntryId] = useState<string | null>(null);
   const [form, setForm] = useState<RegistryFormState>(getInitialFormState);
+  const [backfillAction, setBackfillAction] = useState<BackfillActionState>(null);
+  const [backfillResult, setBackfillResult] = useState<AffiliateRegistryBackfillResult | null>(null);
 
   useEffect(() => {
     if (!auth) {
@@ -304,10 +373,44 @@ export default function AffiliateLinksClient() {
     }
   };
 
+  const runSalesPipelineBackfill = useCallback(async (dryRun: boolean) => {
+    if (!functions) {
+      throw new Error('Firebase Functions is not configured in the website client');
+    }
+
+    setError(null);
+    setSuccessNotice(null);
+    setBackfillAction(dryRun ? 'preview' : 'apply');
+    try {
+      const backfillCallable = httpsCallable<
+        { dryRun: boolean; limit?: number },
+        AffiliateRegistryBackfillResult
+      >(functions, 'backfillAffiliateProductRegistryFromSalesPipeline');
+      const response = await backfillCallable({ dryRun, limit: 300 });
+      setBackfillResult(response.data);
+
+      if (dryRun) {
+        setSuccessNotice(
+          `Backfill preview ready: ${response.data.safeCreateCount} safe, ${response.data.skippedExistingCount} existing, ${response.data.conflictCount} for review.`,
+        );
+      } else {
+        await loadEntries();
+        setSuccessNotice(
+          `Backfill applied: ${response.data.createdCount} created, ${response.data.skippedExistingCount} existing, ${response.data.conflictCount} for review.`,
+        );
+      }
+    } catch (backfillError) {
+      setError(backfillError instanceof Error ? backfillError.message : 'Affiliate registry backfill failed');
+    } finally {
+      setBackfillAction(null);
+    }
+  }, [loadEntries]);
+
   const activeCount = useMemo(
     () => entries.filter((entry) => entry.isActive).length,
     [entries],
   );
+  const backfillRows = backfillResult?.previewRows || [];
 
   const authCard = (
     <Card className="p-6 space-y-4" hover={false}>
@@ -417,6 +520,134 @@ export default function AffiliateLinksClient() {
                 <p className="mt-2 text-xs text-gray-500">WhatsApp stays manual for now.</p>
               </Card>
             </div>
+
+            <Card className="p-6 space-y-5" hover={false}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-primary" />
+                    <p className="text-lg font-semibold text-gray-900">Sales-pipeline backfill</p>
+                  </div>
+                  <p className="mt-1 max-w-3xl text-sm text-gray-600">
+                    Populate exact-match entries from Amazon affiliate links already sent in app. Conflicts are reported for review and are not written.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void runSalesPipelineBackfill(true)}
+                    disabled={Boolean(backfillAction)}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {backfillAction === 'preview'
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <ListChecks className="h-4 w-4" />}
+                    Preview
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => void runSalesPipelineBackfill(false)}
+                    disabled={Boolean(backfillAction)}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {backfillAction === 'apply'
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <PlayCircle className="h-4 w-4" />}
+                    Apply safe entries
+                  </Button>
+                </div>
+              </div>
+
+              {backfillResult && (
+                <>
+                  <div className="grid gap-3 md:grid-cols-5">
+                    <div className="rounded-xl border border-gray-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Scanned</p>
+                      <p className="mt-1 text-2xl font-bold text-gray-900">{backfillResult.scannedLeadCount}</p>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Eligible</p>
+                      <p className="mt-1 text-2xl font-bold text-gray-900">{backfillResult.eligibleLeadCount}</p>
+                    </div>
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Safe</p>
+                      <p className="mt-1 text-2xl font-bold text-emerald-800">{backfillResult.safeCreateCount}</p>
+                    </div>
+                    <div className="rounded-xl border border-gray-200 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Existing</p>
+                      <p className="mt-1 text-2xl font-bold text-gray-900">{backfillResult.skippedExistingCount}</p>
+                    </div>
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                      <p className="text-xs font-medium uppercase tracking-wide text-amber-700">Review</p>
+                      <p className="mt-1 text-2xl font-bold text-amber-800">{backfillResult.conflictCount}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                    <span className="inline-flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      Created this run: {backfillResult.createdCount}
+                    </span>
+                    {backfillResult.conflictCount > 0 && (
+                      <span className="inline-flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        Resolve review rows manually before activation
+                      </span>
+                    )}
+                  </div>
+
+                  {backfillRows.length > 0 && (
+                    <div className="overflow-x-auto rounded-xl border border-gray-200">
+                      <table className="min-w-full border-collapse">
+                        <thead className="bg-gray-50/80 border-b border-gray-200">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Action</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Product</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Source</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Link</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {backfillRows.map((row) => (
+                            <tr key={`${row.entryId}-${row.action}-${row.reason}`} className="border-b border-gray-100 align-top last:border-0">
+                              <td className="px-4 py-4 whitespace-nowrap">
+                                <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold uppercase ${getBackfillActionClass(row.action)}`}>
+                                  {formatBackfillAction(row.action)}
+                                </span>
+                                <div className="mt-2 text-xs text-gray-500">{formatBackfillReason(row.reason)}</div>
+                              </td>
+                              <td className="px-4 py-4 min-w-[220px]">
+                                <div className="text-sm font-semibold text-gray-900">{row.productName}</div>
+                                <div className="mt-1 text-xs text-gray-500">{row.normalizedProductName}</div>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-gray-600 whitespace-nowrap">
+                                <div>{row.sourceLeadCount} lead{row.sourceLeadCount === 1 ? '' : 's'}</div>
+                                <div className="mt-1 text-xs text-gray-500">Latest {formatDate(row.latestAppMessageSentAt || undefined)}</div>
+                              </td>
+                              <td className="px-4 py-4 min-w-[260px] text-sm text-gray-600">
+                                {row.specialLink ? (
+                                  <a href={row.specialLink} target="_blank" rel="noreferrer" className="break-all text-primary hover:underline">
+                                    {row.specialLink}
+                                  </a>
+                                ) : (
+                                  <span>{row.distinctLinkCount} distinct links</span>
+                                )}
+                                {row.existingSpecialLink && row.existingSpecialLink !== row.specialLink && (
+                                  <div className="mt-2 text-xs text-gray-500 break-all">
+                                    Existing: {row.existingSpecialLink}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              )}
+            </Card>
 
             <Card className="p-6 space-y-5" hover={false}>
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
