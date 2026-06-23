@@ -35,6 +35,7 @@ import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeDocumentsScreen
 import com.maswadkar.developers.androidify.ui.screens.LoginScreen
 import com.maswadkar.developers.androidify.ui.screens.FarmerProfileScreen
+import com.maswadkar.developers.androidify.ui.screens.FieldDiaryScreen
 import com.maswadkar.developers.androidify.ui.screens.MandiPricesScreen
 import com.maswadkar.developers.androidify.ui.screens.OffersScreen
 import com.maswadkar.developers.androidify.ui.screens.PlantDiagnosisScreen
@@ -111,6 +112,7 @@ fun AppNavigation(
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onWeatherClick = { navController.navigate(Screen.Weather.route) },
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
+                onFieldDiaryClick = { navController.navigate(Screen.FieldDiary.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
                 onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
@@ -161,6 +163,7 @@ fun AppNavigation(
                 onMandiPricesClick = { navController.navigate(Screen.MandiPrices.route) },
                 onWeatherClick = { navController.navigate(Screen.Weather.route) },
                 onOffersClick = { navController.navigate(Screen.Offers.route) },
+                onFieldDiaryClick = { navController.navigate(Screen.FieldDiary.route) },
                 onCarbonCreditsClick = { navController.navigate(Screen.CarbonCredits.route) },
                 onKnowledgeBaseClick = { navController.navigate(Screen.KnowledgeBase.route) },
                 onFarmerProfileClick = { navController.navigate(Screen.FarmerProfile.route) },
@@ -254,6 +257,12 @@ fun AppNavigation(
 
         composable(Screen.Offers.route) {
             OffersScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.FieldDiary.route) {
+            FieldDiaryScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
