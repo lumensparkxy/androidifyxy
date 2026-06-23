@@ -96,6 +96,12 @@
     <string name="cancel">Cancel</string>
     <string name="menu_mandi_settings">Farmer Profile</string>
     <string name="field_diary_title">Field Diary</string>
+    <string name="field_diary_add_entry">Add entry</string>
+    <string name="field_diary_filter_all">All</string>
+    <string name="field_diary_empty_title">No diary entries yet</string>
+    <string name="field_diary_empty_message">Add the first field activity for this crop season.</string>
+    <string name="field_diary_add_stub">Add entry form is next</string>
+    <string name="field_diary_photos_count">%1$d photos</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">Farmer Profile</string>
