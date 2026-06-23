@@ -49,10 +49,72 @@ import com.maswadkar.developers.androidify.ui.components.DrawerUser
 import kotlinx.coroutines.launch
 
 data class HomeFeature(
+    val destination: HomeFeatureDestination,
     val iconRes: Int,
     val titleRes: Int,
-    val descriptionRes: Int,
-    val onClick: () -> Unit
+    val descriptionRes: Int
+)
+
+enum class HomeFeatureDestination {
+    Chat,
+    PlantDiagnosis,
+    MandiPrices,
+    Weather,
+    KnowledgeBase,
+    FieldDiary,
+    CarbonCredits,
+    History
+}
+
+internal val HOME_FEATURES = listOf(
+    HomeFeature(
+        destination = HomeFeatureDestination.Chat,
+        iconRes = R.drawable.ic_chat,
+        titleRes = R.string.home_feature_chat_title,
+        descriptionRes = R.string.home_feature_chat_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.PlantDiagnosis,
+        iconRes = R.drawable.ic_camera,
+        titleRes = R.string.home_feature_diagnosis_title,
+        descriptionRes = R.string.home_feature_diagnosis_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.MandiPrices,
+        iconRes = R.drawable.ic_price,
+        titleRes = R.string.home_feature_mandi_title,
+        descriptionRes = R.string.home_feature_mandi_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.Weather,
+        iconRes = R.drawable.ic_weather,
+        titleRes = R.string.home_feature_weather_title,
+        descriptionRes = R.string.home_feature_weather_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.KnowledgeBase,
+        iconRes = R.drawable.ic_knowledge,
+        titleRes = R.string.home_feature_knowledge_title,
+        descriptionRes = R.string.home_feature_knowledge_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.FieldDiary,
+        iconRes = R.drawable.ic_diary,
+        titleRes = R.string.home_feature_diary_title,
+        descriptionRes = R.string.home_feature_diary_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.CarbonCredits,
+        iconRes = R.drawable.ic_carbon,
+        titleRes = R.string.home_feature_carbon_title,
+        descriptionRes = R.string.home_feature_carbon_desc
+    ),
+    HomeFeature(
+        destination = HomeFeatureDestination.History,
+        iconRes = R.drawable.ic_history,
+        titleRes = R.string.home_feature_history_title,
+        descriptionRes = R.string.home_feature_history_desc
+    )
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +126,7 @@ fun HomeScreen(
     onMandiPricesClick: () -> Unit,
     onWeatherClick: () -> Unit,
     onOffersClick: () -> Unit,
+    onFieldDiaryClick: () -> Unit,
     onCarbonCreditsClick: () -> Unit,
     onKnowledgeBaseClick: () -> Unit,
     onFarmerProfileClick: () -> Unit,
@@ -83,57 +146,6 @@ fun HomeScreen(
         )
     }
 
-    val features = listOf(
-        HomeFeature(
-            iconRes = R.drawable.ic_chat,
-            titleRes = R.string.home_feature_chat_title,
-            descriptionRes = R.string.home_feature_chat_desc,
-            onClick = onChatClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_camera,
-            titleRes = R.string.home_feature_diagnosis_title,
-            descriptionRes = R.string.home_feature_diagnosis_desc,
-            onClick = onPlantDiagnosisClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_price,
-            titleRes = R.string.home_feature_mandi_title,
-            descriptionRes = R.string.home_feature_mandi_desc,
-            onClick = onMandiPricesClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_weather,
-            titleRes = R.string.home_feature_weather_title,
-            descriptionRes = R.string.home_feature_weather_desc,
-            onClick = onWeatherClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_knowledge,
-            titleRes = R.string.home_feature_knowledge_title,
-            descriptionRes = R.string.home_feature_knowledge_desc,
-            onClick = onKnowledgeBaseClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_offer,
-            titleRes = R.string.home_feature_offers_title,
-            descriptionRes = R.string.home_feature_offers_desc,
-            onClick = onOffersClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_carbon,
-            titleRes = R.string.home_feature_carbon_title,
-            descriptionRes = R.string.home_feature_carbon_desc,
-            onClick = onCarbonCreditsClick
-        ),
-        HomeFeature(
-            iconRes = R.drawable.ic_history,
-            titleRes = R.string.home_feature_history_title,
-            descriptionRes = R.string.home_feature_history_desc,
-            onClick = onHistoryClick
-        )
-    )
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -150,6 +162,7 @@ fun HomeScreen(
                         DrawerItem.MandiPrices -> onMandiPricesClick()
                         DrawerItem.Weather -> onWeatherClick()
                         DrawerItem.Offers -> onOffersClick()
+                        DrawerItem.FieldDiary -> onFieldDiaryClick()
                         DrawerItem.CarbonCredits -> onCarbonCreditsClick()
                         DrawerItem.KnowledgeBase -> onKnowledgeBaseClick()
                         DrawerItem.FarmerProfile -> onFarmerProfileClick()
@@ -198,12 +211,21 @@ fun HomeScreen(
                 }
 
                 // Feature Cards
-                items(features) { feature ->
+                items(HOME_FEATURES) { feature ->
                     FeatureCard(
                         iconRes = feature.iconRes,
                         title = stringResource(feature.titleRes),
                         description = stringResource(feature.descriptionRes),
-                        onClick = feature.onClick
+                        onClick = when (feature.destination) {
+                            HomeFeatureDestination.Chat -> onChatClick
+                            HomeFeatureDestination.PlantDiagnosis -> onPlantDiagnosisClick
+                            HomeFeatureDestination.MandiPrices -> onMandiPricesClick
+                            HomeFeatureDestination.Weather -> onWeatherClick
+                            HomeFeatureDestination.KnowledgeBase -> onKnowledgeBaseClick
+                            HomeFeatureDestination.FieldDiary -> onFieldDiaryClick
+                            HomeFeatureDestination.CarbonCredits -> onCarbonCreditsClick
+                            HomeFeatureDestination.History -> onHistoryClick
+                        }
                     )
                 }
 

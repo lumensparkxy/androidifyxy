@@ -43,11 +43,24 @@ sealed class DrawerItem(
     data object MandiPrices : DrawerItem(R.drawable.ic_price, R.string.menu_mandi_prices)
     data object Weather : DrawerItem(R.drawable.ic_weather, R.string.menu_weather)
     data object Offers : DrawerItem(R.drawable.ic_offer, R.string.menu_offers)
+    data object FieldDiary : DrawerItem(R.drawable.ic_diary, R.string.menu_field_diary)
     data object CarbonCredits : DrawerItem(R.drawable.ic_carbon, R.string.menu_carbon_credits)
     data object KnowledgeBase : DrawerItem(R.drawable.ic_knowledge, R.string.menu_knowledge_base)
     data object FarmerProfile : DrawerItem(R.drawable.ic_settings, R.string.menu_mandi_settings)
     data object SignOut : DrawerItem(R.drawable.ic_logout, R.string.sign_out)
 }
+
+internal val MAIN_DRAWER_ITEMS = listOf(
+    DrawerItem.NewChat,
+    DrawerItem.PlantDiagnosis,
+    DrawerItem.History,
+    DrawerItem.MandiPrices,
+    DrawerItem.FieldDiary,
+    DrawerItem.Weather,
+    DrawerItem.Offers,
+    DrawerItem.CarbonCredits,
+    DrawerItem.KnowledgeBase
+)
 
 @Composable
 fun AppDrawerContent(
@@ -81,109 +94,13 @@ fun AppDrawerContent(
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Main items
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.NewChat.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.NewChat.labelRes)) },
-            selected = selectedItem == DrawerItem.NewChat,
-            onClick = { onItemClick(DrawerItem.NewChat) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.PlantDiagnosis.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.PlantDiagnosis.labelRes)) },
-            selected = selectedItem == DrawerItem.PlantDiagnosis,
-            onClick = { onItemClick(DrawerItem.PlantDiagnosis) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.History.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.History.labelRes)) },
-            selected = selectedItem == DrawerItem.History,
-            onClick = { onItemClick(DrawerItem.History) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.MandiPrices.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.MandiPrices.labelRes)) },
-            selected = selectedItem == DrawerItem.MandiPrices,
-            onClick = { onItemClick(DrawerItem.MandiPrices) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.Weather.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.Weather.labelRes)) },
-            selected = selectedItem == DrawerItem.Weather,
-            onClick = { onItemClick(DrawerItem.Weather) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.Offers.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.Offers.labelRes)) },
-            selected = selectedItem == DrawerItem.Offers,
-            onClick = { onItemClick(DrawerItem.Offers) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.CarbonCredits.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.CarbonCredits.labelRes)) },
-            selected = selectedItem == DrawerItem.CarbonCredits,
-            onClick = { onItemClick(DrawerItem.CarbonCredits) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
-
-        NavigationDrawerItem(
-            icon = {
-                Icon(
-                    painter = painterResource(id = DrawerItem.KnowledgeBase.iconRes),
-                    contentDescription = null
-                )
-            },
-            label = { Text(stringResource(DrawerItem.KnowledgeBase.labelRes)) },
-            selected = selectedItem == DrawerItem.KnowledgeBase,
-            onClick = { onItemClick(DrawerItem.KnowledgeBase) },
-            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-        )
+        MAIN_DRAWER_ITEMS.forEach { item ->
+            AppDrawerItem(
+                item = item,
+                selected = selectedItem == item,
+                onClick = { onItemClick(item) }
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -225,6 +142,26 @@ fun AppDrawerContent(
 
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun AppDrawerItem(
+    item: DrawerItem,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    NavigationDrawerItem(
+        icon = {
+            Icon(
+                painter = painterResource(id = item.iconRes),
+                contentDescription = null
+            )
+        },
+        label = { Text(stringResource(item.labelRes)) },
+        selected = selected,
+        onClick = onClick,
+        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+    )
 }
 
 @Composable

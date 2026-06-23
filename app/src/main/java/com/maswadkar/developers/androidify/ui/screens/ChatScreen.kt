@@ -104,6 +104,7 @@ fun ChatScreen(
     onMandiPricesClick: () -> Unit,
     onWeatherClick: () -> Unit,
     onOffersClick: () -> Unit,
+    onFieldDiaryClick: () -> Unit,
     onCarbonCreditsClick: () -> Unit,
     onKnowledgeBaseClick: () -> Unit,
     onFarmerProfileClick: () -> Unit,
@@ -382,6 +383,7 @@ fun ChatScreen(
                         DrawerItem.MandiPrices -> onMandiPricesClick()
                         DrawerItem.Weather -> onWeatherClick()
                         DrawerItem.Offers -> onOffersClick()
+                        DrawerItem.FieldDiary -> onFieldDiaryClick()
                         DrawerItem.CarbonCredits -> onCarbonCreditsClick()
                         DrawerItem.KnowledgeBase -> onKnowledgeBaseClick()
                         DrawerItem.FarmerProfile -> onFarmerProfileClick()

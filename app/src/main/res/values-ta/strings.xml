@@ -18,6 +18,8 @@
     <string name="home_feature_weather_desc">உள்ளூர் வானிலை முன்னறிவிப்பு</string>
     <string name="home_feature_knowledge_title">அறிவுக் களஞ்சியம்</string>
     <string name="home_feature_knowledge_desc">விவசாய வழிகாட்டிகள் மற்றும் ஆவணங்கள்</string>
+    <string name="home_feature_diary_title">வயல் நாட்குறிப்பு</string>
+    <string name="home_feature_diary_desc">பணியும் செலவும் பதிவு செய்</string>
     <string name="home_feature_offers_title">சலுகைகள்</string>
     <string name="home_feature_offers_desc">விதைகள் மற்றும் உரங்களில் சலுகைகள்</string>
     <string name="home_feature_carbon_title">கார்பன் கிரெடிட்</string>
@@ -49,6 +51,7 @@
     <string name="menu_history">முந்தைய உரையாடல்கள்</string>
     <string name="menu_mandi_prices">மண்டி விலைகள்</string>
     <string name="menu_offers">சலுகைகள்</string>
+    <string name="menu_field_diary">வயல் நாட்குறிப்பு</string>
     <string name="menu_knowledge_base">அறிவுக் களஞ்சியம்</string>
     <string name="menu_other">மற்றவை</string>
     <string name="sign_out">வெளியேறு</string>
@@ -82,6 +85,7 @@
     <string name="change_location_title">இடத்தை மாற்றவும்</string>
     <string name="cancel">ரத்து செய்</string>
     <string name="menu_mandi_settings">விவசாயி சுயவிவரம்</string>
+    <string name="field_diary_title">வயல் நாட்குறிப்பு</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">விவசாயி சுயவிவரம்</string>

@@ -25,6 +25,8 @@
     <string name="home_feature_weather_desc">Local weather forecast</string>
     <string name="home_feature_knowledge_title">Knowledge Base</string>
     <string name="home_feature_knowledge_desc">Farming guides &amp; documents</string>
+    <string name="home_feature_diary_title">Field Diary</string>
+    <string name="home_feature_diary_desc">Record field work and costs</string>
     <string name="home_feature_offers_title">Offers</string>
     <string name="home_feature_offers_desc">Deals on seeds &amp; fertilizers</string>
     <string name="home_feature_carbon_title">Carbon Credits</string>
@@ -65,6 +67,7 @@
     <string name="menu_history">Historical Conversations</string>
     <string name="menu_mandi_prices">Mandi Prices</string>
     <string name="menu_offers">Offers</string>
+    <string name="menu_field_diary">Field Diary</string>
     <string name="menu_knowledge_base">Knowledge Base</string>
     <string name="menu_other">Other</string>
     <string name="open_drawer">Open navigation drawer</string>
@@ -92,6 +95,7 @@
     <string name="change_location_title">Change Location</string>
     <string name="cancel">Cancel</string>
     <string name="menu_mandi_settings">Farmer Profile</string>
+    <string name="field_diary_title">Field Diary</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">Farmer Profile</string>
