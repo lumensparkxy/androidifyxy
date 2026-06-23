@@ -14,6 +14,17 @@ sealed class Screen(val route: String) {
     data object FarmerProfile : Screen("farmer_profile")
     data object Offers : Screen("offers")
     data object FieldDiary : Screen("field_diary")
+    data object AddDiaryEntry : Screen("field_diary/add_entry")
+    data object EditDiaryEntry : Screen("field_diary/edit_entry/{entryId}") {
+        fun createRoute(entryId: String): String {
+            val encodedEntryId = URLEncoder.encode(entryId, StandardCharsets.UTF_8.toString())
+            return "field_diary/edit_entry/$encodedEntryId"
+        }
+
+        fun decodeEntryId(encodedEntryId: String): String {
+            return URLDecoder.decode(encodedEntryId, StandardCharsets.UTF_8.toString())
+        }
+    }
     data object CarbonCredits : Screen("carbon_credits")
     data object KnowledgeBase : Screen("knowledge_base")
     data object Weather : Screen("weather")
