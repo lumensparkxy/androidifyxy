@@ -17,8 +17,7 @@ data class FieldDiaryUiState(
     val errorMessage: String? = null,
     val selectedFilter: DiaryActivityType? = null,
     val entries: List<FieldDiaryEntry> = emptyList(),
-    val groupedEntries: List<FieldDiaryTimelineGroup> = emptyList(),
-    val snackbarMessage: String? = null
+    val groupedEntries: List<FieldDiaryTimelineGroup> = emptyList()
 )
 
 class FieldDiaryViewModel(
@@ -62,14 +61,6 @@ class FieldDiaryViewModel(
         _uiState.value = _uiState.value
             .copy(selectedFilter = filter)
             .withGroupedEntries()
-    }
-
-    fun onAddEntryClicked(message: String) {
-        _uiState.value = _uiState.value.copy(snackbarMessage = message)
-    }
-
-    fun onSnackbarShown() {
-        _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
 
     private fun FieldDiaryUiState.withGroupedEntries(): FieldDiaryUiState = copy(

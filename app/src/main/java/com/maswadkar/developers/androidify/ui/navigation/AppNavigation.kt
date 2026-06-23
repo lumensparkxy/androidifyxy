@@ -29,6 +29,7 @@ import com.maswadkar.developers.androidify.auth.AuthState
 import com.maswadkar.developers.androidify.auth.AuthViewModel
 import com.maswadkar.developers.androidify.ui.screens.ChatScreen
 import com.maswadkar.developers.androidify.ui.screens.CarbonCreditsScreen
+import com.maswadkar.developers.androidify.ui.screens.DiaryEntryFormScreen
 import com.maswadkar.developers.androidify.ui.screens.HistoryScreen
 import com.maswadkar.developers.androidify.ui.screens.HomeScreen
 import com.maswadkar.developers.androidify.ui.screens.KnowledgeBaseScreen
@@ -263,7 +264,37 @@ fun AppNavigation(
 
         composable(Screen.FieldDiary.route) {
             FieldDiaryScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                onAddEntryClick = { navController.navigate(Screen.AddDiaryEntry.route) },
+                onEntryClick = { entryId ->
+                    navController.navigate(Screen.EditDiaryEntry.createRoute(entryId))
+                }
+            )
+        }
+
+        composable(Screen.AddDiaryEntry.route) {
+            DiaryEntryFormScreen(
+                entryId = null,
+                onBackClick = { navController.popBackStack() },
+                onSaved = {
+                    navController.popBackStack(Screen.FieldDiary.route, inclusive = false)
+                }
+            )
+        }
+
+        composable(
+            route = Screen.EditDiaryEntry.route,
+            arguments = listOf(navArgument("entryId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val entryId = backStackEntry.arguments?.getString("entryId")?.let {
+                Screen.EditDiaryEntry.decodeEntryId(it)
+            } ?: ""
+            DiaryEntryFormScreen(
+                entryId = entryId,
+                onBackClick = { navController.popBackStack() },
+                onSaved = {
+                    navController.popBackStack(Screen.FieldDiary.route, inclusive = false)
+                }
             )
         }
 

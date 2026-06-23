@@ -1,6 +1,7 @@
 package com.maswadkar.developers.androidify.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,18 +33,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,25 +59,15 @@ import java.time.LocalDate
 @Composable
 fun FieldDiaryScreen(
     onBackClick: () -> Unit,
+    onAddEntryClick: () -> Unit,
+    onEntryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FieldDiaryViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val addEntryStubMessage = stringResource(R.string.field_diary_add_stub)
-    val addEntryAction = { viewModel.onAddEntryClicked(addEntryStubMessage) }
-
-    LaunchedEffect(uiState.snackbarMessage) {
-        val message = uiState.snackbarMessage
-        if (message != null) {
-            snackbarHostState.showSnackbar(message)
-            viewModel.onSnackbarShown()
-        }
-    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.field_diary_title)) },
@@ -99,7 +86,7 @@ fun FieldDiaryScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = addEntryAction,
+                onClick = onAddEntryClick,
                 icon = {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -114,7 +101,8 @@ fun FieldDiaryScreen(
             uiState = uiState,
             onFilterSelected = viewModel::onFilterSelected,
             onRetry = viewModel::loadEntries,
-            onAddEntryClick = addEntryAction,
+            onAddEntryClick = onAddEntryClick,
+            onEntryClick = onEntryClick,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -128,6 +116,7 @@ private fun FieldDiaryContent(
     onFilterSelected: (DiaryActivityType?) -> Unit,
     onRetry: () -> Unit,
     onAddEntryClick: () -> Unit,
+    onEntryClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when {
@@ -185,7 +174,14 @@ private fun FieldDiaryContent(
                             items = group.entries,
                             key = { entry -> entry.id.ifBlank { "${entry.activityType}-${entry.activityDate}" } }
                         ) { entry ->
-                            DiaryEntryRow(entry = entry)
+                            DiaryEntryRow(
+                                entry = entry,
+                                onClick = {
+                                    if (entry.id.isNotBlank()) {
+                                        onEntryClick(entry.id)
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -253,6 +249,7 @@ private fun DiaryFilterChip(
 @Composable
 private fun DiaryEntryRow(
     entry: FieldDiaryEntry,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val activityType = DiaryActivityType.fromFirestoreValue(entry.activityType)
@@ -263,6 +260,7 @@ private fun DiaryEntryRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {

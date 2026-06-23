@@ -95,6 +95,26 @@ class FieldDiaryRepository(
         }.sortedNewestFirst()
     }
 
+    suspend fun getEntry(entryId: String): FieldDiaryEntry? {
+        val userId = requireSignedInUserId()
+        val trimmedEntryId = entryId.trim()
+        require(trimmedEntryId.isNotBlank()) { "Entry ID is required" }
+
+        val document = firestore.fieldDiaryCollection(userId)
+            .document(trimmedEntryId)
+            .get()
+            .await()
+
+        return try {
+            document.takeIf { it.exists() }
+                ?.toObject(FieldDiaryEntry::class.java)
+                ?.copy(id = document.id, userId = userId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error parsing diary entry $trimmedEntryId: ${e.message}", e)
+            null
+        }
+    }
+
     suspend fun createEntry(entry: FieldDiaryEntry): String {
         val userId = requireSignedInUserId()
         val entryRef = if (entry.id.isBlank()) {
