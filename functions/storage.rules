@@ -18,10 +18,18 @@ service firebase.storage {
                    && request.resource.size < 1 * 1024 * 1024;
     }
 
+    // Field Diary photos - farmers can manage only their own diary images.
+    match /field_diary/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+                            && request.auth.uid == userId
+                            && request.resource.size < 1 * 1024 * 1024;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Deny everything else by default
     match /{allPaths=**} {
       allow read, write: if false;
     }
   }
 }
-
