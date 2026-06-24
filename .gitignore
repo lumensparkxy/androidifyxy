@@ -30,3 +30,5 @@ __pycache__/
 *.pyc
 mandi_sync.log
 outputs/
+
+node_modules/
