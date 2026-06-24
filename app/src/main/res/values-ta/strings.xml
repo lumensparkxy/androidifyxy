@@ -86,6 +86,58 @@
     <string name="cancel">ரத்து செய்</string>
     <string name="menu_mandi_settings">விவசாயி சுயவிவரம்</string>
     <string name="field_diary_title">வயல் நாட்குறிப்பு</string>
+    <string name="field_diary_add_entry">பதிவு சேர்</string>
+    <string name="field_diary_filter_all">அனைத்தும்</string>
+    <string name="field_diary_empty_title">இன்னும் நாட்குறிப்பு பதிவுகள் இல்லை</string>
+    <string name="field_diary_empty_message">இந்த பயிர் பருவத்திற்கான முதல் வயல் செயல்பாட்டைச் சேர்க்கவும்.</string>
+    <string name="field_diary_photos_count">%1$d புகைப்படங்கள்</string>
+    <string name="field_diary_form_add_title">நாட்குறிப்பு பதிவு சேர்</string>
+    <string name="field_diary_form_edit_title">நாட்குறிப்பு பதிவைத் திருத்து</string>
+    <string name="field_diary_date">தேதி</string>
+    <string name="field_diary_activity_type">செயல்பாட்டு வகை</string>
+    <string name="field_diary_activity_type_required">செயல்பாட்டு வகை *</string>
+    <string name="field_diary_select_activity_type">செயல்பாட்டு வகையைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="field_diary_activity_land_preparation">நிலத் தயாரிப்பு / உழுதல்</string>
+    <string name="field_diary_activity_sowing">விதைத்தல் / நடுதல்</string>
+    <string name="field_diary_activity_transplanting">நாற்றங்கால் / மாற்று நடவு</string>
+    <string name="field_diary_activity_irrigation">நீர்ப்பாசனம்</string>
+    <string name="field_diary_activity_fertilizer">உரம் / இயற்கை உரம்</string>
+    <string name="field_diary_activity_weeding">களை எடுப்பு / இடை உழவு</string>
+    <string name="field_diary_activity_pesticide">தெளிப்பு / பயிர் பாதுகாப்பு</string>
+    <string name="field_diary_activity_mulching">மல்சிங்</string>
+    <string name="field_diary_activity_harvest">அறுவடை</string>
+    <string name="field_diary_activity_post_harvest">அறுவடைக்குப் பின் / சேமிப்பு</string>
+    <string name="field_diary_activity_other">மற்றவை</string>
+    <string name="field_diary_crop_required">பயிர் *</string>
+    <string name="field_diary_field_optional">வயல் / பகுதி (விருப்பம்)</string>
+    <string name="field_diary_notes_required">குறிப்புகள் *</string>
+    <string name="field_diary_notes_count">%1$d/%2$d</string>
+    <string name="field_diary_optional_details">விருப்ப விவரங்கள்</string>
+    <string name="field_diary_optional_details_hint">தெரிந்தால் உள்ளீடு, அளவு மற்றும் செலவைச் சேர்க்கவும்</string>
+    <string name="field_diary_input_name">உள்ளீட்டு பெயர்</string>
+    <string name="field_diary_quantity">அளவு</string>
+    <string name="field_diary_cost_amount">செலவு</string>
+    <string name="field_diary_photos_optional">புகைப்படங்கள் (விருப்பம்)</string>
+    <string name="field_diary_photo_limit_count">%2$d இல் %1$d</string>
+    <string name="field_diary_add_photo">புகைப்படம் சேர்</string>
+    <string name="field_diary_remove_photo">புகைப்படத்தை நீக்கு</string>
+    <string name="field_diary_saved_photo">சேமித்த புகைப்படம்</string>
+    <string name="field_diary_new_photo">புதிய புகைப்படம்</string>
+    <string name="field_diary_tip">குறிப்பு: நல்ல பதிவுகள் உங்கள் பண்ணை முன்னேற்றத்தை கண்காணிக்கவும் சிறந்த ஆலோசனை பெறவும் உதவும்.</string>
+    <string name="field_diary_save_entry">பதிவைச் சேமி</string>
+    <string name="field_diary_add_details_later">கூடுதல் விவரங்களை பிறகு சேர்</string>
+    <string name="field_diary_delete_entry">பதிவை நீக்கு</string>
+    <string name="field_diary_delete_confirm_title">நாட்குறிப்பு பதிவை நீக்கவா?</string>
+    <string name="field_diary_delete_confirm_message">இது நாட்குறிப்பு பதிவையும் அதன் சேமித்த புகைப்படங்களையும் நீக்கும். இதை மீட்டெடுக்க முடியாது.</string>
+    <string name="field_diary_error_activity_type_required">செயல்பாட்டு வகை தேவை</string>
+    <string name="field_diary_error_crop_required">பயிர் பெயர் தேவை</string>
+    <string name="field_diary_error_notes_required">குறிப்புகள் தேவை</string>
+    <string name="field_diary_error_cost_invalid">செல்லுபடியான செலவு தொகையை உள்ளிடவும்</string>
+    <string name="field_diary_error_cost_negative">செலவு பூஜ்ஜியம் அல்லது அதற்கு மேல் இருக்க வேண்டும்</string>
+    <string name="field_diary_error_too_many_photos">அதிகபட்சம் %1$d புகைப்படங்களை இணைக்கவும்</string>
+    <string name="field_diary_camera_permission_required">கேமரா அனுமதி தேவை</string>
+    <string name="field_diary_camera_launch_error">கேமரா திறப்பதில் பிழை: %1$s</string>
+    <string name="field_diary_gallery_launch_error">கேலரி திறப்பதில் பிழை</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">விவசாயி சுயவிவரம்</string>
@@ -203,4 +255,3 @@
     <string name="product_type_equipment">கருவிகள்</string>
     <string name="product_type_other">பொருள்</string>
 </resources>
-

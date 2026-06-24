@@ -86,6 +86,58 @@
     <string name="cancel">రద్దు చేయండి</string>
     <string name="menu_mandi_settings">రైతు ప్రొఫైల్</string>
     <string name="field_diary_title">పొలం డైరీ</string>
+    <string name="field_diary_add_entry">ఎంట్రీ జోడించండి</string>
+    <string name="field_diary_filter_all">అన్నీ</string>
+    <string name="field_diary_empty_title">ఇంకా డైరీ ఎంట్రీలు లేవు</string>
+    <string name="field_diary_empty_message">ఈ పంట సీజన్ కోసం మొదటి పొలం కార్యకలాపాన్ని జోడించండి.</string>
+    <string name="field_diary_photos_count">%1$d ఫోటోలు</string>
+    <string name="field_diary_form_add_title">డైరీ ఎంట్రీ జోడించండి</string>
+    <string name="field_diary_form_edit_title">డైరీ ఎంట్రీని సవరించండి</string>
+    <string name="field_diary_date">తేదీ</string>
+    <string name="field_diary_activity_type">కార్యకలాప రకం</string>
+    <string name="field_diary_activity_type_required">కార్యకలాప రకం *</string>
+    <string name="field_diary_select_activity_type">కార్యకలాప రకాన్ని ఎంచుకోండి</string>
+    <string name="field_diary_activity_land_preparation">భూమి సిద్ధం / దున్నడం</string>
+    <string name="field_diary_activity_sowing">విత్తడం / నాటడం</string>
+    <string name="field_diary_activity_transplanting">నర్సరీ / మార్పిడి నాట్లు</string>
+    <string name="field_diary_activity_irrigation">నీటిపారుదల</string>
+    <string name="field_diary_activity_fertilizer">ఎరువు / పేడ ఎరువు</string>
+    <string name="field_diary_activity_weeding">కలుపు తీయడం / అంతరకృషి</string>
+    <string name="field_diary_activity_pesticide">పిచికారీ / పంట రక్షణ</string>
+    <string name="field_diary_activity_mulching">మల్చింగ్</string>
+    <string name="field_diary_activity_harvest">కోత</string>
+    <string name="field_diary_activity_post_harvest">కోత తర్వాత / నిల్వ</string>
+    <string name="field_diary_activity_other">ఇతర</string>
+    <string name="field_diary_crop_required">పంట *</string>
+    <string name="field_diary_field_optional">పొలం / ప్లాట్ (ఐచ్ఛికం)</string>
+    <string name="field_diary_notes_required">గమనికలు *</string>
+    <string name="field_diary_notes_count">%1$d/%2$d</string>
+    <string name="field_diary_optional_details">ఐచ్ఛిక వివరాలు</string>
+    <string name="field_diary_optional_details_hint">తెలిస్తే ఇన్‌పుట్, పరిమాణం మరియు ఖర్చు జోడించండి</string>
+    <string name="field_diary_input_name">ఇన్‌పుట్ పేరు</string>
+    <string name="field_diary_quantity">పరిమాణం</string>
+    <string name="field_diary_cost_amount">ఖర్చు</string>
+    <string name="field_diary_photos_optional">ఫోటోలు (ఐచ్ఛికం)</string>
+    <string name="field_diary_photo_limit_count">%2$d లో %1$d</string>
+    <string name="field_diary_add_photo">ఫోటో జోడించండి</string>
+    <string name="field_diary_remove_photo">ఫోటో తీసివేయండి</string>
+    <string name="field_diary_saved_photo">సేవ్ చేసిన ఫోటో</string>
+    <string name="field_diary_new_photo">కొత్త ఫోటో</string>
+    <string name="field_diary_tip">సూచన: మంచి రికార్డులు మీ పొలం పురోగతిని గమనించడానికి మరియు మెరుగైన సలహా పొందడానికి సహాయపడతాయి.</string>
+    <string name="field_diary_save_entry">ఎంట్రీ సేవ్ చేయండి</string>
+    <string name="field_diary_add_details_later">మరిన్ని వివరాలు తరువాత జోడించండి</string>
+    <string name="field_diary_delete_entry">ఎంట్రీ తొలగించండి</string>
+    <string name="field_diary_delete_confirm_title">డైరీ ఎంట్రీని తొలగించాలా?</string>
+    <string name="field_diary_delete_confirm_message">ఇది డైరీ ఎంట్రీని మరియు దాని సేవ్ చేసిన ఫోటోలను తొలగిస్తుంది. దీన్ని తిరిగి మార్చలేరు.</string>
+    <string name="field_diary_error_activity_type_required">కార్యకలాప రకం అవసరం</string>
+    <string name="field_diary_error_crop_required">పంట పేరు అవసరం</string>
+    <string name="field_diary_error_notes_required">గమనికలు అవసరం</string>
+    <string name="field_diary_error_cost_invalid">చెల్లుబాటు అయ్యే ఖర్చు మొత్తాన్ని నమోదు చేయండి</string>
+    <string name="field_diary_error_cost_negative">ఖర్చు సున్నా లేదా అంతకంటే ఎక్కువ ఉండాలి</string>
+    <string name="field_diary_error_too_many_photos">గరిష్టంగా %1$d ఫోటోలు జత చేయండి</string>
+    <string name="field_diary_camera_permission_required">కెమెరా అనుమతి అవసరం</string>
+    <string name="field_diary_camera_launch_error">కెమెరా ప్రారంభించడంలో లోపం: %1$s</string>
+    <string name="field_diary_gallery_launch_error">గ్యాలరీ ప్రారంభించడంలో లోపం</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">రైతు ప్రొఫైల్</string>
@@ -203,4 +255,3 @@
     <string name="product_type_equipment">పరికరాలు</string>
     <string name="product_type_other">ఉత్పత్తి</string>
 </resources>
-

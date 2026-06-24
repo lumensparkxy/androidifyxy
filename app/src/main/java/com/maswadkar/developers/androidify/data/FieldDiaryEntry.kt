@@ -6,10 +6,16 @@ import java.util.Locale
 private const val FIELD_DIARY_STORAGE_ROOT = "field_diary"
 
 enum class DiaryActivityType(val firestoreValue: String, val displayName: String) {
+    LandPreparation("land_preparation", "Land preparation / Ploughing"),
+    Sowing("sowing", "Sowing / Planting"),
+    Transplanting("transplanting", "Nursery / Transplanting"),
     Irrigation("irrigation", "Irrigation"),
-    Fertilizer("fertilizer", "Fertilizer"),
-    Pesticide("pesticide", "Pesticide"),
+    Fertilizer("fertilizer", "Fertilizer / Manure"),
+    Weeding("weeding", "Weeding / Interculture"),
+    Pesticide("pesticide", "Spraying / Plant protection"),
+    Mulching("mulching", "Mulching"),
     Harvest("harvest", "Harvest"),
+    PostHarvest("post_harvest", "Post-harvest / Storage"),
     Other("other", "Other");
 
     companion object {

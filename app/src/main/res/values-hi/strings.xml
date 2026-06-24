@@ -86,6 +86,58 @@
     <string name="cancel">रद्द करें</string>
     <string name="menu_mandi_settings">किसान प्रोफ़ाइल</string>
     <string name="field_diary_title">फील्ड डायरी</string>
+    <string name="field_diary_add_entry">प्रविष्टि जोड़ें</string>
+    <string name="field_diary_filter_all">सभी</string>
+    <string name="field_diary_empty_title">अभी कोई डायरी प्रविष्टि नहीं</string>
+    <string name="field_diary_empty_message">इस फसल मौसम की पहली खेत गतिविधि जोड़ें।</string>
+    <string name="field_diary_photos_count">%1$d फोटो</string>
+    <string name="field_diary_form_add_title">डायरी प्रविष्टि जोड़ें</string>
+    <string name="field_diary_form_edit_title">डायरी प्रविष्टि संपादित करें</string>
+    <string name="field_diary_date">तारीख</string>
+    <string name="field_diary_activity_type">गतिविधि प्रकार</string>
+    <string name="field_diary_activity_type_required">गतिविधि प्रकार *</string>
+    <string name="field_diary_select_activity_type">गतिविधि प्रकार चुनें</string>
+    <string name="field_diary_activity_land_preparation">भूमि तैयारी / जुताई</string>
+    <string name="field_diary_activity_sowing">बुवाई / रोपण</string>
+    <string name="field_diary_activity_transplanting">नर्सरी / रोपाई</string>
+    <string name="field_diary_activity_irrigation">सिंचाई</string>
+    <string name="field_diary_activity_fertilizer">उर्वरक / खाद</string>
+    <string name="field_diary_activity_weeding">निराई / अंतर-संवर्धन</string>
+    <string name="field_diary_activity_pesticide">छिड़काव / पौध संरक्षण</string>
+    <string name="field_diary_activity_mulching">मल्चिंग</string>
+    <string name="field_diary_activity_harvest">कटाई</string>
+    <string name="field_diary_activity_post_harvest">कटाई के बाद / भंडारण</string>
+    <string name="field_diary_activity_other">अन्य</string>
+    <string name="field_diary_crop_required">फसल *</string>
+    <string name="field_diary_field_optional">खेत / प्लॉट (वैकल्पिक)</string>
+    <string name="field_diary_notes_required">नोट्स *</string>
+    <string name="field_diary_notes_count">%1$d/%2$d</string>
+    <string name="field_diary_optional_details">वैकल्पिक विवरण</string>
+    <string name="field_diary_optional_details_hint">यदि पता हो तो इनपुट, मात्रा और लागत जोड़ें</string>
+    <string name="field_diary_input_name">इनपुट नाम</string>
+    <string name="field_diary_quantity">मात्रा</string>
+    <string name="field_diary_cost_amount">लागत</string>
+    <string name="field_diary_photos_optional">फोटो (वैकल्पिक)</string>
+    <string name="field_diary_photo_limit_count">%2$d में से %1$d</string>
+    <string name="field_diary_add_photo">फोटो जोड़ें</string>
+    <string name="field_diary_remove_photo">फोटो हटाएं</string>
+    <string name="field_diary_saved_photo">सहेजा गया फोटो</string>
+    <string name="field_diary_new_photo">नया फोटो</string>
+    <string name="field_diary_tip">सुझाव: अच्छे रिकॉर्ड आपके खेत की प्रगति पर नज़र रखने और बेहतर सलाह पाने में मदद करते हैं।</string>
+    <string name="field_diary_save_entry">प्रविष्टि सहेजें</string>
+    <string name="field_diary_add_details_later">अधिक विवरण बाद में जोड़ें</string>
+    <string name="field_diary_delete_entry">प्रविष्टि हटाएं</string>
+    <string name="field_diary_delete_confirm_title">डायरी प्रविष्टि हटाएं?</string>
+    <string name="field_diary_delete_confirm_message">इससे डायरी प्रविष्टि और उसके सहेजे गए फोटो हट जाएंगे। इसे वापस नहीं किया जा सकता।</string>
+    <string name="field_diary_error_activity_type_required">गतिविधि प्रकार आवश्यक है</string>
+    <string name="field_diary_error_crop_required">फसल का नाम आवश्यक है</string>
+    <string name="field_diary_error_notes_required">नोट्स आवश्यक हैं</string>
+    <string name="field_diary_error_cost_invalid">वैध लागत राशि दर्ज करें</string>
+    <string name="field_diary_error_cost_negative">लागत शून्य या उससे अधिक होनी चाहिए</string>
+    <string name="field_diary_error_too_many_photos">अधिकतम %1$d फोटो संलग्न करें</string>
+    <string name="field_diary_camera_permission_required">कैमरा अनुमति आवश्यक है</string>
+    <string name="field_diary_camera_launch_error">कैमरा खोलने में त्रुटि: %1$s</string>
+    <string name="field_diary_gallery_launch_error">गैलरी खोलने में त्रुटि</string>
 
     <!-- Farmer Profile Screen -->
     <string name="farmer_profile_title">किसान प्रोफ़ाइल</string>
@@ -203,4 +255,3 @@
     <string name="product_type_equipment">उपकरण</string>
     <string name="product_type_other">उत्पाद</string>
 </resources>
-

@@ -39,12 +39,13 @@ class FieldDiaryTimelineTest {
     fun `timeline filter keeps matching activity without refetch concerns`() {
         val entries = listOf(
             entry("irrigation", DiaryActivityType.Irrigation, LocalDateTime.of(2026, 6, 23, 7, 30)),
-            entry("fertilizer", DiaryActivityType.Fertilizer, LocalDateTime.of(2026, 6, 23, 8, 30))
+            entry("fertilizer", DiaryActivityType.Fertilizer, LocalDateTime.of(2026, 6, 23, 8, 30)),
+            entry("weeding", DiaryActivityType.Weeding, LocalDateTime.of(2026, 6, 23, 9, 30))
         )
 
-        val filtered = filterFieldDiaryEntries(entries, DiaryActivityType.Fertilizer)
+        val filtered = filterFieldDiaryEntries(entries, DiaryActivityType.Weeding)
 
-        assertEquals(listOf("fertilizer"), filtered.map { it.id })
+        assertEquals(listOf("weeding"), filtered.map { it.id })
     }
 
     @Test

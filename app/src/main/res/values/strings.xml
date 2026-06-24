@@ -107,6 +107,19 @@
     <string name="field_diary_form_edit_title">Edit Diary Entry</string>
     <string name="field_diary_date">Date</string>
     <string name="field_diary_activity_type">Activity type</string>
+    <string name="field_diary_activity_type_required">Activity type *</string>
+    <string name="field_diary_select_activity_type">Select activity type</string>
+    <string name="field_diary_activity_land_preparation">Land preparation / Ploughing</string>
+    <string name="field_diary_activity_sowing">Sowing / Planting</string>
+    <string name="field_diary_activity_transplanting">Nursery / Transplanting</string>
+    <string name="field_diary_activity_irrigation">Irrigation</string>
+    <string name="field_diary_activity_fertilizer">Fertilizer / Manure</string>
+    <string name="field_diary_activity_weeding">Weeding / Interculture</string>
+    <string name="field_diary_activity_pesticide">Spraying / Plant protection</string>
+    <string name="field_diary_activity_mulching">Mulching</string>
+    <string name="field_diary_activity_harvest">Harvest</string>
+    <string name="field_diary_activity_post_harvest">Post-harvest / Storage</string>
+    <string name="field_diary_activity_other">Other</string>
     <string name="field_diary_crop_required">Crop *</string>
     <string name="field_diary_field_optional">Field / Plot (optional)</string>
     <string name="field_diary_notes_required">Notes *</string>
@@ -128,6 +141,7 @@
     <string name="field_diary_delete_entry">Delete entry</string>
     <string name="field_diary_delete_confirm_title">Delete diary entry?</string>
     <string name="field_diary_delete_confirm_message">This removes the diary entry and its saved photos. This cannot be undone.</string>
+    <string name="field_diary_error_activity_type_required">Activity type is required</string>
     <string name="field_diary_error_crop_required">Crop name is required</string>
     <string name="field_diary_error_notes_required">Notes are required</string>
     <string name="field_diary_error_cost_invalid">Enter a valid cost amount</string>

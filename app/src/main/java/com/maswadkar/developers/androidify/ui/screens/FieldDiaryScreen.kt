@@ -224,7 +224,7 @@ private fun FieldDiaryHeader(
             )
             DiaryActivityType.entries.forEach { activityType ->
                 DiaryFilterChip(
-                    label = activityType.displayName,
+                    label = stringResource(activityType.labelStringRes()),
                     selected = selectedFilter == activityType,
                     onClick = { onFilterSelected(activityType) }
                 )
@@ -253,6 +253,7 @@ private fun DiaryEntryRow(
     modifier: Modifier = Modifier
 ) {
     val activityType = DiaryActivityType.fromFirestoreValue(entry.activityType)
+    val activityLabel = stringResource(activityType.labelStringRes())
     val accentColor = diaryActivityAccentColor(activityType)
     val detailParts = buildFieldDiaryDetailParts(entry)
     val costText = formatFieldDiaryCostAmount(entry.costAmount)
@@ -282,13 +283,13 @@ private fun DiaryEntryRow(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ActivityBadge(
-                    activityType = activityType,
+                    activityLabel = activityLabel,
                     color = accentColor
                 )
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = activityType.displayName,
+                        text = activityLabel,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -358,7 +359,7 @@ private fun TimelineMarker(
 
 @Composable
 private fun ActivityBadge(
-    activityType: DiaryActivityType,
+    activityLabel: String,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -369,7 +370,7 @@ private fun ActivityBadge(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
-                text = activityType.displayName.first().toString(),
+                text = activityLabel.first().toString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = color
@@ -475,9 +476,15 @@ private fun DiaryErrorState(
 }
 
 private fun diaryActivityAccentColor(activityType: DiaryActivityType): Color = when (activityType) {
+    DiaryActivityType.LandPreparation -> Color(0xFF795548)
+    DiaryActivityType.Sowing -> Color(0xFF558B2F)
+    DiaryActivityType.Transplanting -> Color(0xFF00897B)
     DiaryActivityType.Irrigation -> Color(0xFF1976D2)
     DiaryActivityType.Fertilizer -> Color(0xFF2E7D32)
+    DiaryActivityType.Weeding -> Color(0xFF6A8A00)
     DiaryActivityType.Pesticide -> Color(0xFF00695C)
+    DiaryActivityType.Mulching -> Color(0xFF8D6E63)
     DiaryActivityType.Harvest -> Color(0xFFB26A00)
+    DiaryActivityType.PostHarvest -> Color(0xFF6D4C41)
     DiaryActivityType.Other -> Color(0xFF546E7A)
 }

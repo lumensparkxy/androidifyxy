@@ -29,6 +29,7 @@ class DiaryEntryFormStateTest {
         assertEquals(
             setOf(
                 DiaryEntryFormFieldError.MissingActivityDate,
+                DiaryEntryFormFieldError.MissingActivityType,
                 DiaryEntryFormFieldError.MissingCropName,
                 DiaryEntryFormFieldError.MissingNotes
             ),
@@ -42,7 +43,7 @@ class DiaryEntryFormStateTest {
         val result = validateDiaryEntryForm(
             values = DiaryEntryFormValues(
                 activityDateMillis = dateMillis,
-                activityType = DiaryActivityType.Fertilizer,
+                activityType = DiaryActivityType.Weeding,
                 cropName = " Soybean ",
                 fieldName = " Field A ",
                 notes = " Applied after irrigation ",
@@ -55,7 +56,7 @@ class DiaryEntryFormStateTest {
 
         val normalized = requireNotNull(result.normalizedValues)
         assertTrue(result.errors.isEmpty())
-        assertEquals(DiaryActivityType.Fertilizer, normalized.activityType)
+        assertEquals(DiaryActivityType.Weeding, normalized.activityType)
         assertEquals("Soybean", normalized.cropName)
         assertEquals("Field A", normalized.fieldName)
         assertEquals("Applied after irrigation", normalized.notes)
@@ -89,6 +90,17 @@ class DiaryEntryFormStateTest {
     }
 
     @Test
+    fun `validation requires explicit activity selection`() {
+        val result = validateDiaryEntryForm(
+            values = validValues().copy(activityType = null),
+            photoCount = 0
+        )
+
+        assertEquals(setOf(DiaryEntryFormFieldError.MissingActivityType), result.errors)
+        assertNull(result.normalizedValues)
+    }
+
+    @Test
     fun `entry builder preserves edit createdAt and photo paths`() {
         val normalized = requireNotNull(
             validateDiaryEntryForm(
@@ -109,6 +121,7 @@ class DiaryEntryFormStateTest {
         )
 
         assertEquals("entry-1", entry.id)
+        assertEquals(DiaryActivityType.Irrigation.firestoreValue, entry.activityType)
         assertEquals(createdAt, entry.createdAt)
         assertEquals(1200.0, entry.costAmount ?: -1.0, 0.0)
         assertEquals(

@@ -21,6 +21,7 @@ enum class DiaryEntryFormMode {
 
 enum class DiaryEntryFormFieldError {
     MissingActivityDate,
+    MissingActivityType,
     MissingCropName,
     MissingNotes,
     InvalidCostAmount,
@@ -30,7 +31,7 @@ enum class DiaryEntryFormFieldError {
 
 data class DiaryEntryFormValues(
     val activityDateMillis: Long? = null,
-    val activityType: DiaryActivityType = DiaryActivityType.Irrigation,
+    val activityType: DiaryActivityType? = null,
     val cropName: String = "",
     val fieldName: String = "",
     val notes: String = "",
@@ -65,6 +66,11 @@ fun validateDiaryEntryForm(
         errors += DiaryEntryFormFieldError.MissingActivityDate
     }
 
+    val activityType = values.activityType
+    if (activityType == null) {
+        errors += DiaryEntryFormFieldError.MissingActivityType
+    }
+
     val cropName = values.cropName.trim()
     if (cropName.isBlank()) {
         errors += DiaryEntryFormFieldError.MissingCropName
@@ -95,10 +101,10 @@ fun validateDiaryEntryForm(
         errors += DiaryEntryFormFieldError.TooManyPhotos
     }
 
-    val normalized = if (errors.isEmpty() && activityDate != null) {
+    val normalized = if (errors.isEmpty() && activityDate != null && activityType != null) {
         NormalizedDiaryEntryFormValues(
             activityDate = Timestamp(Date(activityDate)),
-            activityType = values.activityType,
+            activityType = activityType,
             cropName = cropName,
             fieldName = values.fieldName.trimToNullable(),
             notes = notes,

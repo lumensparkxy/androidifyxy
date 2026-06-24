@@ -47,8 +47,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -369,25 +372,11 @@ private fun DiaryEntryFormContent(
             onClick = onDateClick
         )
 
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                text = stringResource(R.string.field_diary_activity_type),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                DiaryActivityType.entries.forEach { activityType ->
-                    FilterChip(
-                        selected = uiState.values.activityType == activityType,
-                        onClick = { onActivityTypeSelected(activityType) },
-                        label = { Text(activityType.displayName) }
-                    )
-                }
-            }
-        }
+        DiaryActivityDropdown(
+            selectedActivityType = uiState.values.activityType,
+            hasError = DiaryEntryFormFieldError.MissingActivityType in uiState.fieldErrors,
+            onActivityTypeSelected = onActivityTypeSelected
+        )
 
         OutlinedTextField(
             value = uiState.values.cropName,
@@ -566,6 +555,60 @@ private fun DiaryEntryDateRow(
                     text = dateLabel,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DiaryActivityDropdown(
+    selectedActivityType: DiaryActivityType?,
+    hasError: Boolean,
+    onActivityTypeSelected: (DiaryActivityType) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectActivityLabel = stringResource(R.string.field_diary_select_activity_type)
+    val activityLabel = selectedActivityType?.let { stringResource(it.labelStringRes()) } ?: selectActivityLabel
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            value = activityLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(stringResource(R.string.field_diary_activity_type_required)) },
+            isError = hasError,
+            supportingText = errorSupportingText(
+                condition = hasError,
+                message = stringResource(R.string.field_diary_error_activity_type_required)
+            ),
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DiaryActivityType.entries.forEach { activityType ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(activityType.labelStringRes())) },
+                    onClick = {
+                        onActivityTypeSelected(activityType)
+                        expanded = false
+                    },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                 )
             }
         }

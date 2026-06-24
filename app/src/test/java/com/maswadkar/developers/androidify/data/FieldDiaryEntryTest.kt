@@ -11,10 +11,17 @@ class FieldDiaryEntryTest {
 
     @Test
     fun `activity type parses stored values and falls back for display`() {
+        assertEquals(DiaryActivityType.LandPreparation, DiaryActivityType.fromFirestoreValue(" land_preparation "))
+        assertEquals(DiaryActivityType.Sowing, DiaryActivityType.fromFirestoreValue("SOWING"))
+        assertEquals(DiaryActivityType.Transplanting, DiaryActivityType.fromFirestoreValue("transplanting"))
         assertEquals(DiaryActivityType.Irrigation, DiaryActivityType.fromFirestoreValue(" irrigation "))
         assertEquals(DiaryActivityType.Fertilizer, DiaryActivityType.fromFirestoreValue("FERTILIZER"))
+        assertEquals(DiaryActivityType.Weeding, DiaryActivityType.fromFirestoreValue("weeding"))
+        assertEquals(DiaryActivityType.Mulching, DiaryActivityType.fromFirestoreValue("mulching"))
+        assertEquals(DiaryActivityType.PostHarvest, DiaryActivityType.fromFirestoreValue("post_harvest"))
         assertEquals(DiaryActivityType.Other, DiaryActivityType.fromFirestoreValue("unexpected"))
         assertTrue(DiaryActivityType.isSupportedFirestoreValue("harvest"))
+        assertTrue(DiaryActivityType.isSupportedFirestoreValue("land_preparation"))
         assertFalse(DiaryActivityType.isSupportedFirestoreValue("spraying"))
     }
 
